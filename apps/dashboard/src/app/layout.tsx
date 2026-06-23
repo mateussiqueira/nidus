@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 import "./globals.css"
 
+export const dynamic = "force-dynamic"
+
 export const metadata: Metadata = {
   title: "Nidus",
   description: "Sua PaaS pessoal — deploy full-stack com suporte a Dart/Vaden",
