@@ -13,8 +13,7 @@ program
 
 program
   .command("login")
-  .description("Autenticar na Nidus")
-  .argument("[token]", "Token de API (opcional)")
+  .description("Autenticar na Nidus (interativo)")
   .action(login)
 
 program
