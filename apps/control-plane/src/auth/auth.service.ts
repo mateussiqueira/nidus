@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger, UnauthorizedException, ConflictException, NotFoundException } from "@nestjs/common"
 import { PrismaService } from "../prisma/prisma.service"
 import { JwtService } from "@nestjs/jwt"
 import * as bcrypt from "bcrypt"
@@ -14,7 +14,7 @@ export class AuthService {
 
   async register(email: string, name: string, password: string) {
     const existing = await this.prisma.db.query("SELECT id FROM users WHERE email = $1", [email])
-    if (existing.rows.length > 0) throw new Error("Email já cadastrado")
+    if (existing.rows.length > 0) throw new ConflictException("Email já cadastrado")
 
     const hashed = await bcrypt.hash(password, 10)
     const result = await this.prisma.db.query(
@@ -36,11 +36,11 @@ export class AuthService {
       "SELECT id, name, email, password FROM users WHERE email = $1",
       [email],
     )
-    if (result.rows.length === 0) throw new Error("Credenciais inválidas")
+    if (result.rows.length === 0) throw new UnauthorizedException("Credenciais inválidas")
 
     const user = result.rows[0]
     const valid = await bcrypt.compare(password, user.password)
-    if (!valid) throw new Error("Credenciais inválidas")
+    if (!valid) throw new UnauthorizedException("Credenciais inválidas")
 
     return {
       token: this.jwt.sign({ sub: user.id, email: user.email }),
@@ -53,7 +53,7 @@ export class AuthService {
       "SELECT id, name, email, avatar, created_at FROM users WHERE id = $1",
       [userId],
     )
-    if (result.rows.length === 0) throw new Error("Usuário não encontrado")
+    if (result.rows.length === 0) throw new NotFoundException("Usuário não encontrado")
     return result.rows[0]
   }
 }
