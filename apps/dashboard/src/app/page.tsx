@@ -4,10 +4,10 @@ export default function Home() {
       <main className="flex flex-col items-center gap-8">
         <div className="text-center">
           <h1 className="text-5xl font-bold tracking-tight text-canopy-400">
-            Canopy
+            Nidus
           </h1>
           <p className="mt-4 text-lg text-zinc-400">
-            Sua plataforma full-stack com suporte nativo a Dart & Vaden
+            Sua PaaS pessoal — deploy full-stack com suporte nativo a Dart & Vaden
           </p>
         </div>
 

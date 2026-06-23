@@ -2,8 +2,8 @@ import type { Metadata } from "next"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Canopy",
-  description: "Sua plataforma de deploy full-stack",
+  title: "Nidus",
+  description: "Sua PaaS pessoal — deploy full-stack com suporte a Dart/Vaden",
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
