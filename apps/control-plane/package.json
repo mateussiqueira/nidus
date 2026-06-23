@@ -14,6 +14,8 @@
     "db:seed": "node prisma/seed.mjs"
   },
   "dependencies": {
+    "@canopy/runtime": "*",
+    "@canopy/shared": "*",
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
     "@nestjs/jwt": "^11.0.0",
