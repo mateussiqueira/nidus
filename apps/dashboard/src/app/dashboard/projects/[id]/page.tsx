@@ -4,7 +4,37 @@ export const dynamic = "force-dynamic"
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { api } from "@/lib/api"
-import { ArrowLeft, GitBranch, Clock, Rocket, ExternalLink, Play, Settings, Eye, EyeOff } from "lucide-react"
+import { ArrowLeft, GitBranch, Clock, Rocket, ExternalLink, Play, Settings, Eye, EyeOff, Activity, Cpu, MemoryStick, Timer } from "lucide-react"
+
+type Project = {
+  id: string
+  name: string
+  slug: string
+  framework: string | null
+  status: string
+  domain: string | null
+  repoUrl: string | null
+  envVars: string | null
+  createdAt: string
+}
+
+type Deployment = {
+  id: string
+  status: string
+  url?: string
+  logs?: string
+  createdAt: string
+  finishedAt?: string
+}
+
+type Metrics = {
+  status: string
+  running: boolean
+  uptime: number
+  cpu: number
+  memory: { usage: string; limit: string; percent: number }
+  restartCount: number
+}
 import Link from "next/link"
 
 type Project = {
@@ -38,6 +68,7 @@ export default function ProjectDetailPage() {
   const [showEnv, setShowEnv] = useState(false)
   const [savingEnv, setSavingEnv] = useState(false)
   const [envSaved, setEnvSaved] = useState(false)
+  const [metrics, setMetrics] = useState<Metrics | null>(null)
 
   function load() {
     if (!id) return
@@ -46,6 +77,7 @@ export default function ProjectDetailPage() {
       setEnvText(p.envVars || "")
     }).catch(() => router.push("/dashboard"))
     api.deployments.list(id).then(setDeployments).catch(() => {})
+    api.deployments.metrics(id).then(setMetrics).catch(() => {})
   }
 
   useEffect(load, [id, router])
@@ -124,6 +156,35 @@ export default function ProjectDetailPage() {
           </button>
         </div>
       </div>
+
+      {/* Metrics */}
+      {metrics && (
+        <div className="card mb-6">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><Activity size={16} /> Container Metrics</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="p-3 rounded-lg bg-zinc-900/50">
+              <div className="flex items-center gap-2 text-xs text-zinc-500 mb-1"><Activity size={12} /> Status</div>
+              <span className={`badge badge-${metrics.running ? "active" : "paused"}`}>{metrics.status}</span>
+            </div>
+            <div className="p-3 rounded-lg bg-zinc-900/50">
+              <div className="flex items-center gap-2 text-xs text-zinc-500 mb-1"><Cpu size={12} /> CPU</div>
+              <p className="text-lg font-semibold">{metrics.cpu.toFixed(1)}%</p>
+            </div>
+            <div className="p-3 rounded-lg bg-zinc-900/50">
+              <div className="flex items-center gap-2 text-xs text-zinc-500 mb-1"><MemoryStick size={12} /> Memory</div>
+              <p className="text-lg font-semibold">{metrics.memory.percent.toFixed(1)}%</p>
+              <p className="text-xs text-zinc-500">{metrics.memory.usage} / {metrics.memory.limit}</p>
+            </div>
+            <div className="p-3 rounded-lg bg-zinc-900/50">
+              <div className="flex items-center gap-2 text-xs text-zinc-500 mb-1"><Timer size={12} /> Uptime</div>
+              <p className="text-lg font-semibold">{metrics.uptime > 86400 ? `${(metrics.uptime / 86400).toFixed(1)}d` : metrics.uptime > 3600 ? `${(metrics.uptime / 3600).toFixed(1)}h` : `${(metrics.uptime / 60).toFixed(0)}m`}</p>
+            </div>
+          </div>
+          {metrics.restartCount > 0 && (
+            <p className="mt-2 text-xs text-yellow-400">⚠️ Reiniciado {metrics.restartCount}x</p>
+          )}
+        </div>
+      )}
 
       {/* Deployments */}
       <div>

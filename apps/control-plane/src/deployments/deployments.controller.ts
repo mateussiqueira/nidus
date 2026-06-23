@@ -18,6 +18,13 @@ export class DeploymentsController {
     return this.deployments.listByProject(projectId)
   }
 
+  @Get("metrics")
+  async metrics(@Param("projectId") projectId: string, @Req() req: any) {
+    const project = await this.projects.get(projectId, req.user.sub)
+    if (!project) return { status: "not_found" }
+    return this.deployments.metrics(project.slug)
+  }
+
   @Post("deploy")
   async deploy(@Param("projectId") projectId: string, @Req() req: any) {
     const project = await this.projects.get(projectId, req.user.sub)

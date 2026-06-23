@@ -27,6 +27,36 @@ export class DeploymentsService {
     }))
   }
 
+  async metrics(slug: string) {
+    const containerName = `nidus-${slug}`
+    try {
+      const inspect = JSON.parse(execSync(`docker inspect ${containerName} 2>/dev/null || echo '{}'`).toString())
+      if (!inspect || inspect.length === 0) return { status: "stopped", cpu: 0, memory: 0, uptime: 0 }
+
+      const state = inspect[0].State || {}
+      const stats = JSON.parse(execSync(`docker stats ${containerName} --no-stream --format '{{json .}}' 2>/dev/null || echo '{}'`).toString())
+
+      return {
+        status: state.Status || "unknown",
+        running: state.Running || false,
+        startedAt: state.StartedAt || null,
+        uptime: state.StartedAt ? Math.floor((Date.now() - new Date(state.StartedAt).getTime()) / 1000) : 0,
+        cpu: parseFloat(stats?.CPUPerc?.replace("%", "") || "0"),
+        memory: {
+          usage: stats?.MemUsage?.split("/")[0]?.trim() || "0",
+          limit: stats?.MemUsage?.split("/")[1]?.trim() || "0",
+          percent: parseFloat(stats?.MemPerc?.replace("%", "") || "0"),
+        },
+        network: stats?.NetIO || "0 / 0",
+        blockIO: stats?.BlockIO || "0 / 0",
+        restartCount: state.RestartCount || 0,
+        exitCode: state.ExitCode ?? null,
+      }
+    } catch {
+      return { status: "error", cpu: 0, memory: 0 }
+    }
+  }
+
   async deploy(projectId: string) {
     const project = await this.prisma.db.query(
       "SELECT id, name, slug, repo_url, domain FROM projects WHERE id = $1",
