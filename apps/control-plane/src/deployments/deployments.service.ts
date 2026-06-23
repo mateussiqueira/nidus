@@ -4,7 +4,7 @@ import { execSync } from "child_process"
 import { writeFileSync, existsSync, mkdirSync } from "fs"
 import { join } from "path"
 
-const DEPLOYS_DIR = "/root/nidus/deploys"
+const DEPLOYS_DIR = process.env.NIDUS_DEPLOYS_DIR || "/root/nidus/deploys"
 
 @Injectable()
 export class DeploymentsService {

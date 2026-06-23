@@ -11,7 +11,7 @@ function question(query) {
 
 export async function login(token) {
   if (token) {
-    saveConfig({ ...loadConfig(), token })
+    saveConfig({ ...loadConfig(), token: token.trim() })
     console.log(chalk.green("✓") + " Token salvo!")
     return
   }
