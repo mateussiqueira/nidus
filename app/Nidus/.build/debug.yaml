@@ -1,0 +1,81 @@
+client:
+  name: basic
+  file-system: device-agnostic
+tools: {}
+targets:
+  "Nidus-arm64-apple-macosx26.0-debug.exe": ["<Nidus-arm64-apple-macosx26.0-debug.exe>"]
+  "Nidus-arm64-apple-macosx26.0-debug.module": ["<Nidus-arm64-apple-macosx26.0-debug.module>"]
+  "PackageStructure": ["<PackageStructure>"]
+  "main": ["<Nidus-arm64-apple-macosx26.0-debug.exe>","<Nidus-arm64-apple-macosx26.0-debug.module>"]
+  "test": ["<Nidus-arm64-apple-macosx26.0-debug.exe>","<Nidus-arm64-apple-macosx26.0-debug.module>"]
+default: "main"
+nodes:
+  "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/":
+    is-directory-structure: true
+    content-exclusion-patterns: [".git",".build"]
+  "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus":
+    is-mutated: true
+commands:
+  "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus-entitlement.plist":
+    tool: write-auxiliary-file
+    inputs: ["<entitlement-plist>","<com.apple.security.get-task-allow>"]
+    outputs: ["/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus-entitlement.plist"]
+    description: "Write auxiliary file /Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus-entitlement.plist"
+
+  "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/ContentView.swift","/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Models/ChatService.swift","/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Models/Models.swift","/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/NidusApp.swift","/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Views/Chat/ChatView.swift","/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Views/LoginView.swift","/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Views/ProjectDetailView.swift"]
+    outputs: ["/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/sources"]
+    description: "Write auxiliary file /Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/sources"
+
+  "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.product/Objects.LinkFileList":
+    tool: write-auxiliary-file
+    inputs: ["<link-file-list>","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ChatService.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ChatView.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ContentView.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/LoginView.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/Models.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/NidusApp.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ProjectDetailView.swift.o"]
+    outputs: ["/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.product/Objects.LinkFileList"]
+    description: "Write auxiliary file /Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.product/Objects.LinkFileList"
+
+  "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt":
+    tool: write-auxiliary-file
+    inputs: ["<swift-get-version>","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"]
+    outputs: ["/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"]
+    always-out-of-date: "true"
+    description: "Write auxiliary file /Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+
+  "<Nidus-arm64-apple-macosx26.0-debug.exe>":
+    tool: phony
+    inputs: ["<Nidus-arm64-apple-macosx26.0-debug.exe-CodeSigning>"]
+    outputs: ["<Nidus-arm64-apple-macosx26.0-debug.exe>"]
+
+  "<Nidus-arm64-apple-macosx26.0-debug.module>":
+    tool: phony
+    inputs: ["/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ContentView.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ChatService.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/Models.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/NidusApp.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ChatView.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/LoginView.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ProjectDetailView.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Modules/Nidus.swiftmodule"]
+    outputs: ["<Nidus-arm64-apple-macosx26.0-debug.module>"]
+
+  "C.Nidus-arm64-apple-macosx26.0-debug.exe":
+    tool: shell
+    inputs: ["/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ChatService.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ChatView.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ContentView.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/LoginView.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/Models.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/NidusApp.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ProjectDetailView.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.product/Objects.LinkFileList"]
+    outputs: ["/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus"]
+    description: "Linking ./.build/arm64-apple-macosx/debug/Nidus"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-L","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug","-o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus","-module-name","Nidus","-Xlinker","-no_warn_duplicate_libraries","-emit-executable","-Xlinker","-alias","-Xlinker","_Nidus_main","-Xlinker","_main","-Xlinker","-rpath","-Xlinker","@loader_path","@/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.product/Objects.LinkFileList","-Xlinker","-rpath","-Xlinker","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-6.2/macosx","-target","arm64-apple-macosx14.0","-Xlinker","-add_ast_path","-Xlinker","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Modules/Nidus.swiftmodule","-plugin-path","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g"]
+
+  "C.Nidus-arm64-apple-macosx26.0-debug.exe-entitlements":
+    tool: shell
+    inputs: ["/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus-entitlement.plist"]
+    outputs: ["<Nidus-arm64-apple-macosx26.0-debug.exe-CodeSigning>"]
+    description: "Applying debug entitlements to ./.build/arm64-apple-macosx/debug/Nidus"
+    args: ["codesign","--force","--sign","-","--entitlements","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus-entitlement.plist","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus"]
+
+  "C.Nidus-arm64-apple-macosx26.0-debug.module":
+    tool: shell
+    inputs: ["/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/ContentView.swift","/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Models/ChatService.swift","/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Models/Models.swift","/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/NidusApp.swift","/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Views/Chat/ChatView.swift","/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Views/LoginView.swift","/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Views/ProjectDetailView.swift","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/sources"]
+    outputs: ["/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ContentView.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ChatService.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/Models.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/NidusApp.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ChatView.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/LoginView.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ProjectDetailView.swift.o","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Modules/Nidus.swiftmodule"]
+    description: "Compiling Swift Module 'Nidus' (7 sources)"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-module-name","Nidus","-emit-dependencies","-emit-module","-emit-module-path","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Modules/Nidus.swiftmodule","-output-file-map","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/output-file-map.json","-incremental","-c","@/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/sources","-I","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Modules","-target","arm64-apple-macosx14.0","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/index/store","-Onone","-enable-testing","-j11","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/ModuleCache","-parseable-output","-Xfrontend","-entry-point-function-name","-Xfrontend","Nidus_main","-swift-version","5","-plugin-path","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g","-Xcc","-isysroot","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-Xcc","-fPIC","-Xcc","-g","-package-name","nidus"]
+
+  "PackageStructure":
+    tool: package-structure-tool
+    inputs: ["/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/","/Volumes/BACKUP/projects/nidus/app/Nidus/Package.swift","/Volumes/BACKUP/projects/nidus/app/Nidus/Package.resolved"]
+    outputs: ["<PackageStructure>"]
+    description: "Planning build"
+    allow-missing-inputs: true
+
