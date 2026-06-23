@@ -1,25 +1,12 @@
 import chalk from "chalk"
 import { loadConfig, saveConfig, api } from "./config.js"
+import { createInterface } from "readline"
 
-export async function login(token) {
-  if (token) {
-    saveConfig({ ...loadConfig(), token })
-    console.log(chalk.green("✓") + " Token salvo!")
-    return
-  }
-  console.log(chalk.cyan("\n  Nidus Login\n"))
-  const email = await question("  Email: ")
-  const password = await question("  Senha: ", true)
-  try {
-    const data = await api("/api/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    })
-    saveConfig({ ...loadConfig(), token: data.token })
-    console.log(chalk.green("\n  ✓ Login efetuado como " + chalk.bold(data.user.name)))
-  } catch (err) {
-    console.log(chalk.red("\n  ✗ " + err.message))
-  }
+function question(query, hidden = false) {
+  return new Promise((resolve) => {
+    const rl = createInterface({ input: process.stdin, output: process.stdout })
+    rl.question(query, (answer) => { rl.close(); resolve(answer) })
+  })
 }
 
 export async function whoami() {

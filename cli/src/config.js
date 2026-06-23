@@ -1,4 +1,4 @@
-import { readFileSync, existsSync } from "fs"
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs"
 import { homedir } from "os"
 import { join } from "path"
 
@@ -13,7 +13,6 @@ function loadConfig() {
 }
 
 function saveConfig(config) {
-  const { mkdirSync, writeFileSync } = require("fs")
   const dir = join(homedir(), ".nidus")
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
   writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2))
