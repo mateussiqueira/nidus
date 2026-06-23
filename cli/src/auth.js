@@ -2,11 +2,32 @@ import chalk from "chalk"
 import { loadConfig, saveConfig, api } from "./config.js"
 import { createInterface } from "readline"
 
-function question(query, hidden = false) {
+function question(query) {
   return new Promise((resolve) => {
     const rl = createInterface({ input: process.stdin, output: process.stdout })
     rl.question(query, (answer) => { rl.close(); resolve(answer) })
   })
+}
+
+export async function login(token) {
+  if (token) {
+    saveConfig({ ...loadConfig(), token })
+    console.log(chalk.green("✓") + " Token salvo!")
+    return
+  }
+  console.log(chalk.cyan("\n  Nidus Login\n"))
+  const email = await question("  Email: ")
+  const password = await question("  Senha: ")
+  try {
+    const data = await api("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    })
+    saveConfig({ ...loadConfig(), token: data.token })
+    console.log(chalk.green("\n  ✓ Login efetuado como " + chalk.bold(data.user.name)))
+  } catch (err) {
+    console.log(chalk.red("\n  ✗ " + err.message))
+  }
 }
 
 export async function whoami() {
@@ -26,18 +47,4 @@ export async function whoami() {
 export async function logout() {
   saveConfig({})
   console.log(chalk.green("  ✓ Logout efetuado"))
-}
-
-function question(query, hidden = false) {
-  return new Promise((resolve) => {
-    const rl = require("readline").createInterface({ input: process.stdin, output: process.stdout })
-    if (hidden) {
-      process.stdin.on("data", (c) => {
-        if (c[0] === 13) { process.stdin.pause(); resolve("") }
-      })
-      rl.question(query, (answer) => { rl.close(); resolve(answer) })
-    } else {
-      rl.question(query, (answer) => { rl.close(); resolve(answer) })
-    }
-  })
 }
