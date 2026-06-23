@@ -39,8 +39,8 @@ export default function LoginPage() {
     <div className="flex min-h-screen flex-col items-center justify-center p-8">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold tracking-tight">Canopy</h1>
-          <p className="mt-2 text-sm text-zinc-400">Entre na sua plataforma</p>
+          <h1 className="text-2xl font-bold tracking-tight">Nidus</h1>
+          <p className="mt-2 text-sm text-zinc-400">Sua PaaS pessoal</p>
         </div>
 
         <div className="card">

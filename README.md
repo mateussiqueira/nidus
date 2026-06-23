@@ -1,6 +1,6 @@
-# Canopy
+# Nidus
 
-A plataforma de deploy full-stack própria — inspirada em Vercel, Appwrite e Supabase, com suporte nativo a Dart/Vaden.
+PaaS open-source inspirada em Vercel, Railway e Coolify, com suporte nativo a Dart/Vaden.
 
 > Fase atual: **Seedbox** — deploy dos seus próprios projetos localmente e em cloud.
 
@@ -8,7 +8,7 @@ A plataforma de deploy full-stack própria — inspirada em Vercel, Appwrite e S
 
 ## Visão
 
-Canopy é uma plataforma open-source para hospedar projetos full-stack:
+Nidus é uma PaaS open-source para hospedar projetos full-stack:
 - **Frontend**: Next.js, React, Vue, Flutter Web
 - **Backend**: Node.js, Python, Go, Dart/Vaden
 - **Serviços integrados**: Auth, PostgreSQL, Storage
