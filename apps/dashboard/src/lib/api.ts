@@ -50,5 +50,6 @@ export const api = {
   },
   deployments: {
     list: (projectId: string) => request(`/api/projects/${projectId}/deployments`),
+    deploy: (projectId: string) => request(`/api/projects/${projectId}/deploy`, { method: "POST" }),
   },
 }
