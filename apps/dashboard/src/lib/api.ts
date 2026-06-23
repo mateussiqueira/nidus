@@ -46,7 +46,7 @@ export const api = {
   projects: {
     list: () => request("/api/projects"),
     get: (id: string) => request(`/api/projects/${id}`),
-    create: (data: { name: string; slug: string; repoUrl?: string }) =>
+    create: (data: { name: string; slug: string; repoUrl?: string; framework?: string }) =>
       request("/api/projects", { method: "POST", body: JSON.stringify(data) }),
   },
   deployments: {
