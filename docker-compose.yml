@@ -1,0 +1,101 @@
+name: canopy
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: canopy-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: canopy
+      POSTGRES_PASSWORD: canopy
+      POSTGRES_DB: canopy
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U canopy -d canopy"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: canopy-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    container_name: canopy-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: canopy
+      MINIO_ROOT_PASSWORD: canopy-canopy
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # gotrue (comentado — MVP usa auth via control-plane NestJS)
+  # gotrue:
+  #   image: supabase/gotrue:v2.158.1
+  #   container_name: canopy-gotrue
+  #   restart: unless-stopped
+  #   environment:
+  #     GOTRUE_API_HOST: 0.0.0.0
+  #     API_EXTERNAL_URL: ${GOTRUE_URL:-http://localhost:9999}
+  #     GOTRUE_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+  #     GOTRUE_URI_ALLOW_LIST: "*"
+  #     GOTRUE_DB_DRIVER: postgres
+  #     GOTRUE_DB_DATABASE_URL: postgresql://canopy:canopy@postgres:5432/canopy
+  #     DATABASE_URL: postgresql://canopy:canopy@postgres:5432/canopy
+  #     GOTRUE_JWT_SECRET: ${GOTRUE_JWT_SECRET:-local_canopy_jwt_secret_change_me}
+  #     GOTRUE_JWT_EXP: 3600
+  #     GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+  #     GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+  #     GOTRUE_MAILER_AUTOCONFIRM: "true"
+  #     GOTRUE_DISABLE_SIGNUP: "false"
+  #     GOTRUE_ENABLE_ANONYMOUS_USERS: "false"
+  #   ports:
+  #     - "9999:9999"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: canopy-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "2019:2019"
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      CANOPY_ROOT_DOMAIN: ${CANOPY_ROOT_DOMAIN:-canopy.localhost}
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  caddy_data:
+  caddy_config:

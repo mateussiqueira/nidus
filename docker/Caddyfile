@@ -1,0 +1,19 @@
+{
+  admin :2019
+}
+
+canopy.localhost, *.canopy.localhost {
+  tls internal
+
+  handle_path /api/* {
+    reverse_proxy host.docker.internal:3001
+  }
+
+  handle_path /auth/* {
+    reverse_proxy host.docker.internal:9999
+  }
+
+  handle {
+    reverse_proxy host.docker.internal:3000
+  }
+}

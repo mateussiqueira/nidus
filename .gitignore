@@ -1,0 +1,17 @@
+node_modules/
+.env
+.env.local
+.env.production
+.env.*.local
+.next/
+dist/
+build/
+*.tsbuildinfo
+.DS_Store
+*.log
+.vscode/settings.json
+.idea/
+coverage/
+docker-compose.override.yml
+/volumes/
+/data/

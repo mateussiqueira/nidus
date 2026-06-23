@@ -1,0 +1,28 @@
+{
+  "name": "canopy",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Plataforma full-stack open-source com suporte nativo a Dart/Vaden",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:dashboard\" \"npm run dev:control-plane\"",
+    "dev:dashboard": "npm run dev --workspace=apps/dashboard",
+    "dev:control-plane": "npm run dev --workspace=apps/control-plane",
+    "build": "npm run build --workspaces",
+    "lint": "npm run lint --workspaces",
+    "typecheck": "npm run typecheck --workspaces",
+    "db:generate": "npm run db:generate --workspace=apps/control-plane",
+    "db:push": "npm run db:push --workspace=apps/control-plane",
+    "db:studio": "npm run db:studio --workspace=apps/control-plane"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
