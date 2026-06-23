@@ -33,7 +33,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   const links = [
-    { href: "/", label: "Projetos", icon: LayoutDashboard },
+    { href: "/dashboard", label: "Projetos", icon: LayoutDashboard },
     { href: "/deployments", label: "Deployments", icon: Rocket },
   ]
 

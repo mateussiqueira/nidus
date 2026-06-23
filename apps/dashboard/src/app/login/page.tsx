@@ -14,7 +14,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (isAuthenticated()) router.push("/")
+    if (isAuthenticated()) router.push("/dashboard")
   }, [router])
 
   async function handleSubmit(e: React.FormEvent) {
@@ -26,7 +26,7 @@ export default function LoginPage() {
         ? await api.auth.login(email, password)
         : await api.auth.register(email, name, password)
       setToken(data.token)
-      router.push("/")
+      router.push("/dashboard")
     } catch (err: any) {
       setError(err.message)
     } finally {
