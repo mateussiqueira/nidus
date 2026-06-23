@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nidus — Sua PaaS pessoal</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0a0a0b;
+  --surface: #111113;
+  --border: #1f1f23;
+  --text: #fafafa;
+  --text-secondary: #a1a1aa;
+  --green: #22c55e;
+  --green-dark: #16a34a;
+  --green-glow: rgba(34,197,94,0.15);
+}
+
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
+}
+
+header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 100;
+  background: rgba(10,10,11,0.9);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+nav {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 18px;
+  text-decoration: none;
+  color: var(--text);
+}
+.logo-icon {
+  width: 32px; height: 32px;
+  background: var(--green);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 14px;
+  color: #000;
+}
+.nav-links { display: flex; align-items: center; gap: 24px; }
+.nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.15s; }
+.nav-links a:hover { color: var(--text); }
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--green);
+  color: #000;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+.btn-primary:hover { background: var(--green-dark); transform: translateY(-1px); }
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+.btn-outline:hover { background: var(--surface); }
+
+.hero {
+  padding: 160px 24px 80px;
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+.hero .badge {
+  display: inline-block;
+  padding: 6px 16px;
+  background: var(--green-glow);
+  color: var(--green);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  border: 1px solid rgba(34,197,94,0.2);
+}
+.hero h1 {
+  font-size: 56px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 24px;
+}
+.hero h1 span { background: linear-gradient(135deg, var(--green), #4ade80); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p {
+  font-size: 18px;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto 40px;
+}
+.hero-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.hero-buttons .btn-primary { padding: 14px 28px; font-size: 16px; }
+
+.features {
+  padding: 80px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.features h2 {
+  text-align: center;
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+.features > p { text-align: center; color: var(--text-secondary); margin-bottom: 64px; }
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px;
+  transition: all 0.2s;
+  text-align: center;
+}
+.feature-card:hover { border-color: var(--green); transform: translateY(-2px); }
+.feature-card .icon { width: 48px; height: 48px; background: var(--green-glow); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 24px; }
+.feature-card h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+.feature-card p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+
+.how-it-works {
+  padding: 80px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+.how-it-works h2 { font-size: 36px; font-weight: 700; margin-bottom: 48px; }
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 32px;
+}
+.step { position: relative; }
+.step .num {
+  width: 48px; height: 48px;
+  background: var(--green);
+  color: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 18px;
+  margin: 0 auto 16px;
+}
+.step h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+.step p { font-size: 14px; color: var(--text-secondary); }
+
+.pricing {
+  padding: 80px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.pricing h2 { text-align: center; font-size: 36px; font-weight: 700; margin-bottom: 48px; }
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.plan {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  position: relative;
+}
+.plan.featured {
+  border-color: var(--green);
+  background: linear-gradient(135deg, var(--surface), rgba(34,197,94,0.05));
+}
+.plan.featured::before {
+  content: 'Mais popular';
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--green);
+  color: #000;
+  padding: 4px 16px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.plan h3 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+.plan .price { font-size: 48px; font-weight: 800; letter-spacing: -0.02em; }
+.plan .price span { font-size: 16px; color: var(--text-secondary); font-weight: 400; }
+.plan .period { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; }
+.plan ul { list-style: none; margin-bottom: 24px; }
+.plan ul li { padding: 8px 0; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+.plan ul li::before { content: '✓'; color: var(--green); font-weight: 700; }
+.plan .btn-primary, .plan .btn-outline { width: 100%; justify-content: center; padding: 12px; }
+
+.cta {
+  padding: 80px 24px;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+.cta h2 { font-size: 36px; font-weight: 700; margin-bottom: 16px; }
+.cta p { color: var(--text-secondary); margin-bottom: 32px; }
+
+footer {
+  text-align: center;
+  padding: 48px 24px;
+  border-top: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+footer a { color: var(--text); text-decoration: none; }
+footer a:hover { color: var(--green); }
+
+@media (max-width: 768px) {
+  .hero h1 { font-size: 36px; }
+  .pricing-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+<nav>
+  <a href="/" class="logo">
+    <div class="logo-icon">N</div>
+    Nidus
+  </a>
+  <div class="nav-links">
+    <a href="#features">Recursos</a>
+    <a href="#pricing">Preços</a>
+    <a href="https://github.com/mateussiqueira/nidus" target="_blank">GitHub</a>
+    <a href="http://2.24.204.31:3000" class="btn-primary">Dashboard →</a>
+  </div>
+</nav>
+</header>
+
+<section class="hero">
+  <div class="badge">Seedbox — Fase 1</div>
+  <h1>Sua <span>PaaS pessoal</span><br>deploy full-stack</h1>
+  <p>Frontends, backends e APIs em segundos. Com suporte nativo a Dart &amp; Vaden. Open-source, self-hosted ou cloud.</p>
+  <div class="hero-buttons">
+    <a href="http://2.24.204.31:3000" class="btn-primary">Acessar Dashboard →</a>
+    <a href="https://github.com/mateussiqueira/nidus" class="btn-outline">Ver no GitHub</a>
+  </div>
+</section>
+
+<section class="features" id="features">
+  <h2>Recursos</h2>
+  <p>Tudo que você precisa para deploy, sem complicação.</p>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="icon">🚀</div>
+      <h3>Deploy</h3>
+      <p>Frontends, backends e APIs em segundos. Conecte seu Git e faça deploy automático.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🗄️</div>
+      <h3>Database</h3>
+      <p>PostgreSQL gerenciado por projeto. Cada app tem seu banco isolado e pronto pra usar.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🔐</div>
+      <h3>Auth</h3>
+      <p>Autenticação pronta com JWT + OAuth. Login, cadastro e gerenciamento de usuários.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🎯</div>
+      <h3>Dart &amp; Vaden</h3>
+      <p>Suporte nativo a Dart backend com Vaden. Build AOT + runtime mínimo em Docker.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">📦</div>
+      <h3>Multi-stack</h3>
+      <p>Next.js, React, Vue, Express, Fastify, Python, Go — detecta automaticamente o framework.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🔧</div>
+      <h3>Self-hosted</h3>
+      <p>Rode localmente com Docker Compose ou em qualquer VPS. Código 100% aberto.</p>
+    </div>
+  </div>
+</section>
+
+<section class="how-it-works">
+  <h2>Como funciona</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="num">1</div>
+      <h3>Crie seu projeto</h3>
+      <p>Conecte um repositório Git ou inicie do zero no dashboard.</p>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <h3>Build automático</h3>
+      <p>Detectamos o framework e fazemos o build em um container Docker.</p>
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <h3>Deploy na hora</h3>
+      <p>Sua aplicação no ar com URL única. Atualizações automáticas via Git push.</p>
+    </div>
+  </div>
+</section>
+
+<section class="pricing" id="pricing">
+  <h2>Preços</h2>
+  <div class="pricing-grid">
+    <div class="plan">
+      <h3>Starter</h3>
+      <div class="price">Grátis</div>
+      <p class="period">Sempre</p>
+      <ul>
+        <li>3 projetos</li>
+        <li>PostgreSQL por projeto</li>
+        <li>Deploy manual</li>
+        <li>Domínio *.nidus.app</li>
+        <li>Comunidade</li>
+      </ul>
+      <a href="http://2.24.204.31:3000" class="btn-outline">Começar</a>
+    </div>
+    <div class="plan featured">
+      <h3>Pro</h3>
+      <div class="price">$9<span>/mês</span></div>
+      <p class="period">ou $90/ano</p>
+      <ul>
+        <li>Projetos ilimitados</li>
+        <li>Git auto-deploy</li>
+        <li>Domínios customizados</li>
+        <li>Suporte a Dart/Vaden</li>
+        <li>Logs e métricas</li>
+      </ul>
+      <a href="http://2.24.204.31:3000" class="btn-primary">Assinar Pro</a>
+    </div>
+    <div class="plan">
+      <h3>Enterprise</h3>
+      <div class="price">$49<span>/mês</span></div>
+      <p class="period">até 10 usuários</p>
+      <ul>
+        <li>Tudo do Pro</li>
+        <li>Self-hosted</li>
+        <li>SSO / SAML</li>
+        <li>Audit logs</li>
+        <li>SLA 99.9%</li>
+      </ul>
+      <a href="#" class="btn-outline">Falar com vendas</a>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <h2>Pronto para começar?</h2>
+  <p>Faça deploy do seu primeiro projeto em menos de 5 minutos.</p>
+  <a href="http://2.24.204.31:3000" class="btn-primary">Acessar Dashboard →</a>
+</section>
+
+<footer>
+  <p>Nidus — PaaS open-source inspirada em Vercel, Railway e Coolify.</p>
+  <p><a href="https://github.com/mateussiqueira/nidus">GitHub</a> · MIT License · Feito com ☕ no Brasil</p>
+</footer>
+
+</body>
+</html>
