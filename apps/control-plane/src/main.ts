@@ -10,7 +10,7 @@ async function bootstrap() {
 
   app.use(helmet({ contentSecurityPolicy: false }))
   app.enableCors({
-    origin: process.env.CORS_ORIGINS?.split(",") ?? ["http://localhost:3000"],
+    origin: ["http://localhost:3000", "http://2.24.204.31:3000"],
     credentials: true,
   })
 
