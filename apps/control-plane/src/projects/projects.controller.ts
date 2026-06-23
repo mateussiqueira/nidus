@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Req, UseGuards } from "@nestjs/common"
+import { Controller, Get, Post, Patch, Body, Param, Req, UseGuards } from "@nestjs/common"
 import { ProjectsService } from "./projects.service"
 import { JwtGuard } from "../auth/jwt.guard"
 
@@ -18,7 +18,12 @@ export class ProjectsController {
   }
 
   @Post()
-  create(@Req() req: any, @Body() body: { name: string; slug: string; repoUrl?: string }) {
+  create(@Req() req: any, @Body() body: { name: string; slug: string; repoUrl?: string; framework?: string }) {
     return this.projects.create(req.user.sub, body)
+  }
+
+  @Patch(":id")
+  update(@Param("id") id: string, @Req() req: any, @Body() body: { envVars?: string; domain?: string; repoUrl?: string }) {
+    return this.projects.update(id, req.user.sub, body)
   }
 }

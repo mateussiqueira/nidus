@@ -39,6 +39,7 @@ model Project {
   status     ProjectStatus @default(ACTIVE)
   domain     String?
   databaseId String?       @map("database_id")
+  envVars    String?       @map("env_vars")
   createdAt  DateTime      @default(now()) @map("created_at")
   updatedAt  DateTime      @updatedAt @map("updated_at")
 
