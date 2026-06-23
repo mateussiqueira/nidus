@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic"
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { api } from "@/lib/api"
-import { ArrowLeft, GitBranch, Clock, Rocket, ExternalLink, Play } from "lucide-react"
+import { ArrowLeft, GitBranch, Clock, Rocket, ExternalLink, Play, Settings, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
 
 type Project = {
@@ -15,6 +15,7 @@ type Project = {
   status: string
   domain: string | null
   repoUrl: string | null
+  envVars: string | null
   createdAt: string
 }
 
@@ -33,10 +34,17 @@ export default function ProjectDetailPage() {
   const [project, setProject] = useState<Project | null>(null)
   const [deployments, setDeployments] = useState<Deployment[]>([])
   const [deploying, setDeploying] = useState(false)
+  const [envText, setEnvText] = useState("")
+  const [showEnv, setShowEnv] = useState(false)
+  const [savingEnv, setSavingEnv] = useState(false)
+  const [envSaved, setEnvSaved] = useState(false)
 
   function load() {
     if (!id) return
-    api.projects.get(id).then(setProject).catch(() => router.push("/dashboard"))
+    api.projects.get(id).then((p) => {
+      setProject(p)
+      setEnvText(p.envVars || "")
+    }).catch(() => router.push("/dashboard"))
     api.deployments.list(id).then(setDeployments).catch(() => {})
   }
 
@@ -50,6 +58,17 @@ export default function ProjectDetailPage() {
       load()
     } catch {}
     setDeploying(false)
+  }
+
+  async function handleSaveEnv() {
+    if (!id) return
+    setSavingEnv(true)
+    try {
+      await api.request("PATCH", `/api/projects/${id}`, { envVars: envText })
+      setEnvSaved(true)
+      setTimeout(() => setEnvSaved(false), 2000)
+    } catch {}
+    setSavingEnv(false)
   }
 
   if (!project) return null
@@ -84,6 +103,29 @@ export default function ProjectDetailPage() {
         </button>
       </div>
 
+      {/* Environment Variables */}
+      <div className="card mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold flex items-center gap-2"><Settings size={16} /> Environment Variables</h2>
+          <button onClick={() => setShowEnv(!showEnv)} className="btn btn-ghost text-xs">
+            {showEnv ? <EyeOff size={14} /> : <Eye size={14} />} {showEnv ? "Ocultar" : "Mostrar"}
+          </button>
+        </div>
+        <textarea
+          className="input font-mono text-xs min-h-[100px]"
+          value={envText}
+          onChange={(e) => { setEnvText(e.target.value); setEnvSaved(false) }}
+          placeholder="DATABASE_URL=postgresql://...&#x0a;API_KEY=secreta&#x0a;NODE_ENV=production"
+          type={showEnv ? "text" : "password"}
+        />
+        <div className="flex justify-end mt-3">
+          <button onClick={handleSaveEnv} disabled={savingEnv} className="btn btn-primary text-xs">
+            {savingEnv ? "Salvando..." : envSaved ? "✓ Salvo" : "Salvar Variáveis"}
+          </button>
+        </div>
+      </div>
+
+      {/* Deployments */}
       <div>
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Rocket size={16} />
