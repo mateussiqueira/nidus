@@ -3,6 +3,7 @@ import { ThrottlerModule } from "@nestjs/throttler"
 import { PrismaModule } from "./prisma/prisma.module"
 import { AuthModule } from "./auth/auth.module"
 import { ProjectsModule } from "./projects/projects.module"
+import { WebhookModule } from "./webhook/webhook.module"
 import { HealthController } from "./health/health.controller"
 
 @Module({
@@ -16,6 +17,7 @@ import { HealthController } from "./health/health.controller"
     PrismaModule,
     AuthModule,
     ProjectsModule,
+    WebhookModule,
   ],
   controllers: [HealthController],
 })

@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic"
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { api } from "@/lib/api"
-import { ArrowLeft, GitBranch, Clock, Rocket, ExternalLink, Play, Settings, Eye, EyeOff, Activity, Cpu, MemoryStick, Timer } from "lucide-react"
+import { ArrowLeft, GitBranch, Clock, Rocket, ExternalLink, Play, Settings, Eye, EyeOff, Activity, Cpu, MemoryStick, Timer, Webhook } from "lucide-react"
 
 type Project = {
   id: string
@@ -160,7 +160,7 @@ export default function ProjectDetailPage() {
       {/* Metrics */}
       {metrics && (
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><Activity size={16} /> Container Metrics</h2>
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><Activity size={16} /> Container</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-3 rounded-lg bg-zinc-900/50">
               <div className="flex items-center gap-2 text-xs text-zinc-500 mb-1"><Activity size={12} /> Status</div>
@@ -171,7 +171,7 @@ export default function ProjectDetailPage() {
               <p className="text-lg font-semibold">{metrics.cpu.toFixed(1)}%</p>
             </div>
             <div className="p-3 rounded-lg bg-zinc-900/50">
-              <div className="flex items-center gap-2 text-xs text-zinc-500 mb-1"><MemoryStick size={12} /> Memory</div>
+              <div className="flex items-center gap-2 text-xs text-zinc-500 mb-1"><MemoryStick size={12} /> Memória</div>
               <p className="text-lg font-semibold">{metrics.memory.percent.toFixed(1)}%</p>
               <p className="text-xs text-zinc-500">{metrics.memory.usage} / {metrics.memory.limit}</p>
             </div>
@@ -183,6 +183,21 @@ export default function ProjectDetailPage() {
           {metrics.restartCount > 0 && (
             <p className="mt-2 text-xs text-yellow-400">⚠️ Reiniciado {metrics.restartCount}x</p>
           )}
+        </div>
+      )}
+
+      {/* Webhook Info */}
+      {project.repoUrl && (
+        <div className="card mb-6">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><Webhook size={16} /> Git Auto-Deploy</h2>
+          <p className="text-sm text-zinc-400 mb-3">Adicione este webhook no seu repositório GitHub para deploy automático:</p>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 p-2 rounded bg-black/40 text-xs text-zinc-300 font-mono break-all">
+              http://2.24.204.31:3001/api/webhook/github
+            </code>
+            <button onClick={() => navigator.clipboard.writeText("http://2.24.204.31:3001/api/webhook/github")} className="btn btn-ghost text-xs">Copiar</button>
+          </div>
+          <p className="text-xs text-zinc-500 mt-2">GitHub → Settings → Webhooks → Add webhook → cole a URL acima → Content type: application/json</p>
         </div>
       )}
 
