@@ -1,3 +1,5 @@
+import Link from "next/link"
+
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-8">
@@ -9,6 +11,12 @@ export default function Home() {
           <p className="mt-4 text-lg text-zinc-400">
             Sua PaaS pessoal — deploy full-stack com suporte nativo a Dart & Vaden
           </p>
+        </div>
+
+        <div className="flex gap-4">
+          <Link href="/login" className="btn btn-primary px-8 py-3 bg-green-500 text-black rounded-lg font-semibold hover:bg-green-600 transition">
+            Acessar Dashboard →
+          </Link>
         </div>
 
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
