@@ -22,10 +22,9 @@ export default function LoginPage() {
     setError("")
     setLoading(true)
     try {
-      const fn = mode === "login" ? api.auth.login : api.auth.register
       const data = mode === "login"
-        ? await fn(email, password)
-        : await fn(email, name, password)
+        ? await api.auth.login(email, password)
+        : await api.auth.register(email, name, password)
       setToken(data.token)
       router.push("/")
     } catch (err: any) {
