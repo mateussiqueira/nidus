@@ -1,8 +1,9 @@
 import { Injectable, Logger, OnModuleDestroy } from "@nestjs/common"
 import { PrismaService } from "../prisma/prisma.service"
-import { execSync } from "child_process"
 import { deployQueue, deployWorker, sanitizeBranch, DeployJobData } from "./deploy.queue"
+import Docker from "dockerode"
 
+const docker = new Docker({ socketPath: "/var/run/docker.sock" })
 const DEPLOYS_DIR = process.env.NIDUS_DEPLOYS_DIR || "/tmp/nidus-deploys"
 const HOST = process.env.NIDUS_HOST || "localhost"
 
@@ -19,7 +20,7 @@ export class DeploymentsService implements OnModuleDestroy {
 
   async listByProject(projectId: string) {
     const result = await this.prisma.db.query(
-      `SELECT id, status, url, logs, branch, type, created_at, finished_at
+      `SELECT id, status, url, branch, type, created_at, finished_at
        FROM deployments WHERE project_id = $1
        ORDER BY created_at DESC LIMIT 50`,
       [projectId],
@@ -28,7 +29,6 @@ export class DeploymentsService implements OnModuleDestroy {
       id: row.id,
       status: row.status,
       url: row.url,
-      logs: row.logs,
       branch: row.branch,
       type: row.type,
       createdAt: row.created_at,
@@ -36,9 +36,17 @@ export class DeploymentsService implements OnModuleDestroy {
     }))
   }
 
+  async getLogs(deploymentId: string) {
+    const result = await this.prisma.db.query(
+      "SELECT logs FROM deployments WHERE id = $1",
+      [deploymentId],
+    )
+    return result.rows[0]?.logs || ""
+  }
+
   async listPreviews(projectId: string) {
     const result = await this.prisma.db.query(
-      `SELECT id, status, url, logs, branch, type, created_at, finished_at
+      `SELECT id, status, url, branch, type, created_at, finished_at
        FROM deployments WHERE project_id = $1 AND type = 'preview'
        ORDER BY created_at DESC LIMIT 20`,
       [projectId],
@@ -47,7 +55,6 @@ export class DeploymentsService implements OnModuleDestroy {
       id: row.id,
       status: row.status,
       url: row.url,
-      logs: row.logs,
       branch: row.branch,
       type: row.type,
       createdAt: row.created_at,
@@ -60,30 +67,30 @@ export class DeploymentsService implements OnModuleDestroy {
       ? `nidus-${slug}-preview-${sanitizeBranch(branch)}`
       : `nidus-${slug}`
     try {
-      const inspect = JSON.parse(execSync(`docker inspect ${containerName} 2>/dev/null || echo '{}'`).toString())
-      if (!inspect || inspect.length === 0) return { status: "stopped", cpu: 0, memory: 0, uptime: 0 }
+      const container = docker.getContainer(containerName)
+      const inspect = await container.inspect()
+      const stats = await container.stats({ stream: false })
 
-      const state = inspect[0].State || {}
-      const stats = JSON.parse(execSync(`docker stats ${containerName} --no-stream --format '{{json .}}' 2>/dev/null || echo '{}'`).toString())
-
+      const state = inspect.State || {}
       return {
         status: state.Status || "unknown",
         running: state.Running || false,
         startedAt: state.StartedAt || null,
         uptime: state.StartedAt ? Math.floor((Date.now() - new Date(state.StartedAt).getTime()) / 1000) : 0,
-        cpu: parseFloat(stats?.CPUPerc?.replace("%", "") || "0"),
+        cpu: stats.cpu_stats ? ((stats.cpu_stats.cpu_usage.total_usage / stats.system_cpu_usage) * 100).toFixed(2) : "0",
         memory: {
-          usage: stats?.MemUsage?.split("/")[0]?.trim() || "0",
-          limit: stats?.MemUsage?.split("/")[1]?.trim() || "0",
-          percent: parseFloat(stats?.MemPerc?.replace("%", "") || "0"),
+          usage: stats.memory_stats ? `${(stats.memory_stats.usage / 1024 / 1024).toFixed(1)}MB` : "0",
+          limit: stats.memory_stats ? `${(stats.memory_stats.limit / 1024 / 1024).toFixed(1)}MB` : "0",
+          percent: stats.memory_stats?.usage && stats.memory_stats?.limit
+            ? ((stats.memory_stats.usage / stats.memory_stats.limit) * 100).toFixed(1)
+            : "0",
         },
-        network: stats?.NetIO || "0 / 0",
-        blockIO: stats?.BlockIO || "0 / 0",
+        network: stats.networks ? Object.values(stats.networks).map((n: any) => `${n.rx_bytes}/${n.tx_bytes}`).join(", ") : "0",
         restartCount: state.RestartCount || 0,
         exitCode: state.ExitCode ?? null,
       }
     } catch {
-      return { status: "error", cpu: 0, memory: 0 }
+      return { status: "stopped", cpu: 0, memory: 0 }
     }
   }
 
@@ -128,10 +135,7 @@ export class DeploymentsService implements OnModuleDestroy {
       safeBranch,
     }
 
-    const job = await deployQueue.add("deploy", jobData, {
-      jobId: depId,
-    })
-
+    const job = await deployQueue.add("deploy", jobData, { jobId: depId })
     this.logger.log(`Deploy job ${job.id} queued for ${p.name} (${branch})`)
 
     return {
@@ -145,18 +149,16 @@ export class DeploymentsService implements OnModuleDestroy {
 
   async getJobStatus(deploymentId: string) {
     const result = await this.prisma.db.query(
-      `SELECT id, status, url, logs, branch, type, created_at, finished_at
+      `SELECT id, status, url, branch, type, created_at, finished_at
        FROM deployments WHERE id = $1`,
       [deploymentId],
     )
     if (!result.rows[0]) return null
-
     const row = result.rows[0]
     return {
       id: row.id,
       status: row.status,
       url: row.url,
-      logs: row.logs,
       branch: row.branch,
       type: row.type,
       createdAt: row.created_at,

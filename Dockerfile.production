@@ -1,0 +1,55 @@
+# Multi-stage build for Nidus Control Plane
+# Stage 1: Build Go deploy worker
+FROM golang:1.23-alpine AS go-builder
+WORKDIR /app
+COPY workers/deploy/go.mod workers/deploy/go.sum ./
+RUN go mod download
+COPY workers/deploy/ .
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /nidus-deploy-worker .
+
+# Stage 2: Build NestJS API
+FROM node:22-alpine AS api-builder
+WORKDIR /app
+COPY apps/control-plane/package*.json ./
+RUN npm ci --prefer-offline --production=false
+COPY apps/control-plane/ .
+RUN npm run build
+
+# Stage 3: Build Next.js Dashboard
+FROM node:22-alpine AS dashboard-builder
+WORKDIR /app
+COPY apps/dashboard/package*.json ./
+RUN npm ci --prefer-offline --production=false
+COPY apps/dashboard/ .
+RUN npm run build
+
+# Stage 4: Production image
+FROM node:22-alpine AS production
+WORKDIR /app
+
+# Install dumb-init for proper signal handling
+RUN apk add --no-cache dumb-init
+
+# Copy Go binary
+COPY --from=go-builder /nidus-deploy-worker /usr/local/bin/
+
+# Copy API
+COPY --from=api-builder /app/dist ./api/dist
+COPY --from=api-builder /app/node_modules ./api/node_modules
+COPY --from=api-builder /app/package.json ./api/
+
+# Copy Dashboard
+COPY --from=dashboard-builder /app/.next/standalone ./
+COPY --from=dashboard-builder /app/.next/static ./dashboard/.next/static
+COPY --from=dashboard-builder /app/public ./dashboard/public
+
+# Copy Prisma schema
+COPY apps/control-plane/prisma ./prisma
+
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV API_PORT=3001
+
+EXPOSE 3000 3001
+
+CMD ["dumb-init", "node", "api/dist/main.js"]

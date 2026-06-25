@@ -9,7 +9,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -304,13 +306,73 @@ func processJob(ctx context.Context, rdb *redis.Client, db *pgxpool.Pool, jobJSO
 	}
 }
 
+type WorkerPool struct {
+	workers int
+	jobs    chan string
+	wg      sync.WaitGroup
+}
+
+func NewWorkerPool(workers int) *WorkerPool {
+	return &WorkerPool{
+		workers: workers,
+		jobs:    make(chan string, 100),
+	}
+}
+
+func (wp *WorkerPool) Start(ctx context.Context, rdb *redis.Client, pool *pgxpool.Pool) {
+	for i := 0; i < wp.workers; i++ {
+		wp.wg.Add(1)
+		go func(id int) {
+			defer wp.wg.Done()
+			log.Printf("[worker-%d] Started", id)
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case jobJSON, ok := <-wp.jobs:
+					if !ok {
+						return
+					}
+					log.Printf("[worker-%d] Processing job", id)
+					processJob(ctx, rdb, pool, jobJSON)
+				}
+			}
+		}(i)
+	}
+}
+
+func (wp *WorkerPool) Submit(job string) {
+	wp.jobs <- job
+}
+
+func (wp *WorkerPool) Stop() {
+	close(wp.jobs)
+	wp.wg.Wait()
+}
+
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	log.Println("[deploy-worker] Starting Go deploy worker...")
+	
+	numWorkers := runtime.NumCPU()
+	if numWorkers > 8 {
+		numWorkers = 8
+	}
+	
+	log.Printf("[deploy-worker] Starting Go deploy worker with %d workers...", numWorkers)
 
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	pool, err := pgxpool.New(ctx, dbURL)
+	poolConfig, err := pgxpool.ParseConfig(dbURL)
+	if err != nil {
+		log.Fatalf("[error] Failed to parse database config: %v", err)
+	}
+	poolConfig.MaxConns = 20
+	poolConfig.MinConns = 5
+	poolConfig.MaxConnLifetime = time.Hour
+	poolConfig.MaxConnIdleTime = 30 * time.Minute
+
+	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
 	if err != nil {
 		log.Fatalf("[error] Failed to connect to database: %v", err)
 	}
@@ -325,6 +387,11 @@ func main() {
 	}
 	log.Println("[deploy-worker] Connected to Redis and PostgreSQL")
 
+	workerPool := NewWorkerPool(numWorkers)
+	workerPool.Start(ctx, rdb, pool)
+
+	log.Println("[deploy-worker] Waiting for jobs...")
+
 	for {
 		result, err := rdb.BRPop(ctx, 0, "deploy-queue").Result()
 		if err != nil {
@@ -333,7 +400,7 @@ func main() {
 			continue
 		}
 		if len(result) >= 2 {
-			processJob(ctx, rdb, pool, result[1])
+			workerPool.Submit(result[1])
 		}
 	}
 }

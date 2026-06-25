@@ -1,7 +1,12 @@
 import { Queue, Worker, Job } from "bullmq"
-import { execSync } from "child_process"
-import { writeFileSync, existsSync, mkdirSync } from "fs"
+import { exec } from "child_process"
+import { promisify } from "util"
+import { writeFileSync, existsSync, mkdirSync, rmSync } from "fs"
 import { join } from "path"
+import Docker from "dockerode"
+
+const execAsync = promisify(exec)
+const docker = new Docker({ socketPath: "/var/run/docker.sock" })
 
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379"
 const DEPLOYS_DIR = process.env.NIDUS_DEPLOYS_DIR || "/tmp/nidus-deploys"
@@ -13,10 +18,7 @@ const deployQueue = new Queue("deploy-queue", {
   connection: redisOpts,
   defaultJobOptions: {
     attempts: 2,
-    backoff: {
-      type: "exponential",
-      delay: 5000,
-    },
+    backoff: { type: "exponential", delay: 5000 },
     removeOnComplete: { age: 86400 },
     removeOnFail: { age: 86400 },
   },
@@ -48,6 +50,10 @@ function sanitizeBranch(branch: string): string {
   return branch.toLowerCase().replace(/[^a-z0-9-_.]/g, "-").slice(0, 50)
 }
 
+function sanitizeShell(str: string): string {
+  return str.replace(/[^a-zA-Z0-9._\/-]/g, "")
+}
+
 function detectFramework(repoDir: string): string {
   const pkgJson = join(repoDir, "package.json")
   const nextConfig = join(repoDir, "next.config.js")
@@ -77,12 +83,13 @@ function detectFramework(repoDir: string): string {
 }
 
 function generateDockerfile(framework: string): string {
+  const cacheMount = "--mount=type=cache,target=/root/.npm"
   switch (framework) {
     case "nextjs":
       return `FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN ${cacheMount} npm ci
 COPY . .
 RUN npm run build
 
@@ -98,7 +105,7 @@ CMD ["npm", "start"]`
       return `FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN ${cacheMount} npm ci
 COPY . .
 RUN npm run build
 
@@ -111,7 +118,7 @@ CMD ["node", ".output/server/index.mjs"]`
       return `FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN ${cacheMount} npm ci
 COPY . .
 RUN npm run build
 
@@ -122,7 +129,7 @@ EXPOSE 80`
       return `FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN ${cacheMount} npm ci
 COPY . .
 RUN npm run build --configuration=production
 
@@ -150,13 +157,13 @@ const deployWorker = new Worker(
       repoUrl,
       domain,
       branch,
-      deployType,
       containerName,
       imageTag,
       isPreview,
-      safeBranch,
     } = job.data
 
+    const safeSlug = sanitizeShell(projectSlug)
+    const safeBranch = sanitizeShell(branch)
     const logs: string[] = []
     const log = (msg: string) => {
       logs.push(msg)
@@ -165,32 +172,30 @@ const deployWorker = new Worker(
 
     const pg = await import("pg")
     const pool = new pg.Pool({
-      connectionString: process.env.DATABASE_URL || "postgresql://broto:broto@localhost:5432/nidus?schema=public",
+      connectionString: process.env.DATABASE_URL,
+      max: 2,
     })
 
     try {
-      log(`🚀 Iniciando deploy de ${projectName} (${branch})...`)
+      log(`🚀 Iniciando deploy de ${projectName} (${safeBranch})...`)
       await pool.query(`UPDATE deployments SET status = 'building', logs = $1 WHERE id = $2`, [logs.join("\n"), deploymentId])
 
-      let repoDir = join(DEPLOYS_DIR, projectSlug)
+      let repoDir = join(DEPLOYS_DIR, safeSlug)
       if (repoUrl) {
         if (!existsSync(repoDir)) {
-          log(`📦 Clonando repositorio...`)
-          execSync(`git clone ${repoUrl} ${repoDir} 2>&1`, { timeout: 120000 })
+          log(`📦 Clonando repositorio (depth=1)...`)
+          await execAsync(`git clone --depth 1 --single-branch ${repoUrl} ${repoDir}`, { timeout: 120000 })
         } else {
           log(`🔄 Actualizando repositorio...`)
-          execSync(`git fetch --all 2>&1`, { cwd: repoDir, timeout: 60000 })
+          await execAsync(`git fetch --all`, { cwd: repoDir, timeout: 60000 })
+          await execAsync(`git checkout ${safeBranch} && git pull origin ${safeBranch}`, { cwd: repoDir, timeout: 60000 })
         }
-
-        execSync(`git checkout ${branch} 2>&1 && git pull origin ${branch} 2>&1`, {
-          cwd: repoDir, timeout: 60000,
-        })
-        log(`✅ Branch ${branch} actualizada`)
+        log(`✅ Branch ${safeBranch} actualizada`)
       } else {
         log(`⚠️ Sin repositorio configurado`)
-        repoDir = join(DEPLOYS_DIR, projectSlug, "src")
+        repoDir = join(DEPLOYS_DIR, safeSlug, "src")
         if (!existsSync(repoDir)) mkdirSync(repoDir, { recursive: true })
-        writeFileSync(join(repoDir, "index.html"), `<h1>${projectName}</h1><p>Deploy #${deploymentId.slice(0, 8)} (${branch})</p>`)
+        writeFileSync(join(repoDir, "index.html"), `<h1>${projectName}</h1><p>Deploy #${deploymentId.slice(0, 8)} (${safeBranch})</p>`)
         log(`📄 Proyecto creado sin repositorio`)
       }
 
@@ -199,23 +204,44 @@ const deployWorker = new Worker(
       log(`🐳 Build da imagen Docker...`)
 
       const dockerfile = generateDockerfile(framework)
-      execSync(`docker build -t ${imageTag} -f- ${repoDir} 2>&1`, {
-        input: dockerfile,
-        timeout: 300000,
+      const buildStream = await docker.buildImage({
+        context: repoDir,
+        src: ["."],
+        dockerfile: "Dockerfile",
+      }, { t: imageTag, dockerfile: Buffer.from(dockerfile).toString("base64") })
+
+      await new Promise<void>((resolve, reject) => {
+        docker.modem.followProgress(buildStream, (err: any, output: any[]) => {
+          if (err) return reject(err)
+          log(`✅ Build concluido`)
+          resolve()
+        }, (event: any) => {
+          if (event.stream) log(event.stream.trim())
+        })
       })
-      log(`✅ Build concluido`)
 
       log(`🔄 Removendo container anterior...`)
-      execSync(`docker rm -f ${containerName} 2>/dev/null || true`)
+      try {
+        const oldContainer = docker.getContainer(containerName)
+        await oldContainer.stop().catch(() => {})
+        await oldContainer.remove().catch(() => {})
+      } catch { /* ignore */ }
+
       log(`🚀 Iniciando container...`)
-
       const exposedPort = getExposedPort(framework)
-      execSync(
-        `docker run -d --name ${containerName} -p 0:${exposedPort} --restart unless-stopped ${imageTag} 2>&1`,
-        { timeout: 30000 },
-      )
+      const container = await docker.createContainer({
+        Image: imageTag,
+        name: containerName,
+        ExposedPorts: { [`${exposedPort}/tcp`]: {} },
+        HostConfig: {
+          RestartPolicy: { Name: "unless-stopped" },
+          PortBindings: { [`${exposedPort}/tcp`]: [{ HostPort: "0" }] },
+        },
+      })
+      await container.start()
 
-      const port = execSync(`docker port ${containerName} ${exposedPort} | cut -d: -f2`).toString().trim()
+      const info = await container.inspect()
+      const port = info.NetworkSettings.Ports[`${exposedPort}/tcp`]?.[0]?.HostPort
       const url = domain && !isPreview ? `http://${domain}` : `http://${HOST}:${port}`
       log(`✅ Deploy concluido em ${url}`)
 
@@ -231,25 +257,24 @@ const deployWorker = new Worker(
       return { status: "success", url, logs: logs.join("\n") }
     } catch (err: any) {
       const errorMsg = err.message || "Error desconocido"
+      log(`❌ Error: ${errorMsg}`)
       await pool.query(
         `UPDATE deployments SET status = 'failed', logs = $1, finished_at = NOW() WHERE id = $2`,
         [logs.join("\n"), deploymentId],
       )
-
       await pool.query("UPDATE projects SET status = 'FAILED' WHERE id = $1", [projectId])
-
       return { status: "failed", error: errorMsg, logs: logs.join("\n") }
     } finally {
       await pool.end()
+      if (existsSync(join(DEPLOYS_DIR, safeSlug))) {
+        rmSync(join(DEPLOYS_DIR, safeSlug), { recursive: true, force: true })
+      }
     }
   },
   {
     connection: redisOpts,
-    concurrency: 4,
-    limiter: {
-      max: 10,
-      duration: 60000,
-    },
+    concurrency: 2,
+    limiter: { max: 5, duration: 60000 },
   },
 )
 

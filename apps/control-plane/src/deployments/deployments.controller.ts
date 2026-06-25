@@ -67,4 +67,16 @@ export class DeploymentsController {
     if (!project) return null
     return this.deployments.getJobStatus(deploymentId)
   }
+
+  @Get("deployments/:deploymentId/logs")
+  @ApiOperation({ summary: "Get deployment logs" })
+  async getDeploymentLogs(
+    @Param("projectId") projectId: string,
+    @Param("deploymentId") deploymentId: string,
+    @Req() req: any,
+  ) {
+    const project = await this.projects.get(projectId, req.user.sub)
+    if (!project) return null
+    return this.deployments.getLogs(deploymentId)
+  }
 }

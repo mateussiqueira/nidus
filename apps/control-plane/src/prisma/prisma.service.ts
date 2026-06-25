@@ -3,8 +3,6 @@ import { PrismaClient } from "@prisma/client"
 import { PrismaPg } from "@prisma/adapter-pg"
 import { Pool } from "pg"
 
-const DATABASE_URL = "postgresql://broto:broto@localhost:5432/nidus?schema=public"
-
 @Injectable()
 export class PrismaService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PrismaService.name)
@@ -12,10 +10,23 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   public pool: Pool
 
   constructor() {
-    const url = process.env.DATABASE_URL ?? DATABASE_URL
-    this.pool = new Pool({ connectionString: url })
+    const url = process.env.DATABASE_URL
+    if (!url) throw new Error("DATABASE_URL is required")
+    this.pool = new Pool({
+      connectionString: url,
+      max: 20,
+      min: 5,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 5000,
+      statement_timeout: 10000,
+      query_timeout: 15000,
+    })
     const adapter = new PrismaPg(this.pool)
     this.client = new PrismaClient({ adapter })
+
+    this.pool.on("error", (err) => {
+      this.logger.error(`PostgreSQL pool error: ${err.message}`)
+    })
   }
 
   get db() {
@@ -23,9 +34,19 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleInit() {
-    await this.client.$connect()
-    await this.pool.query("SELECT 1")
-    this.logger.log("Database connected")
+    const maxRetries = 5
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        await this.client.$connect()
+        await this.pool.query("SELECT 1")
+        this.logger.log("Database connected")
+        return
+      } catch (err: any) {
+        this.logger.warn(`Database connection attempt ${i + 1}/${maxRetries} failed: ${err.message}`)
+        if (i === maxRetries - 1) throw err
+        await new Promise((r) => setTimeout(r, 2000 * (i + 1)))
+      }
+    }
   }
 
   async onModuleDestroy() {
