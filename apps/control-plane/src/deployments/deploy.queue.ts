@@ -12,7 +12,12 @@ const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379"
 const DEPLOYS_DIR = process.env.NIDUS_DEPLOYS_DIR || "/tmp/nidus-deploys"
 const HOST = process.env.NIDUS_HOST || "localhost"
 
-const redisOpts = { host: new URL(REDIS_URL).hostname, port: Number(new URL(REDIS_URL).port) || 6379 }
+const redisUrl = new URL(REDIS_URL)
+const redisOpts = {
+  host: redisUrl.hostname,
+  port: Number(redisUrl.port) || 6379,
+  password: redisUrl.password || undefined,
+}
 
 const deployQueue = new Queue("deploy-queue", {
   connection: redisOpts,
