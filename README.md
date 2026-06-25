@@ -59,7 +59,7 @@ Ou acesse: **http://2.24.204.31:3000**
 ```bash
 # Terminal 1 - API
 cd apps/control-plane
-DATABASE_URL='postgresql://broto:broto@localhost:5432/canopy?schema=public' \
+DATABASE_URL='postgresql://broto:broto@localhost:5432/nidus?schema=public' \
 NIDUS_DEPLOYS_DIR=/tmp/nidus-deploys \
 node dist/main.js
 
@@ -94,6 +94,6 @@ nidus/
 - [ ] Preview deployments (branch → URL)
 - [ ] Domínios customizados
 - [ ] Template Vaden (Dart backend)
-- [ ] Integração Canopy (open code fork)
+- [ ] Integração Nidus (open code fork)
 
 ## Licença MIT

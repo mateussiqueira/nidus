@@ -2,7 +2,9 @@
   admin :2019
 }
 
-canopy.localhost, *.canopy.localhost {
+# Custom domain support - replace nidus.example.com with your domain
+# For production, use: https://{$NIDUS_ROOT_DOMAIN}
+nidus.localhost, *.nidus.localhost {
   tls internal
 
   handle_path /api/* {
@@ -17,3 +19,24 @@ canopy.localhost, *.canopy.localhost {
     reverse_proxy host.docker.internal:3000
   }
 }
+
+# Wildcard domain for custom deployments
+# Uncomment and configure for production:
+# {$NIDUS_ROOT_DOMAIN} {
+#   tls {
+#     protocols tls1.2 tls1.3
+#   }
+#
+#   @host host_regexp ^(.+)\.{$NIDUS_ROOT_DOMAIN}$
+#   handle @host {
+#     reverse_proxy host.docker.internal:3001
+#   }
+#
+#   handle_path /api/* {
+#     reverse_proxy host.docker.internal:3001
+#   }
+#
+#   handle {
+#     reverse_proxy host.docker.internal:3000
+#   }
+# }

@@ -18,7 +18,7 @@ function saveConfig(config) {
   writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2))
 }
 
-const API = process.env.NIDUS_API_URL || "http://2.24.204.31:3001"
+const API = process.env.NIDUS_API_URL || "http://localhost:3001"
 
 async function api(path, options = {}) {
   const config = loadConfig()

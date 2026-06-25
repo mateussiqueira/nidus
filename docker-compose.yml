@@ -1,27 +1,27 @@
-name: canopy
+name: nidus
 
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: canopy-postgres
+    container_name: nidus-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: canopy
-      POSTGRES_PASSWORD: canopy
-      POSTGRES_DB: canopy
+      POSTGRES_USER: nidus
+      POSTGRES_PASSWORD: nidus
+      POSTGRES_DB: nidus
     ports:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U canopy -d canopy"]
+      test: ["CMD-SHELL", "pg_isready -U nidus -d nidus"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
-    container_name: canopy-redis
+    container_name: nidus-redis
     restart: unless-stopped
     ports:
       - "6379:6379"
@@ -35,12 +35,12 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: canopy-minio
+    container_name: nidus-minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: canopy
-      MINIO_ROOT_PASSWORD: canopy-canopy
+      MINIO_ROOT_USER: nidus
+      MINIO_ROOT_PASSWORD: nidus-nidus
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -55,7 +55,7 @@ services:
   # gotrue (comentado — MVP usa auth via control-plane NestJS)
   # gotrue:
   #   image: supabase/gotrue:v2.158.1
-  #   container_name: canopy-gotrue
+  #   container_name: nidus-gotrue
   #   restart: unless-stopped
   #   environment:
   #     GOTRUE_API_HOST: 0.0.0.0
@@ -63,9 +63,9 @@ services:
   #     GOTRUE_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
   #     GOTRUE_URI_ALLOW_LIST: "*"
   #     GOTRUE_DB_DRIVER: postgres
-  #     GOTRUE_DB_DATABASE_URL: postgresql://canopy:canopy@postgres:5432/canopy
-  #     DATABASE_URL: postgresql://canopy:canopy@postgres:5432/canopy
-  #     GOTRUE_JWT_SECRET: ${GOTRUE_JWT_SECRET:-local_canopy_jwt_secret_change_me}
+  #     GOTRUE_DB_DATABASE_URL: postgresql://nidus:nidus@postgres:5432/nidus
+  #     DATABASE_URL: postgresql://nidus:nidus@postgres:5432/nidus
+  #     GOTRUE_JWT_SECRET: ${GOTRUE_JWT_SECRET:-local_nidus_jwt_secret_change_me}
   #     GOTRUE_JWT_EXP: 3600
   #     GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
   #     GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
@@ -80,7 +80,7 @@ services:
 
   caddy:
     image: caddy:2-alpine
-    container_name: canopy-caddy
+    container_name: nidus-caddy
     restart: unless-stopped
     ports:
       - "80:80"
@@ -91,7 +91,7 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     environment:
-      CANOPY_ROOT_DOMAIN: ${CANOPY_ROOT_DOMAIN:-canopy.localhost}
+      NIDUS_ROOT_DOMAIN: ${NIDUS_ROOT_DOMAIN:-nidus.localhost}
 
 volumes:
   postgres_data:

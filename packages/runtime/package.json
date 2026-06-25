@@ -1,5 +1,5 @@
 {
-  "name": "@canopy/runtime",
+  "name": "@nidus/runtime",
   "version": "0.1.0",
   "private": true,
   "main": "./src/index.ts",
@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@canopy/shared": "*",
+    "@nidus/shared": "*",
     "zod": "^3.24.0"
   },
   "devDependencies": {

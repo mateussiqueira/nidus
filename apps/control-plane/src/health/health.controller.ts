@@ -13,7 +13,7 @@ export class HealthController {
       await this.prisma.db.query("SELECT 1")
       return {
         status: "ok",
-        name: "canopy-control-plane",
+        name: "nidus-control-plane",
         version: "0.1.0",
         timestamp: new Date().toISOString(),
         dbConnected: true,

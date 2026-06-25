@@ -22,15 +22,24 @@ export class WebhookController {
     if (!repoUrl || !branch) return { ok: false, msg: "missing repo_url or branch" }
 
     const projects = await this.prisma.db.query(
-      "SELECT id, name, slug, env_vars FROM projects WHERE repo_url = $1 AND branch = $2",
-      [repoUrl, branch],
+      "SELECT id, name, slug, branch FROM projects WHERE repo_url = $1",
+      [repoUrl],
     )
 
     const results = []
     for (const project of projects.rows) {
-      this.logger.log(`Auto-deploying ${project.name} from push to ${branch}`)
-      const result = await this.deployments.deploy(project.id)
-      results.push({ project: project.name, slug: project.slug, status: result.status, url: result.url })
+      const isProduction = branch === project.branch
+      const deployType = isProduction ? "production" : "preview"
+      this.logger.log(`Auto-deploying ${project.name} (${deployType}) from push to ${branch}`)
+      const result = await this.deployments.deploy(project.id, branch)
+      results.push({
+        project: project.name,
+        slug: project.slug,
+        branch,
+        type: deployType,
+        status: result.status,
+        jobId: result.jobId,
+      })
     }
 
     return { ok: true, deployed: results.length, results }

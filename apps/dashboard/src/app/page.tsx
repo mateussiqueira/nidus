@@ -5,7 +5,7 @@ export default function Home() {
     <div className="flex min-h-screen flex-col items-center justify-center p-8">
       <main className="flex flex-col items-center gap-8">
         <div className="text-center">
-          <h1 className="text-5xl font-bold tracking-tight text-canopy-400">
+          <h1 className="text-5xl font-bold tracking-tight text-nidus-400">
             Nidus
           </h1>
           <p className="mt-4 text-lg text-zinc-400">

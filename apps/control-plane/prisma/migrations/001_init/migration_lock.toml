@@ -1,0 +1,8 @@
+# 001_init
+
+## Changes
+- Create initial database schema
+- Create enums: ProjectStatus
+- Create tables: users, projects, deployments, databases
+- Add foreign key constraints
+- Add unique indexes

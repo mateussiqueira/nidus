@@ -1,5 +1,5 @@
 {
-  "name": "@canopy/shared",
+  "name": "@nidus/shared",
   "version": "0.1.0",
   "private": true,
   "main": "./src/index.ts",

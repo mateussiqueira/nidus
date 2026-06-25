@@ -1,7 +1,7 @@
 import { execSync, spawn } from "child_process"
 import { writeFileSync, existsSync, mkdirSync } from "fs"
 import { join } from "path"
-import type { ProjectConfig, DeploymentResult, Framework } from "@canopy/shared"
+import type { ProjectConfig, DeploymentResult, Framework } from "@nidus/shared"
 
 const DOCKER_DIR = join(process.cwd(), "..", "..", "docker")
 
@@ -64,10 +64,10 @@ CMD ["./start.sh"]
 export async function buildProject(config: ProjectConfig, sourceDir: string): Promise<DeploymentResult> {
   try {
     const dockerfile = generateDockerfile(config.framework, config.outputDir)
-    const dockerfilePath = join(sourceDir, "Dockerfile.canopy")
+    const dockerfilePath = join(sourceDir, "Dockerfile.nidus")
     writeFileSync(dockerfilePath, dockerfile)
 
-    const tag = `canopy/${config.slug}:latest`
+    const tag = `nidus/${config.slug}:latest`
     execSync(`docker build -t ${tag} -f ${dockerfilePath} .`, {
       cwd: sourceDir,
       stdio: "pipe",
@@ -81,15 +81,15 @@ export async function buildProject(config: ProjectConfig, sourceDir: string): Pr
 
 export async function deployProject(config: ProjectConfig, port: number): Promise<DeploymentResult> {
   try {
-    const tag = `canopy/${config.slug}:latest`
-    const containerName = `canopy-${config.slug}`
+    const tag = `nidus/${config.slug}:latest`
+    const containerName = `nidus-${config.slug}`
 
     execSync(`docker rm -f ${containerName} 2>/dev/null || true`, { stdio: "pipe" })
 
     const container = spawn("docker", [
       "run", "-d",
       "--name", containerName,
-      "--label", `canopy.project=${config.slug}`,
+      "--label", `nidus.project=${config.slug}`,
       ...(config.env ? Object.entries(config.env).flatMap(([k, v]) => ["-e", `${k}=${v}`]) : []),
       "-p", `${port}:8080`,
       "--restart", "unless-stopped",
@@ -115,5 +115,5 @@ export async function deployProject(config: ProjectConfig, port: number): Promis
 }
 
 export async function stopProject(slug: string): Promise<void> {
-  execSync(`docker rm -f canopy-${slug} 2>/dev/null || true`, { stdio: "pipe" })
+  execSync(`docker rm -f nidus-${slug} 2>/dev/null || true`, { stdio: "pipe" })
 }

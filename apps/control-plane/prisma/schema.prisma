@@ -54,6 +54,8 @@ model Deployment {
   id        String   @id @default(uuid())
   projectId String   @map("project_id")
   commitSha String?  @map("commit_sha")
+  branch    String   @default("main")
+  type      String   @default("production")
   status    String   @default("pending")
   logs      String?
   url       String?

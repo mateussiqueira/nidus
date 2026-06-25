@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client"
 import { PrismaPg } from "@prisma/adapter-pg"
 import { Pool } from "pg"
 
-const DATABASE_URL = "postgresql://broto:broto@localhost:5432/canopy?schema=public"
+const DATABASE_URL = "postgresql://broto:broto@localhost:5432/nidus?schema=public"
 
 @Injectable()
 export class PrismaService implements OnModuleInit, OnModuleDestroy {

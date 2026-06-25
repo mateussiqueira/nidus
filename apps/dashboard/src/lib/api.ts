@@ -2,15 +2,15 @@ const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"
 
 function getToken(): string | null {
   if (typeof window === "undefined") return null
-  return localStorage.getItem("canopy_token")
+  return localStorage.getItem("nidus_token")
 }
 
 export function setToken(token: string) {
-  localStorage.setItem("canopy_token", token)
+  localStorage.setItem("nidus_token", token)
 }
 
 export function clearToken() {
-  localStorage.removeItem("canopy_token")
+  localStorage.removeItem("nidus_token")
 }
 
 export function isAuthenticated(): boolean {
@@ -51,7 +51,10 @@ export const api = {
   },
   deployments: {
     list: (projectId: string) => request(`/api/projects/${projectId}/deployments`),
-    deploy: (projectId: string) => request(`/api/projects/${projectId}/deploy`, { method: "POST" }),
-    metrics: (projectId: string) => request(`/api/projects/${projectId}/metrics`),
+    listPreviews: (projectId: string) => request(`/api/projects/${projectId}/previews`),
+    deploy: (projectId: string, branch?: string) =>
+      request(`/api/projects/${projectId}/deploy${branch ? `?branch=${branch}` : ""}`, { method: "POST" }),
+    metrics: (projectId: string, branch?: string) =>
+      request(`/api/projects/${projectId}/metrics${branch ? `?branch=${branch}` : ""}`),
   },
 }

@@ -9,7 +9,7 @@ import { JwtStrategy } from "./jwt.strategy"
   imports: [
     PassportModule.register({ defaultStrategy: "jwt" }),
     JwtModule.register({
-      secret: process.env.JWT_SECRET ?? "local_canopy_jwt_secret_change_me",
+      secret: process.env.JWT_SECRET ?? "local_nidus_jwt_secret_change_me",
       signOptions: { expiresIn: "7d" },
     }),
   ],

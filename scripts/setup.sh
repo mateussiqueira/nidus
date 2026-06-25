@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT_DIR"
 
-echo "🌳 Canopy — Setup Inicial"
+echo "🌳 Nidus — Setup Inicial"
 echo "======================="
 echo ""
 
@@ -62,7 +62,7 @@ npx prisma db push --skip-generate > /dev/null 2>&1 || true
 echo "✅ Banco de dados configurado"
 
 echo ""
-echo "🎉 Canopy pronto!"
+echo "🎉 Nidus pronto!"
 echo ""
 echo "Para iniciar o desenvolvimento:"
 echo "  npm run dev"
@@ -71,5 +71,5 @@ echo "Acesse:"
 echo "  Dashboard: http://localhost:3000"
 echo "  API:       http://localhost:3001"
 echo "  Auth:      http://localhost:9999"
-echo "  MinIO:     http://localhost:9001 (user: canopy / pass: canopy-canopy)"
+echo "  MinIO:     http://localhost:9001 (user: nidus / pass: nidus-nidus)"
 echo ""
