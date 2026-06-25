@@ -22,8 +22,9 @@ export class ProjectsController {
   }
 
   @Post()
-  create(@Req() req: any, @Body() body: { name: string; slug: string; repoUrl?: string; framework?: string }) {
-    return this.projects.create(req.user.sub, body)
+  create(@Req() req: any, @Body() body: { name: string; slug?: string; repoUrl?: string; framework?: string }) {
+    const slug = body.slug || body.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+    return this.projects.create(req.user.sub, { ...body, slug })
   }
 
   @Patch(":id")

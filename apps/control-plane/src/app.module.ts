@@ -1,8 +1,10 @@
 import { Module } from "@nestjs/common"
 import { ThrottlerModule } from "@nestjs/throttler"
 import { PrismaModule } from "./prisma/prisma.module"
+import { CacheModule } from "./cache/cache.module"
 import { AuthModule } from "./auth/auth.module"
 import { ProjectsModule } from "./projects/projects.module"
+import { DatabasesModule } from "./databases/databases.module"
 import { WebhookModule } from "./webhook/webhook.module"
 import { HealthController } from "./health/health.controller"
 
@@ -15,8 +17,10 @@ import { HealthController } from "./health/health.controller"
       },
     ]),
     PrismaModule,
+    CacheModule,
     AuthModule,
     ProjectsModule,
+    DatabasesModule,
     WebhookModule,
   ],
   controllers: [HealthController],
