@@ -1,3 +1,15 @@
 packages:
   - apps/*
   - packages/*
+allowBuilds:
+  '@prisma/engines': true
+  '@scarf/scarf': set this to true or false
+  '@swc/core': true
+  cpu-features: set this to true or false
+  msgpackr-extract: set this to true or false
+  prisma: true
+  protobufjs: set this to true or false
+  sharp: set this to true or false
+  ssh2: set this to true or false
+minimumReleaseAgeExclude:
+  - dockerode@5.0.1

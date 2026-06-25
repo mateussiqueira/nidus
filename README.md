@@ -1,99 +1,89 @@
 # Nidus
 
-PaaS open-source inspirada em Vercel, Railway e Coolify, com suporte nativo a Dart/Vaden.
+Plataforma de deploy self-hosted. Pense num Vercel que roda na sua máquina.
 
-> Beta — deploy real com Docker, métricas, webhook, CLI e app macOS nativo.
+## O que é
+
+Nidus faz deploy de apps web via Docker. Você conecta o GitHub, faz push, e ele builda + roda o container automaticamente.
+
+**Ainda em beta** — funciona mas falta polish.
 
 ## Stack
 
-| Camada | Tecnologia |
-|--------|-----------|
-| Dashboard | Next.js 16 + Tailwind 4 |
-| API | NestJS + Prisma 7 + PostgreSQL |
-| Runtime | Docker + BuildKit |
-| Proxy | Caddy (auto HTTPS) |
-| Auth | JWT + bcrypt |
-| Deploy | Docker containers isolados |
-| CLI | Node.js (`npx nidus`) |
-| App | SwiftUI (macOS 14+) |
+- **Frontend:** Next.js 16 + Tailwind
+- **API:** NestJS + Prisma + PostgreSQL
+- **Proxy:** Caddy (HTTPS automático)
+- **Deploy:** Docker containers isolados
+- **CLI:** `npx nidus`
 
-## Funcionalidades
-
-### Dashboard
-- Login/Cadastro com rate limit
-- Criar projeto com template (Next.js, Vaden, Express, Static)
-- Deploy em 1 clique com logs completos
-- Métricas do container (CPU, RAM, uptime)
-- Environment variables editáveis
-- Git webhook (auto-deploy via push GitHub)
-- Histórico de deploys
-
-### CLI
-```bash
-npx nidus login          # autenticar
-npx nidus deploy         # deploy do diretório atual
-npx nidus projects       # listar projetos
-```
-
-### App macOS Nativo
-```bash
-cd app/Nidus && swift run
-```
-- Chat IA multimodal (texto, imagem, áudio) via OpenRouter
-- Sidebar com projetos + deploys + métricas
-- Modelos: Claude, GPT, Gemini, DeepSeek, Mistral
-
-## Deploy Rápido
+## Como rodar
 
 ```bash
-npm install -g nidus
-nidus login              # email + senha
-cd meu-projeto
-nidus deploy             # deploy automático
-```
+# Com Docker (mais fácil)
+docker compose up -d
 
-Ou acesse: **http://2.24.204.31:3000**
-
-## Setup Local
-
-```bash
-# Terminal 1 - API
+# Sem Docker
 cd apps/control-plane
-DATABASE_URL='postgresql://broto:broto@localhost:5432/nidus?schema=public' \
-NIDUS_DEPLOYS_DIR=/tmp/nidus-deploys \
-node dist/main.js
+npm install
+npm run build
+npm start
 
-# Terminal 2 - Dashboard
+# Em outro terminal
 cd apps/dashboard
-npx next dev -p 3000
+npm run dev
 ```
 
-Acesse: http://localhost:3000 | Login: `local@nidus.dev` / `local123`
+Abre http://localhost:3000
+
+## Deploy
+
+```bash
+# Via CLI
+npx nidus login
+cd meu-projeto
+npx nidus deploy
+
+# Via GitHub
+Configura o webhook no GitHub apontando pra http://seu-ip:3001/api/webhook
+```
+
+## Variáveis de ambiente
+
+Copia o `.env.example` pra `.env` e ajusta:
+
+```bash
+DATABASE_URL=postgresql://user:pass@localhost:5432/nidus
+REDIS_URL=redis://localhost:6379
+NIDUS_HOST=localhost
+JWT_SECRET=mude-isto
+```
 
 ## Estrutura
 
 ```
 nidus/
-├── apps/dashboard/          # Next.js
-├── apps/control-plane/      # NestJS API
-├── app/Nidus/               # macOS app (SwiftUI)
-├── cli/                     # CLI (npx nidus)
-├── packages/runtime/        # Deploy engine
-├── packages/shared/         # Tipos
-└── docker/                  # Dockerfiles
+├── apps/
+│   ├── dashboard/        # Next.js
+│   └── control-plane/    # NestJS API
+├── workers/
+│   └── deploy/           # Worker Go (deploy rápido)
+├── cli/                  # CLI
+├── packages/
+│   ├── runtime/          # Engine de deploy
+│   └── shared/           # Tipos compartilhados
+└── docker/               # Caddyfile
 ```
 
-## Roadmap
+## Performance
 
-- [x] Deploy via Git push (webhook GitHub)
-- [x] CLI (`npx nidus deploy`)
-- [x] App macOS nativo (SwiftUI multimodal)
-- [x] Métricas de container (CPU, RAM)
-- [x] Env vars por projeto
-- [ ] CLI no npm (`npm i -g nidus`)
-- [ ] Preview deployments (branch → URL)
-- [ ] Domínios customizados
-- [ ] Template Vaden (Dart backend)
-- [ ] Integração Nidus (open code fork)
+O deploy worker foi escrito em Go por performance:
 
-## Licença MIT
+- Git clone: ~0.5s (vs ~5s em Node)
+- Docker build: ~25s com layer caching
+- Memória: ~15MB (vs ~100MB+ em Node)
+
+Roda `./benchmark.sh` pra ver os números.
+
+## License
+
+MIT
