@@ -2,7 +2,10 @@ import { defineConfig } from "prisma/config"
 import { config } from "dotenv"
 import { resolve } from "path"
 
-config({ path: resolve(__dirname, ".env") })
+config({ path: resolve(__dirname, "apps/control-plane/.env") })
+if (!process.env["DATABASE_URL"]) {
+  config({ path: resolve(__dirname, ".env") })
+}
 
 const url = process.env["DATABASE_URL"]
 if (!url) throw new Error("DATABASE_URL is required in .env or environment")

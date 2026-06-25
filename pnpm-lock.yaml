@@ -9,10 +9,10 @@ importers:
   .:
     devDependencies:
       concurrently:
-        specifier: ^9.0.0
+        specifier: ^9.2.3
         version: 9.2.3
       typescript:
-        specifier: ^5.7.0
+        specifier: ^5.9.3
         version: 5.9.3
 
   apps/control-plane:

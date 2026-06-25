@@ -1,51 +1,51 @@
-# Contribuindo com o Nidus
+# Contributing to Nidus
 
-## Como começar
+## Getting started
 
-1. Fork o repo
-2. `git clone https://github.com/seu-usuario/nidus.git`
+1. Fork the repo
+2. `git clone https://github.com/your-user/nidus.git`
 3. `cd nidus && npm install`
 4. `cp .env.example .env`
 5. `docker compose up -d`
 6. `npm run dev`
 
-## Estrutura
+## Structure
 
-- `apps/control-plane/` — API NestJS
-- `apps/dashboard/` — Frontend Next.js
-- `workers/deploy/` — Worker Go
-- `packages/` — Código compartilhado
+- `apps/control-plane/` — NestJS API
+- `apps/dashboard/` — Next.js frontend
+- `workers/deploy/` — Go worker
+- `packages/` — Shared code
 
 ## Commits
 
-Usa conventional commits:
+Use conventional commits:
 
 ```
-feat: adiciona X
-fix: corrige Y
-refactor: refatora Z
-perf: melhora performance de W
-docs: atualiza documentação
-test: adiciona testes
+feat: add X
+fix: fix Y
+refactor: refactor Z
+perf: improve performance of W
+docs: update documentation
+test: add tests
 ```
 
 ## Pull Requests
 
-1. Cria uma branch da `main`
-2. Faz as mudanças
-3. Roda os testes: `npm test`
-4. Abre o PR com descrição clara do que mudou
+1. Create a branch from `main`
+2. Make changes
+3. Run tests: `npm test`
+4. Open PR with clear description of what changed
 
-## Código
+## Code
 
-- Sem comentários desnecessários
-- Nomes claros e descritivos
-- Funções pequenas (< 50 linhas)
-- Tipos em tudo que for TypeScript
+- No unnecessary comments
+- Clear, descriptive names
+- Small functions (< 50 lines)
+- Types everywhere in TypeScript
 
 ## Bugs
 
-Abre uma issue com:
-- Passos pra reproduzir
-- Comportamento esperado vs atual
-- Versão do Node/OS
+Open an issue with:
+- Steps to reproduce
+- Expected vs actual behavior
+- Node/OS version

@@ -1,64 +1,64 @@
 # Nidus
 
-Plataforma de deploy self-hosted. Pense num Vercel que roda na sua máquina.
+Self-hosted deploy platform. Think Vercel that runs on your own machine.
 
-## O que é
+## What is it
 
-Nidus faz deploy de apps web via Docker. Você conecta o GitHub, faz push, e ele builda + roda o container automaticamente.
+Nidus deploys web apps via Docker. Connect GitHub, push, and it builds + runs the container automatically.
 
-**Ainda em beta** — funciona mas falta polish.
+**Still in beta** — works but needs polish.
 
 ## Stack
 
 - **Frontend:** Next.js 16 + Tailwind
 - **API:** NestJS + Prisma + PostgreSQL
-- **Proxy:** Caddy (HTTPS automático)
-- **Deploy:** Docker containers isolados
+- **Proxy:** Caddy (auto HTTPS)
+- **Deploy:** Isolated Docker containers
 - **CLI:** `npx nidus`
 
-## Como rodar
+## Quick start
 
 ```bash
-# Com Docker (mais fácil)
+# With Docker (easiest)
 docker compose up -d
 
-# Sem Docker
+# Without Docker
 cd apps/control-plane
 npm install
 npm run build
 npm start
 
-# Em outro terminal
+# In another terminal
 cd apps/dashboard
 npm run dev
 ```
 
-Abre http://localhost:3000
+Open http://localhost:3000
 
 ## Deploy
 
 ```bash
 # Via CLI
 npx nidus login
-cd meu-projeto
+cd my-project
 npx nidus deploy
 
 # Via GitHub
-Configura o webhook no GitHub apontando pra http://seu-ip:3001/api/webhook
+Set up webhook in GitHub pointing to http://your-ip:3001/api/webhook
 ```
 
-## Variáveis de ambiente
+## Environment variables
 
-Copia o `.env.example` pra `.env` e ajusta:
+Copy `.env.example` to `.env` and adjust:
 
 ```bash
 DATABASE_URL=postgresql://user:pass@localhost:5432/nidus
 REDIS_URL=redis://localhost:6379
 NIDUS_HOST=localhost
-JWT_SECRET=mude-isto
+JWT_SECRET=change-this
 ```
 
-## Estrutura
+## Structure
 
 ```
 nidus/
@@ -66,23 +66,23 @@ nidus/
 │   ├── dashboard/        # Next.js
 │   └── control-plane/    # NestJS API
 ├── workers/
-│   └── deploy/           # Worker Go (deploy rápido)
+│   └── deploy/           # Go worker (fast deploys)
 ├── cli/                  # CLI
 ├── packages/
-│   ├── runtime/          # Engine de deploy
-│   └── shared/           # Tipos compartilhados
+│   ├── runtime/          # Deploy engine
+│   └── shared/           # Shared types
 └── docker/               # Caddyfile
 ```
 
 ## Performance
 
-O deploy worker foi escrito em Go por performance:
+Deploy worker written in Go for speed:
 
-- Git clone: ~0.5s (vs ~5s em Node)
-- Docker build: ~25s com layer caching
-- Memória: ~15MB (vs ~100MB+ em Node)
+- Git clone: ~0.5s (vs ~5s in Node)
+- Docker build: ~25s with layer caching
+- Memory: ~15MB (vs ~100MB+ in Node)
 
-Roda `./benchmark.sh` pra ver os números.
+Run `./benchmark.sh` to see the numbers.
 
 ## License
 
