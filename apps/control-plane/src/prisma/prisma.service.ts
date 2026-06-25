@@ -24,7 +24,7 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
     const adapter = new PrismaPg(this.pool)
     this.client = new PrismaClient({ adapter })
 
-    this.pool.on("error", (err) => {
+    this.pool.on("error", (err: Error) => {
       this.logger.error(`PostgreSQL pool error: ${err.message}`)
     })
   }

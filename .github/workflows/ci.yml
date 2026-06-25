@@ -1,0 +1,103 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  api:
+    name: API Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: nidus
+          POSTGRES_PASSWORD: nidus
+          POSTGRES_DB: nidus_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: |
+          cd apps/control-plane
+          npm ci
+      - name: Build
+        run: |
+          cd apps/control-plane
+          npm run build
+        env:
+          DATABASE_URL: postgresql://nidus:nidus@localhost:5432/nidus_test
+      - name: Test
+        run: |
+          cd apps/control-plane
+          npm test
+        env:
+          DATABASE_URL: postgresql://nidus:nidus@localhost:5432/nidus_test
+          REDIS_URL: redis://localhost:6379
+
+  dashboard:
+    name: Dashboard Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: |
+          cd apps/dashboard
+          npm ci
+      - name: Build
+        run: |
+          cd apps/dashboard
+          npm run build
+
+  go-worker:
+    name: Go Worker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+      - name: Build
+        run: |
+          cd workers/deploy
+          go build -o ../../bin/nidus-deploy-worker .
+      - name: Test
+        run: |
+          cd workers/deploy
+          go test ./...
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: |
+          cd apps/control-plane
+          npm ci
+      - name: Lint
+        run: |
+          cd apps/control-plane
+          npm run lint

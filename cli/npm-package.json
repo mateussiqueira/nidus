@@ -1,0 +1,25 @@
+{
+  "name": "nidus",
+  "version": "1.0.0",
+  "description": "Self-hosted deploy platform",
+  "main": "dist/index.js",
+  "bin": {
+    "nidus": "dist/index.js"
+  },
+  "scripts": {
+    "build": "node build.js",
+    "start": "node dist/index.js"
+  },
+  "keywords": ["deploy", "paas", "docker", "self-hosted"],
+  "author": "mateussiqueira",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "conf": "^13.0.0",
+    "ora": "^8.1.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

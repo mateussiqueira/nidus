@@ -216,7 +216,7 @@ const deployWorker = new Worker(
       }, { t: imageTag, dockerfile: Buffer.from(dockerfile).toString("base64") })
 
       await new Promise<void>((resolve, reject) => {
-        docker.modem.followProgress(buildStream, (err: any, output: any[]) => {
+        docker.modem.followProgress(buildStream as any, (err: any, output: any[]) => {
           if (err) return reject(err)
           log(`✅ Build concluido`)
           resolve()
