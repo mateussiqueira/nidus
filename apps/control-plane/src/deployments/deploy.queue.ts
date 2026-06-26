@@ -8,26 +8,36 @@ import Docker from "dockerode"
 const execAsync = promisify(exec)
 const docker = new Docker({ socketPath: "/var/run/docker.sock" })
 
-const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379"
 const DEPLOYS_DIR = process.env.NIDUS_DEPLOYS_DIR || "/tmp/nidus-deploys"
 const HOST = process.env.NIDUS_HOST || "localhost"
 
-const redisUrl = new URL(REDIS_URL)
-const redisOpts = {
-  host: redisUrl.hostname,
-  port: Number(redisUrl.port) || 6379,
-  password: redisUrl.password || undefined,
+function getRedisOpts() {
+  const url = process.env.REDIS_URL || "redis://localhost:6379"
+  const parsed = new URL(url)
+  return {
+    host: parsed.hostname,
+    port: Number(parsed.port) || 6379,
+    password: parsed.password || undefined,
+  }
 }
 
-const deployQueue = new Queue("deploy-queue", {
-  connection: redisOpts,
-  defaultJobOptions: {
-    attempts: 2,
-    backoff: { type: "exponential", delay: 5000 },
-    removeOnComplete: { age: 86400 },
-    removeOnFail: { age: 86400 },
-  },
-})
+let _deployQueue: Queue | null = null
+let _deployWorker: Worker | null = null
+
+function getDeployQueue(): Queue {
+  if (!_deployQueue) {
+    _deployQueue = new Queue("deploy-queue", {
+      connection: getRedisOpts(),
+      defaultJobOptions: {
+        attempts: 2,
+        backoff: { type: "exponential", delay: 5000 },
+        removeOnComplete: { age: 86400 },
+        removeOnFail: { age: 86400 },
+      },
+    })
+  }
+  return _deployQueue
+}
 
 export interface DeployJobData {
   deploymentId: string
@@ -151,9 +161,10 @@ function getExposedPort(framework: string): number {
   return framework === "nextjs" || framework === "nuxt" ? 3000 : 80
 }
 
-const deployWorker = new Worker(
-  "deploy-queue",
-  async (job: Job<DeployJobData>): Promise<DeployJobResult> => {
+function createWorker(): Worker {
+  const worker = new Worker(
+    "deploy-queue",
+    async (job: Job<DeployJobData>): Promise<DeployJobResult> => {
     const {
       deploymentId,
       projectId,
@@ -209,11 +220,11 @@ const deployWorker = new Worker(
       log(`🐳 Build da imagen Docker...`)
 
       const dockerfile = generateDockerfile(framework)
-      const buildStream = await docker.buildImage({
-        context: repoDir,
-        src: ["."],
-        dockerfile: "Dockerfile",
-      }, { t: imageTag, dockerfile: Buffer.from(dockerfile).toString("base64") })
+      writeFileSync(join(repoDir, "Dockerfile.nidus"), dockerfile)
+      const buildStream = await docker.buildImage(
+        { context: repoDir, src: ["."] },
+        { t: imageTag, dockerfile: "Dockerfile.nidus" } as any,
+      )
 
       await new Promise<void>((resolve, reject) => {
         docker.modem.followProgress(buildStream as any, (err: any, output: any[]) => {
@@ -277,18 +288,28 @@ const deployWorker = new Worker(
     }
   },
   {
-    connection: redisOpts,
+    connection: getRedisOpts(),
     concurrency: 2,
     limiter: { max: 5, duration: 60000 },
   },
 )
 
-deployWorker.on("completed", (job) => {
-  console.log(`[deploy-worker] Job ${job.id} completed: ${job.data.deploymentId}`)
-})
+  worker.on("completed", (job) => {
+    console.log(`[deploy-worker] Job ${job.id} completed: ${job.data.deploymentId}`)
+  })
 
-deployWorker.on("failed", (job, err) => {
-  console.error(`[deploy-worker] Job ${job?.id} failed: ${err.message}`)
-})
+  worker.on("failed", (job, err) => {
+    console.error(`[deploy-worker] Job ${job?.id} failed: ${err.message}`)
+  })
 
-export { deployQueue, deployWorker, sanitizeBranch }
+  return worker
+}
+
+function getDeployWorker(): Worker {
+  if (!_deployWorker) {
+    _deployWorker = createWorker()
+  }
+  return _deployWorker
+}
+
+export { getDeployQueue, getDeployWorker, sanitizeBranch }

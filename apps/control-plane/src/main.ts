@@ -5,6 +5,12 @@ import helmet from "helmet"
 import compression from "compression"
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger"
 import { randomUUID } from "crypto"
+import { config } from "dotenv"
+import { resolve } from "path"
+
+config({ path: resolve(__dirname, "../../.env") })
+config({ path: resolve(__dirname, "../.env") })
+config({ path: resolve(__dirname, ".env") })
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {

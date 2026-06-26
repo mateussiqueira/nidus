@@ -16,3 +16,4 @@ docker-compose.override.yml
 /volumes/
 /data/
 app/Nidus/.build/
+dump.rdb

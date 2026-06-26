@@ -1,6 +1,6 @@
-import { Injectable, Logger, OnModuleDestroy } from "@nestjs/common"
+import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from "@nestjs/common"
 import { PrismaService } from "../prisma/prisma.service"
-import { deployQueue, deployWorker, sanitizeBranch, DeployJobData } from "./deploy.queue"
+import { getDeployQueue, getDeployWorker, sanitizeBranch, DeployJobData } from "./deploy.queue"
 import Docker from "dockerode"
 
 const docker = new Docker({ socketPath: "/var/run/docker.sock" })
@@ -8,14 +8,19 @@ const DEPLOYS_DIR = process.env.NIDUS_DEPLOYS_DIR || "/tmp/nidus-deploys"
 const HOST = process.env.NIDUS_HOST || "localhost"
 
 @Injectable()
-export class DeploymentsService implements OnModuleDestroy {
+export class DeploymentsService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(DeploymentsService.name)
 
   constructor(private readonly prisma: PrismaService) {}
 
+  async onModuleInit() {
+    getDeployWorker()
+    this.logger.log("Deploy worker started")
+  }
+
   async onModuleDestroy() {
-    await deployWorker.close()
-    await deployQueue.close()
+    try { await getDeployWorker().close() } catch { /* not started */ }
+    try { await getDeployQueue().close() } catch { /* not started */ }
   }
 
   async listByProject(projectId: string) {
@@ -69,7 +74,7 @@ export class DeploymentsService implements OnModuleDestroy {
     try {
       const container = docker.getContainer(containerName)
       const inspect = await container.inspect()
-      const stats = await container.stats({ stream: false })
+      const stats = await container.stats({ stream: false }) as any
 
       const state = inspect.State || {}
       return {
@@ -77,7 +82,7 @@ export class DeploymentsService implements OnModuleDestroy {
         running: state.Running || false,
         startedAt: state.StartedAt || null,
         uptime: state.StartedAt ? Math.floor((Date.now() - new Date(state.StartedAt).getTime()) / 1000) : 0,
-        cpu: stats.cpu_stats ? ((stats.cpu_stats.cpu_usage.total_usage / stats.system_cpu_usage) * 100).toFixed(2) : "0",
+        cpu: stats.cpu_stats ? ((stats.cpu_stats.cpu_usage.total_usage / (stats.cpu_stats.system_cpu_usage || 1)) * 100).toFixed(2) : "0",
         memory: {
           usage: stats.memory_stats ? `${(stats.memory_stats.usage / 1024 / 1024).toFixed(1)}MB` : "0",
           limit: stats.memory_stats ? `${(stats.memory_stats.limit / 1024 / 1024).toFixed(1)}MB` : "0",
@@ -86,7 +91,7 @@ export class DeploymentsService implements OnModuleDestroy {
             : "0",
         },
         network: stats.networks ? Object.values(stats.networks).map((n: any) => `${n.rx_bytes}/${n.tx_bytes}`).join(", ") : "0",
-        restartCount: state.RestartCount || 0,
+        restartCount: (state as any).RestartCount || 0,
         exitCode: state.ExitCode ?? null,
       }
     } catch {
@@ -135,7 +140,7 @@ export class DeploymentsService implements OnModuleDestroy {
       safeBranch,
     }
 
-    const job = await deployQueue.add("deploy", jobData, { jobId: depId })
+    const job = await getDeployQueue().add("deploy", jobData, { jobId: depId })
     this.logger.log(`Deploy job ${job.id} queued for ${p.name} (${branch})`)
 
     return {

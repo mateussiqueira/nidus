@@ -3,6 +3,32 @@ import Redis from "ioredis"
 
 const DEFAULT_TTL = 30
 
+function createRedisClient(): Redis {
+  const url = process.env.REDIS_URL || "redis://localhost:6379"
+  try {
+    const parsed = new URL(url)
+    const password = parsed.password || process.env.REDIS_PASSWORD || undefined
+    return new Redis({
+      host: parsed.hostname,
+      port: Number(parsed.port) || 6379,
+      password,
+      maxRetriesPerRequest: 3,
+      retryStrategy(times) {
+        return Math.min(times * 50, 2000)
+      },
+      lazyConnect: true,
+    })
+  } catch {
+    return new Redis(url, {
+      maxRetriesPerRequest: 3,
+      retryStrategy(times) {
+        return Math.min(times * 50, 2000)
+      },
+      lazyConnect: true,
+    })
+  }
+}
+
 @Injectable()
 export class RedisCacheService implements OnModuleDestroy {
   private readonly logger = new Logger(RedisCacheService.name)
@@ -10,13 +36,7 @@ export class RedisCacheService implements OnModuleDestroy {
   private readonly prefix = "nidus:"
 
   constructor() {
-    this.redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379", {
-      maxRetriesPerRequest: 3,
-      retryStrategy(times) {
-        return Math.min(times * 50, 2000)
-      },
-      lazyConnect: true,
-    })
+    this.redis = createRedisClient()
 
     this.redis.on("error", (err) => {
       this.logger.error(`Redis error: ${err.message}`)
