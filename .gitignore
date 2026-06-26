@@ -19,3 +19,4 @@ app/Nidus/.build/
 dump.rdb
 workers/deploy/nidus-deploy-worker
 dump.rdb
+apps/api/nidus-api
