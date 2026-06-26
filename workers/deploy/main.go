@@ -31,7 +31,7 @@ var (
 	host       = env("NIDUS_HOST", "localhost")
 	redisURL   = env("REDIS_URL", "redis://localhost:6379")
 	dbURL      = env("DATABASE_URL", "postgresql://broto:broto@localhost:5432/nidus")
-	workerPort = env("WORKER_PORT", "8080")
+	workerPort = env("WORKER_PORT", "8081")
 )
 
 func env(key, fallback string) string {
