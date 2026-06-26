@@ -1,25 +1,17 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from "@nestjs/common"
+import { Injectable, Logger, OnModuleDestroy } from "@nestjs/common"
 import { PrismaService } from "../prisma/prisma.service"
-import { getDeployQueue, getDeployWorker, sanitizeBranch, DeployJobData } from "./deploy.queue"
+import { getDeployQueue, sanitizeBranch, DeployJobData } from "./deploy.queue"
 import Docker from "dockerode"
 
 const docker = new Docker({ socketPath: "/var/run/docker.sock" })
-const DEPLOYS_DIR = process.env.NIDUS_DEPLOYS_DIR || "/tmp/nidus-deploys"
-const HOST = process.env.NIDUS_HOST || "localhost"
 
 @Injectable()
-export class DeploymentsService implements OnModuleInit, OnModuleDestroy {
+export class DeploymentsService implements OnModuleDestroy {
   private readonly logger = new Logger(DeploymentsService.name)
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async onModuleInit() {
-    getDeployWorker()
-    this.logger.log("Deploy worker started")
-  }
-
   async onModuleDestroy() {
-    try { await getDeployWorker().close() } catch { /* not started */ }
     try { await getDeployQueue().close() } catch { /* not started */ }
   }
 
