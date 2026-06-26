@@ -20,3 +20,26 @@ dump.rdb
 workers/deploy/nidus-deploy-worker
 dump.rdb
 apps/api/nidus-api
+
+# ============================================
+# Security - NEVER commit these
+# ============================================
+secrets/
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+
+# Deploy artifacts
+deploy/scripts/*.log
+deploy/scripts/output/
+/logs/
+/data/
+backups/
+
+# Production secrets
+.env.production
+.env.staging
+.env.secrets

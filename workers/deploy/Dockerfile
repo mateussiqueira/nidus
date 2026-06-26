@@ -1,9 +1,9 @@
 # Build stage
 FROM golang:1.23-alpine AS builder
 WORKDIR /app
-COPY go.mod go.sum ./
+COPY workers/deploy/go.mod workers/deploy/go.sum ./
 RUN go mod download
-COPY . .
+COPY workers/deploy/*.go ./
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /nidus-deploy-worker .
 
 # Production stage

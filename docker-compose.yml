@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: broto
       POSTGRES_DB: nidus
     ports:
-      - "5432:5432"
+      - "15432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -23,7 +23,7 @@ services:
     container_name: nidus-redis
     command: redis-server --requirepass nidus-redis-pass
     ports:
-      - "6379:6379"
+      - "16379:6379"
     volumes:
       - redisdata:/data
     healthcheck:

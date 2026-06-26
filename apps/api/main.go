@@ -21,6 +21,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/gorilla/websocket"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/crypto/bcrypt"
@@ -104,6 +105,9 @@ func main() {
 	// Metrics
 	mux.HandleFunc("GET /api/metrics", handleMetrics)
 	mux.HandleFunc("GET /api/metrics/prometheus", handlePrometheus)
+
+	// WebSocket for real-time logs
+	mux.HandleFunc("GET /api/ws/deployments/{id}/logs", handleWebSocketLogs)
 
 	handler := corsMiddleware(requestIDMiddleware(loggingMiddleware(mux)))
 
@@ -1295,6 +1299,90 @@ func jsonResponse(w http.ResponseWriter, data interface{}, status ...int) {
 
 func jsonError(w http.ResponseWriter, msg string, status int) {
 	jsonResponse(w, map[string]string{"message": msg}, status)
+}
+
+// ─── WebSocket for Real-time Deployment Logs ────────────────────────────────
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true // Allow all origins for WebSocket
+	},
+}
+
+func handleWebSocketLogs(w http.ResponseWriter, r *http.Request) {
+	// Extract deployment ID from path
+	deploymentID := r.PathValue("id")
+	if deploymentID == "" {
+		http.Error(w, "Missing deployment ID", http.StatusBadRequest)
+		return
+	}
+
+	// Verify deployment exists
+	var exists bool
+	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM deployments WHERE id=$1)", deploymentID).Scan(&exists)
+	if err != nil || !exists {
+		http.Error(w, "Deployment not found", http.StatusNotFound)
+		return
+	}
+
+	// Upgrade HTTP to WebSocket
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Printf("WebSocket upgrade failed: %v", err)
+		return
+	}
+	defer conn.Close()
+
+	log.Printf("WebSocket client connected for deployment %s", deploymentID)
+
+	// Send initial logs
+	var logs sql.NullString
+	err = db.QueryRow("SELECT logs FROM deployments WHERE id=$1", deploymentID).Scan(&logs)
+	if err == nil && logs.Valid {
+		conn.WriteMessage(websocket.TextMessage, []byte(logs.String))
+	}
+
+	// Poll for new logs every 2 seconds
+	ticker := time.NewTicker(2 * time.Second)
+	defer ticker.Stop()
+
+	var lastLogLen int
+	if logs.Valid {
+		lastLogLen = len(logs.String)
+	}
+
+	for {
+		select {
+		case <-ticker.C:
+			// Check if deployment is still building
+			var status string
+			err := db.QueryRow("SELECT status FROM deployments WHERE id=$1", deploymentID).Scan(&status)
+			if err != nil {
+				conn.WriteMessage(websocket.TextMessage, []byte("Error checking deployment status"))
+				return
+			}
+
+			// Get current logs
+			err = db.QueryRow("SELECT logs FROM deployments WHERE id=$1", deploymentID).Scan(&logs)
+			if err == nil && logs.Valid && len(logs.String) > lastLogLen {
+				// Send only new logs
+				newLogs := logs.String[lastLogLen:]
+				conn.WriteMessage(websocket.TextMessage, []byte(newLogs))
+				lastLogLen = len(logs.String)
+			}
+
+			// If deployment is done, send final message and close
+			if status == "success" || status == "failed" {
+				conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("\n[Deploy %s]", status)))
+				return
+			}
+
+		case <-r.Context().Done():
+			return
+		}
+	}
 }
 
 func getEnv(key, fallback string) string {

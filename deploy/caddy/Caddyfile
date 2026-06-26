@@ -1,0 +1,91 @@
+# Caddyfile para Nidus em produção
+# TLS automático via Let's Encrypt
+
+# Configuração global
+{
+    email admin@nidus.com
+    admin off
+    log {
+        output file /var/log/caddy/access.log
+        format json
+    }
+}
+
+# API Principal
+api.nidus.com {
+    reverse_proxy api:3001
+
+    # Rate limiting
+    rate_limit {
+        zone api_limit {
+            key    {remote_host}
+            events 100
+            window 1m
+        }
+    }
+
+    # Headers de segurança
+    header {
+        # HSTS
+        Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+        # Prevent MIME sniffing
+        X-Content-Type-Options "nosniff"
+        # XSS Protection
+        X-X-XSS-Protection "1; mode=block"
+        # Clickjacking
+        X-Frame-Options "DENY"
+        # Referrer
+        Referrer-Policy "strict-origin-when-cross-origin"
+        # Permissions
+        Permissions-Policy "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
+        # Remove server header
+        -Server
+    }
+
+    # Logging
+    log {
+        output file /var/log/caddy/api.log
+        format json
+    }
+}
+
+# Dashboard
+nidus.com {
+    reverse_proxy dashboard:3000
+
+    header {
+        Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-X-XSS-Protection "1; mode=block"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        -Server
+    }
+
+    log {
+        output file /var/log/caddy/dashboard.log
+        format json
+    }
+}
+
+# Proxy para apps dos usuários (wildcard)
+*.nidus.com {
+    reverse_proxy proxy:3080
+
+    header {
+        Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        -Server
+    }
+
+    log {
+        output file /var/log/caddy/apps.log
+        format json
+    }
+}
+
+# Redirect HTTP para HTTPS
+http:// {
+    redir https://{host}{uri} permanent
+}

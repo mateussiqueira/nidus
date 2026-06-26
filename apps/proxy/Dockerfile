@@ -1,4 +1,4 @@
-FROM rust:1.85-alpine AS builder
+FROM rust:1.87-alpine AS builder
 RUN apk add --no-cache musl-dev
 WORKDIR /app
 COPY apps/proxy/Cargo.toml apps/proxy/Cargo.lock ./

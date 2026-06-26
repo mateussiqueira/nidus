@@ -52,18 +52,26 @@ func cleanDBURL(url string) string {
 // ── Models ────────────────────────────────────────────────────────────
 
 type DeployJob struct {
-	DeploymentID  string `json:"deploymentId"`
-	ProjectID     string `json:"projectId"`
-	ProjectName   string `json:"projectName"`
-	ProjectSlug   string `json:"projectSlug"`
-	RepoURL       string `json:"repoUrl"`
-	Domain        string `json:"domain"`
-	Branch        string `json:"branch"`
-	DeployType    string `json:"deployType"`
-	ContainerName string `json:"containerName"`
-	ImageTag      string `json:"imageTag"`
-	IsPreview     bool   `json:"isPreview"`
-	SafeBranch    string `json:"safeBranch"`
+	DeploymentID  string            `json:"deploymentId"`
+	ProjectID     string            `json:"projectId"`
+	ProjectName   string            `json:"projectName"`
+	ProjectSlug   string            `json:"projectSlug"`
+	RepoURL       string            `json:"repoUrl"`
+	Domain        string            `json:"domain"`
+	Branch        string            `json:"branch"`
+	DeployType    string            `json:"deployType"`
+	ContainerName string            `json:"containerName"`
+	ImageTag      string            `json:"imageTag"`
+	IsPreview     bool              `json:"isPreview"`
+	SafeBranch    string            `json:"safeBranch"`
+	EnvVars       map[string]string `json:"envVars,omitempty"`
+}
+
+// EnvVar represents a project environment variable
+type EnvVar struct {
+	Key   string
+	Value string
+	Secret bool
 }
 
 // ── Metrics ───────────────────────────────────────────────────────────
@@ -104,6 +112,45 @@ func sanitizeBranch(branch string) string {
 		s = s[:50]
 	}
 	return s
+}
+
+// fetchEnvVars retrieves environment variables for a project from the database
+func fetchEnvVars(ctx context.Context, db *pgxpool.Pool, projectID string) (map[string]string, error) {
+	envVars := make(map[string]string)
+
+	// Try to fetch from project_env_vars table
+	rows, err := db.Query(ctx,
+		`SELECT key, value, secret FROM project_env_vars WHERE project_id = $1`,
+		projectID)
+	if err != nil {
+		// Table might not exist, try alternative table name
+		rows, err = db.Query(ctx,
+			`SELECT key, value, secret FROM environment_variables WHERE project_id = $1`,
+			projectID)
+		if err != nil {
+			return envVars, nil // Return empty map if table doesn't exist
+		}
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var key, value string
+		var secret bool
+		if err := rows.Scan(&key, &value, &secret); err != nil {
+			continue
+		}
+		envVars[key] = value
+	}
+
+	return envVars, nil
+}
+
+// maskEnvVar masks sensitive values for logging
+func maskEnvVar(value string) string {
+	if len(value) <= 4 {
+		return "****"
+	}
+	return value[:2] + "****" + value[len(value)-2:]
 }
 
 func sanitizeShell(s string) string {
@@ -281,6 +328,18 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 	dp.db.Exec(ctx, `UPDATE deployments SET status='building', logs=$1 WHERE id=$2`,
 		strings.Join(logs, "\n"), job.DeploymentID)
 
+	// ── Fetch environment variables ──
+	envVars, err := fetchEnvVars(ctx, dp.db, job.ProjectID)
+	if err != nil {
+		logFn(fmt.Sprintf("⚠️ Warning: Could not fetch env vars: %v", err))
+	}
+	if job.EnvVars != nil {
+		for k, v := range job.EnvVars {
+			envVars[k] = v
+		}
+	}
+	logFn(fmt.Sprintf("🔧 Environment variables: %d loaded", len(envVars)))
+
 	// ── Git clone / fetch ──
 	repoDir := filepath.Join(deploysDir, job.ProjectSlug)
 	if job.RepoURL != "" {
@@ -320,18 +379,46 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 	logFn(fmt.Sprintf("🔍 Framework detectado: %s", framework))
 	exposedPort := getExposedPort(framework)
 
+	// ── Check for custom Dockerfile ──
+	customDockerfile := filepath.Join(repoDir, "Dockerfile")
+	customNidusDockerfile := filepath.Join(repoDir, "Dockerfile.nidus")
+	useCustomDockerfile := false
+	if _, err := os.Stat(customDockerfile); err == nil {
+		logFn("📄 Using custom Dockerfile")
+		useCustomDockerfile = true
+	} else if _, err := os.Stat(customNidusDockerfile); err == nil {
+		logFn("📄 Using custom Dockerfile.nidus")
+		useCustomDockerfile = true
+	}
+
 	// ── Docker build with streaming (via CLI for real-time logs) ──
 	logFn("🐳 Build da imagen Docker...")
-	dockerfile := generateDockerfile(framework)
-	dockerfilePath := filepath.Join(repoDir, "Dockerfile.nidus")
-	os.WriteFile(dockerfilePath, []byte(dockerfile), 0644)
-	defer os.Remove(dockerfilePath)
 
-	buildCmd := exec.CommandContext(ctx, "docker", "build",
-		"-t", job.ImageTag,
-		"-f", dockerfilePath,
-		"--progress=plain",
-		repoDir)
+	var buildArgs []string
+	buildArgs = append(buildArgs, "-t", job.ImageTag)
+
+	if useCustomDockerfile {
+		if _, err := os.Stat(customDockerfile); err == nil {
+			buildArgs = append(buildArgs, "-f", customDockerfile)
+		} else {
+			buildArgs = append(buildArgs, "-f", customNidusDockerfile)
+		}
+	} else {
+		dockerfile := generateDockerfile(framework)
+		dockerfilePath := filepath.Join(repoDir, "Dockerfile.nidus")
+		os.WriteFile(dockerfilePath, []byte(dockerfile), 0644)
+		defer os.Remove(dockerfilePath)
+		buildArgs = append(buildArgs, "-f", dockerfilePath)
+	}
+
+	// Add build args for environment variables
+	for key, value := range envVars {
+		buildArgs = append(buildArgs, "--build-arg", fmt.Sprintf("%s=%s", key, value))
+	}
+
+	buildArgs = append(buildArgs, "--progress=plain", repoDir)
+
+	buildCmd := exec.CommandContext(ctx, "docker", buildArgs...)
 
 	buildStdout, _ := buildCmd.StdoutPipe()
 	buildStderr, _ := buildCmd.StderrPipe()
@@ -346,10 +433,18 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 	// Stream build output in real-time
 	var buildWg sync.WaitGroup
 	buildWg.Add(2)
+
+	// Build timeout (10 minutes)
+	buildCtx, buildCancel := context.WithTimeout(ctx, 10*time.Minute)
+	defer buildCancel()
+
 	go func() {
 		defer buildWg.Done()
 		scanner := bufio.NewScanner(buildStdout)
 		for scanner.Scan() {
+			if buildCtx.Err() != nil {
+				return
+			}
 			logFn(scanner.Text())
 		}
 	}()
@@ -357,10 +452,21 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 		defer buildWg.Done()
 		scanner := bufio.NewScanner(buildStderr)
 		for scanner.Scan() {
+			if buildCtx.Err() != nil {
+				return
+			}
 			logFn(scanner.Text())
 		}
 	}()
 	buildWg.Wait()
+
+	if buildCtx.Err() != nil {
+		logFn("❌ Build timeout (10 minutes)")
+		buildCmd.Process.Kill()
+		updateDB("failed", "")
+		deploysTotal.WithLabelValues("failed").Inc()
+		return
+	}
 
 	if err := buildCmd.Wait(); err != nil {
 		logFn(fmt.Sprintf("❌ Error build: %v", err))
@@ -374,13 +480,25 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 	logFn("🔄 Removendo container anterior...")
 	runCmd(ctx, "docker", "rm", "-f", job.ContainerName)
 
-	// ── Start new container ──
+	// ── Start new container with env vars ──
 	logFn("🚀 Iniciando container...")
-	if out, err := runCmd(ctx, "docker", "run", "-d",
+	var runArgs []string
+	runArgs = append(runArgs, "-d",
 		"--name", job.ContainerName,
 		"-p", fmt.Sprintf("0:%d", exposedPort),
-		"--restart", "unless-stopped",
-		job.ImageTag); err != nil {
+		"--restart", "unless-stopped")
+
+	// Add environment variables
+	for key, value := range envVars {
+		runArgs = append(runArgs, "-e", fmt.Sprintf("%s=%s", key, value))
+		logFn(fmt.Sprintf("🔧 ENV: %s=%s", key, maskEnvVar(value)))
+	}
+
+	runArgs = append(runArgs, job.ImageTag)
+
+	// Build docker run command with all arguments
+	dockerArgs := append([]string{"run"}, runArgs...)
+	if out, err := runCmd(ctx, "docker", dockerArgs...); err != nil {
 		logFn(fmt.Sprintf("❌ Error iniciando: %s", out))
 		updateDB("failed", "")
 		deploysTotal.WithLabelValues("failed").Inc()
@@ -395,6 +513,31 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 		if len(parts) > 1 {
 			port = parts[len(parts)-1]
 		}
+	}
+
+	// ── Container health check ──
+	logFn("🏥 Verificando saúde do container...")
+	healthOK := false
+	for i := 0; i < 10; i++ {
+		time.Sleep(2 * time.Second)
+		inspectOutput, _ := runCmd(ctx, "docker", "inspect", "--format", "{{.State.Running}}", job.ContainerName)
+		if strings.TrimSpace(inspectOutput) == "true" {
+			healthOK = true
+			break
+		}
+		logFn(fmt.Sprintf("⏳ Aguardando container... (%d/10)", i+1))
+	}
+
+	if !healthOK {
+		logFn("❌ Container não está rodando após 20 segundos")
+		// Get container logs for debugging
+		containerLogs, _ := runCmd(ctx, "docker", "logs", "--tail", "50", job.ContainerName)
+		if containerLogs != "" {
+			logFn(fmt.Sprintf("📋 Container logs:\n%s", containerLogs))
+		}
+		updateDB("failed", "")
+		deploysTotal.WithLabelValues("failed").Inc()
+		return
 	}
 
 	url := job.Domain
