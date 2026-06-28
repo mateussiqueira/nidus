@@ -1256,7 +1256,90 @@ func handleMetrics(w http.ResponseWriter, r *http.Request) {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 
+	// Count deployments by status
+	var totalDeploys, successDeploys, failedDeploys, activeDeploys int
+	db.QueryRow("SELECT COUNT(*) FROM deployments").Scan(&totalDeploys)
+	db.QueryRow("SELECT COUNT(*) FROM deployments WHERE status = 'success'").Scan(&successDeploys)
+	db.QueryRow("SELECT COUNT(*) FROM deployments WHERE status = 'failed'").Scan(&failedDeploys)
+	db.QueryRow("SELECT COUNT(*) FROM deployments WHERE status IN ('building','pending','queued')").Scan(&activeDeploys)
+
+	// Get container info from Docker
+	containerRunning, containerTotal := 0, 0
+	out, err := exec.Command("docker", "ps", "-q").Output()
+	if err == nil {
+		containerRunning = len(strings.Fields(string(out)))
+	}
+	out, err = exec.Command("docker", "ps", "-aq").Output()
+	if err == nil {
+		containerTotal = len(strings.Fields(string(out)))
+	}
+
+	// Disk usage
+	diskTotal, diskUsed, diskAvail := float64(0), float64(0), float64(0)
+	dfOut, err := exec.Command("df", "-B1", "/").Output()
+	if err == nil {
+		lines := strings.Split(string(dfOut), "\n")
+		if len(lines) >= 2 {
+			fields := strings.Fields(lines[1])
+			if len(fields) >= 4 {
+				diskTotal, _ = strconv.ParseFloat(fields[1], 64)
+				diskUsed, _ = strconv.ParseFloat(fields[2], 64)
+				diskAvail, _ = strconv.ParseFloat(fields[3], 64)
+			}
+		}
+	}
+
+	// Memory info
+	memTotal, memAvail := float64(0), float64(0)
+	memOut, err := exec.Command("free", "-b").Output()
+	if err == nil {
+		lines := strings.Split(string(memOut), "\n")
+		if len(lines) >= 2 {
+			fields := strings.Fields(lines[1])
+			if len(fields) >= 3 {
+				memTotal, _ = strconv.ParseFloat(fields[1], 64)
+				memAvail, _ = strconv.ParseFloat(fields[3], 64)
+			}
+		}
+	}
+	memUsed := memTotal - memAvail
+	memPercent := float64(0)
+	if memTotal > 0 {
+		memPercent = (memUsed / memTotal) * 100
+	}
+
+	uptime := time.Since(startTime).Seconds()
+
 	jsonResponse(w, map[string]interface{}{
+		"memory": map[string]interface{}{
+			"total":   memTotal,
+			"used":    memUsed,
+			"free":    memAvail,
+			"percent": memPercent,
+			"heapUsed":  float64(m.HeapInuse) / 1048576,
+			"heapTotal": float64(m.HeapAlloc) / 1048576,
+			"rss":       float64(m.Sys) / 1048576,
+		},
+		"disk": map[string]interface{}{
+			"total":   diskTotal,
+			"used":    diskUsed,
+			"free":    diskAvail,
+			"percent": func() float64 {
+				if diskTotal > 0 { return (diskUsed / diskTotal) * 100 }
+				return 0
+			}(),
+		},
+		"uptime": uptime,
+		"containers": map[string]interface{}{
+			"running": containerRunning,
+			"total":   containerTotal,
+		},
+		"deploys": map[string]interface{}{
+			"total":   totalDeploys,
+			"success": successDeploys,
+			"failed":  failedDeploys,
+			"active":  activeDeploys,
+		},
 		"requests": map[string]interface{}{
 			"total": 0, "success": 0, "error": 0, "avgDuration": 0,
 			"p50": 0, "p95": 0, "p99": 0,
@@ -1268,13 +1351,6 @@ func handleMetrics(w http.ResponseWriter, r *http.Request) {
 			"connections": db.Stats().OpenConnections,
 			"queries":     0, "avgQueryTime": 0,
 		},
-		"memory": map[string]interface{}{
-			"heapUsed":  float64(m.HeapInuse) / 1048576,
-			"heapTotal": float64(m.HeapAlloc) / 1048576,
-			"rss":       float64(m.Sys) / 1048576,
-			"external":  float64(m.Mallocs) / 1048576,
-		},
-		"uptime": time.Since(startTime).Seconds(),
 	})
 }
 
