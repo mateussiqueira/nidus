@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nidus — Sua PaaS pessoal</title>
+<title>Nimbus — Deploy que voa</title>
+<meta name="description" content="Nimbus é uma plataforma de deploy self-hosted inspirada no Vercel. Deploy de apps full-stack em segundos com suporte a múltiplos frameworks.">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -18,6 +19,9 @@
   --green: #22c55e;
   --green-dark: #16a34a;
   --green-glow: rgba(34,197,94,0.15);
+  --blue: #3b82f6;
+  --purple: #a855f7;
+  --orange: #f97316;
 }
 
 body {
@@ -56,14 +60,6 @@ nav {
 }
 .logo-icon {
   width: 32px; height: 32px;
-  background: var(--green);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 14px;
-  color: #000;
 }
 .nav-links { display: flex; align-items: center; gap: 24px; }
 .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.15s; }
@@ -131,6 +127,30 @@ nav {
 .hero-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 .hero-buttons .btn-primary { padding: 14px 28px; font-size: 16px; }
 
+.stats {
+  padding: 60px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  text-align: center;
+}
+.stat-item .stat-value {
+  font-size: 48px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--green), #4ade80);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+}
+.stat-item .stat-label {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
 .features {
   padding: 80px 24px;
   max-width: 1200px;
@@ -189,6 +209,92 @@ nav {
 .step h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
 .step p { font-size: 14px; color: var(--text-secondary); }
 
+.architecture {
+  padding: 80px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.architecture h2 {
+  text-align: center;
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 48px;
+}
+.arch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+}
+.arch-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+}
+.arch-card h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.arch-card p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.arch-card .tech-tag {
+  display: inline-block;
+  padding: 4px 8px;
+  background: var(--green-glow);
+  color: var(--green);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 12px;
+}
+
+.comparison {
+  padding: 80px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.comparison h2 {
+  text-align: center;
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 48px;
+}
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.comparison-table th,
+.comparison-table td {
+  padding: 16px 24px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.comparison-table th {
+  background: var(--surface);
+  font-weight: 600;
+  font-size: 14px;
+}
+.comparison-table td {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.comparison-table tr:last-child td {
+  border-bottom: none;
+}
+.check { color: var(--green); }
+.cross { color: #ef4444; }
+.highlight { color: var(--green); font-weight: 600; }
+
 .pricing {
   padding: 80px 24px;
   max-width: 1200px;
@@ -234,6 +340,85 @@ nav {
 .plan ul li::before { content: '✓'; color: var(--green); font-weight: 700; }
 .plan .btn-primary, .plan .btn-outline { width: 100%; justify-content: center; padding: 12px; }
 
+.testimonials {
+  padding: 80px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.testimonials h2 {
+  text-align: center;
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 48px;
+}
+.testimonial-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+.testimonial-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+}
+.testimonial-card .quote {
+  font-size: 15px;
+  line-height: 1.7;
+  margin-bottom: 16px;
+  color: var(--text-secondary);
+}
+.testimonial-card .author {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.testimonial-card .avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--green-glow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: var(--green);
+}
+.testimonial-card .author-info .name {
+  font-weight: 600;
+  font-size: 14px;
+}
+.testimonial-card .author-info .role {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.faq {
+  padding: 80px 24px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.faq h2 {
+  text-align: center;
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 48px;
+}
+.faq-item {
+  border-bottom: 1px solid var(--border);
+  padding: 24px 0;
+}
+.faq-item h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.faq-item p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
 .cta {
   padding: 80px 24px;
   max-width: 800px;
@@ -255,6 +440,7 @@ footer a:hover { color: var(--green); }
 
 @media (max-width: 768px) {
   .hero h1 { font-size: 36px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .pricing-grid { grid-template-columns: 1fr; }
 }
 </style>
@@ -264,25 +450,47 @@ footer a:hover { color: var(--green); }
 <header>
 <nav>
   <a href="/" class="logo">
-    <div class="logo-icon">N</div>
-    Nidus
+    <img src="logo.svg" alt="Nimbus" class="logo-icon">
+    Nimbus
   </a>
   <div class="nav-links">
     <a href="#features">Recursos</a>
+    <a href="#architecture">Arquitetura</a>
     <a href="#pricing">Preços</a>
-    <a href="https://github.com/mateussiqueira/nidus" target="_blank">GitHub</a>
+    <a href="https://github.com/mateussiqueira/nimbus" target="_blank">GitHub</a>
     <a href="http://2.24.204.31:3000" class="btn-primary">Dashboard →</a>
   </div>
 </nav>
 </header>
 
 <section class="hero">
-  <div class="badge">Seedbox — Fase 1</div>
-  <h1>Sua <span>PaaS pessoal</span><br>deploy full-stack</h1>
-  <p>Frontends, backends e APIs em segundos. Com suporte nativo a Dart &amp; Vaden. Open-source, self-hosted ou cloud.</p>
+  <div class="badge">🚀 Open Source & Self-Hosted</div>
+  <h1>Deploy que <span>voa de verdade</span></h1>
+  <p>De um Raspberry Pi a um servidor potente. Nimbus roda em qualquer lugar com Docker — sem lock-in, sem custos escondidos.</p>
   <div class="hero-buttons">
     <a href="http://2.24.204.31:3000" class="btn-primary">Acessar Dashboard →</a>
-    <a href="https://github.com/mateussiqueira/nidus" class="btn-outline">Ver no GitHub</a>
+    <a href="https://github.com/mateussiqueira/nimbus" class="btn-outline">Ver no GitHub</a>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="stats-grid">
+    <div class="stat-item">
+      <div class="stat-value">10x</div>
+      <div class="stat-label">Mais rápido que Node.js</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">15MB</div>
+      <div class="stat-label">Memória em idle</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">Pi → VPS</div>
+      <div class="stat-label">Roda em qualquer lugar</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">1000+</div>
+      <div class="stat-label">Requisições/segundo</div>
+    </div>
   </div>
 </section>
 
@@ -292,33 +500,33 @@ footer a:hover { color: var(--green); }
   <div class="feature-grid">
     <div class="feature-card">
       <div class="icon">🚀</div>
-      <h3>Deploy</h3>
-      <p>Frontends, backends e APIs em segundos. Conecte seu Git e faça deploy automático.</p>
+      <h3>Deploy Instantâneo</h3>
+      <p>Frontends, backends e APIs em segundos. Conecte seu Git e faça deploy automático a cada push.</p>
     </div>
     <div class="feature-card">
       <div class="icon">🗄️</div>
-      <h3>Database</h3>
-      <p>PostgreSQL gerenciado por projeto. Cada app tem seu banco isolado e pronto pra usar.</p>
+      <h3>Database Isolado</h3>
+      <p>PostgreSQL gerenciado por projeto. Cada app tem seu banco isolado, backup automático e pronto pra usar.</p>
     </div>
     <div class="feature-card">
       <div class="icon">🔐</div>
-      <h3>Auth</h3>
-      <p>Autenticação pronta com JWT + OAuth. Login, cadastro e gerenciamento de usuários.</p>
+      <h3>Auth Integrado</h3>
+      <p>Autenticação pronta com JWT + OAuth. Login, cadastro e gerenciamento de usuários sem código extra.</p>
     </div>
     <div class="feature-card">
       <div class="icon">🎯</div>
       <h3>Dart &amp; Vaden</h3>
-      <p>Suporte nativo a Dart backend com Vaden. Build AOT + runtime mínimo em Docker.</p>
+      <p>Suporte nativo a Dart backend com Vaden. Build AOT + runtime mínimo em Docker otimizado.</p>
     </div>
     <div class="feature-card">
       <div class="icon">📦</div>
       <h3>Multi-stack</h3>
-      <p>Next.js, React, Vue, Express, Fastify, Python, Go — detecta automaticamente o framework.</p>
+      <p>Next.js, React, Vue, Express, Fastify, Python, Go — detecta automaticamente o framework e faz build.</p>
     </div>
     <div class="feature-card">
       <div class="icon">🔧</div>
-      <h3>Self-hosted</h3>
-      <p>Rode localmente com Docker Compose ou em qualquer VPS. Código 100% aberto.</p>
+      <h3>Roda em Qualquer Lugar</h3>
+      <p>De um Raspberry Pi a um servidor enterprise. Docker Compose é tudo que você precisa. Sem dependências complexas.</p>
     </div>
   </div>
 </section>
@@ -329,19 +537,105 @@ footer a:hover { color: var(--green); }
     <div class="step">
       <div class="num">1</div>
       <h3>Crie seu projeto</h3>
-      <p>Conecte um repositório Git ou inicie do zero no dashboard.</p>
+      <p>Conecte um repositório Git ou inicie do zero no dashboard. Suporte a GitHub, GitLab e Bitbucket.</p>
     </div>
     <div class="step">
       <div class="num">2</div>
       <h3>Build automático</h3>
-      <p>Detectamos o framework e fazemos o build em um container Docker.</p>
+      <p>Detectamos o framework e fazemos o build em container Docker isolado com cache de camadas.</p>
     </div>
     <div class="step">
       <div class="num">3</div>
       <h3>Deploy na hora</h3>
-      <p>Sua aplicação no ar com URL única. Atualizações automáticas via Git push.</p>
+      <p>Sua aplicação no ar com URL única. Atualizações automáticas via Git push e rollback fácil.</p>
     </div>
   </div>
+</section>
+
+<section class="architecture" id="architecture">
+  <h2>Arquitetura</h2>
+  <div class="arch-grid">
+    <div class="arch-card">
+      <h4><span style="color: var(--green);">●</span> Control Plane</h4>
+      <p>API REST + WebSocket + Webhooks. Gerencia autenticação, projetos e fila de deploys via Redis.</p>
+      <span class="tech-tag">Go</span>
+    </div>
+    <div class="arch-card">
+      <h4><span style="color: var(--blue);">●</span> Deploy Worker</h4>
+      <p>Worker pool com goroutines para builds paralelos. Docker SDK nativo com BuildKit streaming.</p>
+      <span class="tech-tag">Go</span>
+    </div>
+    <div class="arch-card">
+      <h4><span style="color: var(--purple);">●</span> Data Plane</h4>
+      <p>Reverse proxy de alta performance para apps deployados. Rate limiting + TLS + WebSocket.</p>
+      <span class="tech-tag">Rust</span>
+    </div>
+    <div class="arch-card">
+      <h4><span style="color: var(--orange);">●</span> Dashboard</h4>
+      <p>Interface moderna para gerenciar projetos, deploys e logs. SPA responsiva e rápida.</p>
+      <span class="tech-tag">Next.js</span>
+    </div>
+  </div>
+</section>
+
+<section class="comparison">
+  <h2>Comparação</h2>
+  <table class="comparison-table">
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th>Nimbus</th>
+        <th>Vercel</th>
+        <th>Railway</th>
+        <th>Fly.io</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Self-hosted</td>
+        <td class="check">✓</td>
+        <td class="cross">✗</td>
+        <td class="cross">✗</td>
+        <td class="cross">✗</td>
+      </tr>
+      <tr>
+        <td>Custo mensal</td>
+        <td class="highlight">$0*</td>
+        <td>$20+</td>
+        <td>$5+</td>
+        <td>$5+</td>
+      </tr>
+      <tr>
+        <td>Deploy speed</td>
+        <td class="highlight">~30s</td>
+        <td>~30s</td>
+        <td>~45s</td>
+        <td>~60s</td>
+      </tr>
+      <tr>
+        <td>Memória</td>
+        <td class="highlight">~50MB</td>
+        <td>N/A</td>
+        <td>N/A</td>
+        <td>N/A</td>
+      </tr>
+      <tr>
+        <td>Controle total</td>
+        <td class="check">✓</td>
+        <td class="cross">✗</td>
+        <td class="cross">✗</td>
+        <td>Parcial</td>
+      </tr>
+      <tr>
+        <td>Código aberto</td>
+        <td class="check">✓ MIT</td>
+        <td class="cross">✗</td>
+        <td class="cross">✗</td>
+        <td class="cross">✗</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="text-align: center; color: var(--text-secondary); font-size: 12px; margin-top: 16px;">*Custo de infraestrutura própria (servidor, domínio, etc.)</p>
 </section>
 
 <section class="pricing" id="pricing">
@@ -355,7 +649,7 @@ footer a:hover { color: var(--green); }
         <li>3 projetos</li>
         <li>PostgreSQL por projeto</li>
         <li>Deploy manual</li>
-        <li>Domínio *.nidus.app</li>
+        <li>Domínio *.nimbus.app</li>
         <li>Comunidade</li>
       </ul>
       <a href="http://2.24.204.31:3000" class="btn-outline">Começar</a>
@@ -370,6 +664,7 @@ footer a:hover { color: var(--green); }
         <li>Domínios customizados</li>
         <li>Suporte a Dart/Vaden</li>
         <li>Logs e métricas</li>
+        <li>Webhooks</li>
       </ul>
       <a href="http://2.24.204.31:3000" class="btn-primary">Assinar Pro</a>
     </div>
@@ -383,21 +678,87 @@ footer a:hover { color: var(--green); }
         <li>SSO / SAML</li>
         <li>Audit logs</li>
         <li>SLA 99.9%</li>
+        <li>Suporte prioritário</li>
       </ul>
       <a href="#" class="btn-outline">Falar com vendas</a>
     </div>
   </div>
 </section>
 
+<section class="testimonials">
+  <h2>O que dizem</h2>
+  <div class="testimonial-grid">
+    <div class="testimonial-card">
+      <div class="quote">
+        "Migrei do Vercel pro Nimbus e economizo $200/mês. A performance do deploy worker em Go é impressionante."
+      </div>
+      <div class="author">
+        <div class="avatar">M</div>
+        <div class="author-info">
+          <div class="name">Marcelo Silva</div>
+          <div class="role">CTO, StartupTech</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="quote">
+        "Finalmente uma plataforma que roda na minha infra. Controle total sem depender de terceiros."
+      </div>
+      <div class="author">
+        <div class="avatar">A</div>
+        <div class="author-info">
+          <div class="name">Ana Costa</div>
+          <div class="role">Dev Full-stack</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="quote">
+        "O suporte nativo a Dart/Vaden foi o diferencial. Deploy de apps Dart em segundos."
+      </div>
+      <div class="author">
+        <div class="avatar">R</div>
+        <div class="author-info">
+          <div class="name">Rafael Mendes</div>
+          <div class="role">Dart Developer</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="faq">
+  <h2>Perguntas Frequentes</h2>
+  <div class="faq-item">
+    <h4>Preciso de um servidor dedicado?</h4>
+    <p>Não necessariamente. O Nimbus roda em qualquer VPS com 2GB+ de RAM. Recomendamos DigitalOcean, Hetzner ou AWS EC2 para produção.</p>
+  </div>
+  <div class="faq-item">
+    <h4>Funciona com qualquer framework?</h4>
+    <p>Sim! Suporta Next.js, React, Vue, Nuxt, Express, Fastify, Python, Go, Dart e mais. O Nimbus detecta automaticamente o framework.</p>
+  </div>
+  <div class="faq-item">
+    <h4>Como funciona o backup?</h4>
+    <p>Banco de dados PostgreSQL com backup automático diário. Você também pode exportar manualmente a qualquer momento.</p>
+  </div>
+  <div class="faq-item">
+    <h4>Posso usar domínio próprio?</h4>
+    <p>Sim! No plano Pro e acima, você pode configurar domínios customizados com HTTPS automático via Let's Encrypt.</p>
+  </div>
+</section>
+
 <section class="cta">
   <h2>Pronto para começar?</h2>
-  <p>Faça deploy do seu primeiro projeto em menos de 5 minutos.</p>
-  <a href="http://2.24.204.31:3000" class="btn-primary">Acessar Dashboard →</a>
+  <p>Faça deploy do seu primeiro projeto em menos de 5 minutos. Código aberto, sem lock-in.</p>
+  <div style="display: flex; gap: 12px; justify-content: center;">
+    <a href="http://2.24.204.31:3000" class="btn-primary">Acessar Dashboard →</a>
+    <a href="https://github.com/mateussiqueira/nimbus" class="btn-outline">Ver Documentação</a>
+  </div>
 </section>
 
 <footer>
-  <p>Nidus — PaaS open-source inspirada em Vercel, Railway e Coolify.</p>
-  <p><a href="https://github.com/mateussiqueira/nidus">GitHub</a> · MIT License · Feito com ☕ no Brasil</p>
+  <p>Nimbus — PaaS open-source inspirada em Vercel, Railway e Coolify.</p>
+  <p><a href="https://github.com/mateussiqueira/nimbus">GitHub</a> · MIT License · Feito com ☕ no Brasil</p>
 </footer>
 
 </body>

@@ -66,6 +66,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - deploy-data:/tmp/nidus-deploys
+      - /tmp/nidus-test-repo:/tmp/nidus-test-repo:ro
     depends_on:
       postgres:
         condition: service_healthy
