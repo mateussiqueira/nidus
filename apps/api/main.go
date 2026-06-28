@@ -753,13 +753,13 @@ func handleProjectRoutes(w http.ResponseWriter, r *http.Request) {
 func handleGetProject(w http.ResponseWriter, r *http.Request, id string) {
 	userID := r.Context().Value("userID").(string)
 
-	var name, slug, pStatus string
+	var name, slug, pStatus, branch string
 	var framework, domain, repoURL, envVars sql.NullString
 	var createdAt time.Time
 	err := db.QueryRowContext(r.Context(),
-		`SELECT name, slug, framework, status, domain, repo_url, env_vars, created_at
+		`SELECT name, slug, framework, status, domain, repo_url, env_vars, branch, created_at
 		 FROM projects WHERE id = $1 AND user_id = $2`, id, userID,
-	).Scan(&name, &slug, &framework, &pStatus, &domain, &repoURL, &envVars, &createdAt)
+	).Scan(&name, &slug, &framework, &pStatus, &domain, &repoURL, &envVars, &branch, &createdAt)
 	if err == sql.ErrNoRows {
 		jsonResponse(w, nil)
 		return
@@ -778,6 +778,7 @@ func handleGetProject(w http.ResponseWriter, r *http.Request, id string) {
 		"domain":    nullString(domain),
 		"repoUrl":   nullString(repoURL),
 		"envVars":   nullString(envVars),
+		"branch":    branch,
 		"createdAt": createdAt.Format(time.RFC3339),
 	})
 }
@@ -786,9 +787,11 @@ func handleUpdateProject(w http.ResponseWriter, r *http.Request, id string) {
 	userID := r.Context().Value("userID").(string)
 
 	var body struct {
-		EnvVars string `json:"envVars"`
-		Domain  string `json:"domain"`
-		RepoURL string `json:"repoUrl"`
+		EnvVars   string `json:"envVars"`
+		Domain    string `json:"domain"`
+		RepoURL   string `json:"repoUrl"`
+		Framework string `json:"framework"`
+		Branch    string `json:"branch"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		jsonError(w, "Body invalido", http.StatusBadRequest)
@@ -814,6 +817,16 @@ func handleUpdateProject(w http.ResponseWriter, r *http.Request, id string) {
 		args = append(args, body.RepoURL)
 		argIdx++
 	}
+	if body.Framework != "" {
+		sets = append(sets, fmt.Sprintf("framework = $%d", argIdx))
+		args = append(args, body.Framework)
+		argIdx++
+	}
+	if body.Branch != "" {
+		sets = append(sets, fmt.Sprintf("branch = $%d", argIdx))
+		args = append(args, body.Branch)
+		argIdx++
+	}
 
 	if len(sets) == 0 {
 		handleGetProject(w, r, id)
@@ -824,13 +837,13 @@ func handleUpdateProject(w http.ResponseWriter, r *http.Request, id string) {
 	sets = append(sets, "updated_at = datetime('now')")
 	args = append(args, id, userID)
 
-	query := fmt.Sprintf("UPDATE projects SET %s WHERE id = $%d AND user_id = $%d RETURNING id, name, slug, framework, status, domain, repo_url, env_vars, created_at",
+	query := fmt.Sprintf("UPDATE projects SET %s WHERE id = $%d AND user_id = $%d RETURNING id, name, slug, framework, status, domain, repo_url, env_vars, branch, created_at",
 		strings.Join(sets, ", "), argIdx, argIdx+1)
 
-	var name, slug, pStatus string
+	var name, slug, pStatus, branch string
 	var framework, domain, repoURL, envVars sql.NullString
 	var createdAt time.Time
-	err := db.QueryRowContext(r.Context(), query, args...).Scan(&id, &name, &slug, &framework, &pStatus, &domain, &repoURL, &envVars, &createdAt)
+	err := db.QueryRowContext(r.Context(), query, args...).Scan(&id, &name, &slug, &framework, &pStatus, &domain, &repoURL, &envVars, &branch, &createdAt)
 	if err != nil {
 		jsonError(w, "Erro ao atualizar projeto", http.StatusInternalServerError)
 		return
@@ -845,6 +858,7 @@ func handleUpdateProject(w http.ResponseWriter, r *http.Request, id string) {
 		"domain":    nullString(domain),
 		"repoUrl":   nullString(repoURL),
 		"envVars":   nullString(envVars),
+		"branch":    branch,
 		"createdAt": createdAt.Format(time.RFC3339),
 	})
 }

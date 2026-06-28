@@ -33,6 +33,10 @@ export default function ProjectPage() {
   const [repoUrlInput, setRepoUrlInput] = useState("")
   const [savingRepo, setSavingRepo] = useState(false)
   const [repoSaved, setRepoSaved] = useState(false)
+  const [frameworkInput, setFrameworkInput] = useState("")
+  const [branchCfg, setBranchCfg] = useState("main")
+  const [savingSettings, setSavingSettings] = useState(false)
+  const [settingsSaved, setSettingsSaved] = useState(false)
 
   function load() {
     if (!id) return
@@ -40,6 +44,8 @@ export default function ProjectPage() {
       setProject(p)
       setEnvText(p.envVars || "")
       setRepoUrlInput(p.repoUrl || "")
+      setFrameworkInput(p.framework || "")
+      setBranchCfg(p.branch || "main")
     }).catch(() => router.push("/dashboard"))
     api.deployments.list(id).then(setDeployments).catch(() => {})
     api.deployments.listPreviews(id).then(setPreviews).catch(() => {})
@@ -88,6 +94,18 @@ export default function ProjectPage() {
       load()
     } catch {}
     setSavingRepo(false)
+  }
+
+  async function handleSaveSettings() {
+    if (!id) return
+    setSavingSettings(true)
+    try {
+      await api.request(`/api/projects/${id}`, { method: "PATCH", body: JSON.stringify({ framework: frameworkInput, branch: branchCfg }) })
+      setSettingsSaved(true)
+      setTimeout(() => setSettingsSaved(false), 2000)
+      load()
+    } catch {}
+    setSavingSettings(false)
   }
 
   async function handleRollback(deploymentId: string) {
@@ -223,6 +241,35 @@ export default function ProjectPage() {
         <p className="text-xs text-zinc-500 mt-2">
           Configure o repositório Git para habilitar auto-deploy via webhook.
         </p>
+      </div>
+
+      <div className="card mb-6">
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><Settings size={16} /> Configurações do Projeto</h2>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="mb-1 block text-xs text-zinc-500">Framework</label>
+            <select className="input text-sm" value={frameworkInput} onChange={(e) => { setFrameworkInput(e.target.value); setSettingsSaved(false) }}>
+              <option value="">Auto-detect</option>
+              <option value="nextjs">Next.js</option>
+              <option value="nuxt">Nuxt</option>
+              <option value="vite">Vite</option>
+              <option value="angular">Angular</option>
+              <option value="svelte">Svelte</option>
+              <option value="astro">Astro</option>
+              <option value="vaden">Dart/Vaden</option>
+              <option value="static">Static</option>
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-zinc-500">Branch Principal</label>
+            <input className="input text-sm" value={branchCfg} onChange={(e) => { setBranchCfg(e.target.value); setSettingsSaved(false) }} placeholder="main" />
+          </div>
+        </div>
+        <div className="flex justify-end mt-3">
+          <button onClick={handleSaveSettings} disabled={savingSettings} className="btn btn-primary text-xs">
+            {savingSettings ? "Salvando..." : settingsSaved ? "✓ Salvo" : "Salvar Configurações"}
+          </button>
+        </div>
       </div>
 
       {project.repoUrl && (
