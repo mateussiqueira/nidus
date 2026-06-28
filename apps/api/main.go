@@ -847,13 +847,27 @@ func handleDeploy(w http.ResponseWriter, r *http.Request, projectID string) {
 
 	// If Redis is available, enqueue BullMQ job
 	if rdb != nil {
+		imageTag := fmt.Sprintf("nidus-%s:%s", slug.String, branch)
+		if branch == "main" {
+			imageTag = fmt.Sprintf("nidus-%s:latest", slug.String)
+		}
+		containerName := fmt.Sprintf("nidus-%s", slug.String)
+		if branch != "main" {
+			containerName = fmt.Sprintf("nidus-%s-preview-%s", slug.String, sanitizeBranch(branch))
+		}
+
 		jobData, _ := json.Marshal(map[string]interface{}{
-			"deploymentId": deployID,
-			"projectId":    projectID,
-			"projectName":  name.String,
-			"projectSlug":  slug.String,
-			"repoUrl":      repoURL.String,
-			"branch":       branch,
+			"deploymentId":  deployID,
+			"projectId":     projectID,
+			"projectName":   name.String,
+			"projectSlug":   slug.String,
+			"repoUrl":       repoURL.String,
+			"branch":        branch,
+			"deployType":    deployType,
+			"containerName": containerName,
+			"imageTag":      imageTag,
+			"isPreview":     branch != "main",
+			"safeBranch":    sanitizeBranch(branch),
 		})
 
 		ctx := r.Context()
