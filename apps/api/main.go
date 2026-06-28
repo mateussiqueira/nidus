@@ -1,14 +1,20 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"crypto/hmac"
 	"crypto/rand"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"math/big"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -144,6 +150,8 @@ func main() {
 	mux.HandleFunc("POST /api/auth/register", handleRegister)
 	mux.HandleFunc("POST /api/auth/login", handleLogin)
 	mux.HandleFunc("GET /api/auth/me", withAuth(handleMe))
+	mux.HandleFunc("GET /api/auth/github/login", handleGitHubLogin)
+	mux.HandleFunc("GET /api/auth/github/callback", handleGitHubCallback)
 
 	// Projects — catch-all for /api/projects/*
 	mux.HandleFunc("/api/projects/", withAuth(handleProjectRoutes))
@@ -431,6 +439,158 @@ func handleMe(w http.ResponseWriter, r *http.Request) {
 		"avatar":     nullString(avatar),
 		"created_at": createdAt.Format(time.RFC3339),
 	})
+}
+
+// ─── GitHub OAuth ────────────────────────────────────────────────────────
+
+var githubOAuthState = uuid.New().String()
+
+func handleGitHubLogin(w http.ResponseWriter, r *http.Request) {
+	clientID := os.Getenv("GITHUB_CLIENT_ID")
+	if clientID == "" {
+		jsonError(w, "GitHub OAuth not configured", http.StatusBadRequest)
+		return
+	}
+	redirectURI := os.Getenv("GITHUB_REDIRECT_URI")
+	if redirectURI == "" {
+		redirectURI = "https://api.nidus.app/api/auth/github/callback"
+	}
+
+	url := fmt.Sprintf("https://github.com/login/oauth/authorize?client_id=%s&redirect_uri=%s&scope=user:email&state=%s",
+		clientID, url.QueryEscape(redirectURI), githubOAuthState)
+	http.Redirect(w, r, url, http.StatusFound)
+}
+
+func handleGitHubCallback(w http.ResponseWriter, r *http.Request) {
+	clientID := os.Getenv("GITHUB_CLIENT_ID")
+	clientSecret := os.Getenv("GITHUB_CLIENT_SECRET")
+	if clientID == "" || clientSecret == "" {
+		jsonError(w, "GitHub OAuth not configured", http.StatusBadRequest)
+		return
+	}
+
+	state := r.URL.Query().Get("state")
+	if state != githubOAuthState {
+		jsonError(w, "Invalid state", http.StatusUnauthorized)
+		return
+	}
+
+	code := r.URL.Query().Get("code")
+	if code == "" {
+		jsonError(w, "Missing code", http.StatusBadRequest)
+		return
+	}
+
+	// Exchange code for access token
+	redirectURI := os.Getenv("GITHUB_REDIRECT_URI")
+	if redirectURI == "" {
+		redirectURI = "https://api.nidus.app/api/auth/github/callback"
+	}
+
+	tokenURL := fmt.Sprintf("https://github.com/login/oauth/access_token?client_id=%s&client_secret=%s&code=%s&redirect_uri=%s",
+		clientID, clientSecret, code, url.QueryEscape(redirectURI))
+
+	req, _ := http.NewRequest("POST", tokenURL, nil)
+	req.Header.Set("Accept", "application/json")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		jsonError(w, "Failed to exchange token", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	var tokenResp struct {
+		AccessToken string `json:"access_token"`
+		Error       string `json:"error_description"`
+	}
+	json.NewDecoder(resp.Body).Decode(&tokenResp)
+
+	if tokenResp.Error != "" {
+		jsonError(w, "OAuth error: "+tokenResp.Error, http.StatusUnauthorized)
+		return
+	}
+
+	// Get user info from GitHub
+	userReq, _ := http.NewRequest("GET", "https://api.github.com/user", nil)
+	userReq.Header.Set("Authorization", "Bearer "+tokenResp.AccessToken)
+	userResp, err := http.DefaultClient.Do(userReq)
+	if err != nil {
+		jsonError(w, "Failed to get user info", http.StatusInternalServerError)
+		return
+	}
+	defer userResp.Body.Close()
+
+	var ghUser struct {
+		ID        int    `json:"id"`
+		Login     string `json:"login"`
+		Name      string `json:"name"`
+		Email     string `json:"email"`
+		AvatarURL string `json:"avatar_url"`
+	}
+	json.NewDecoder(userResp.Body).Decode(&ghUser)
+
+	if ghUser.Email == "" {
+		// Get emails from GitHub if primary email is hidden
+		emailReq, _ := http.NewRequest("GET", "https://api.github.com/user/emails", nil)
+		emailReq.Header.Set("Authorization", "Bearer "+tokenResp.AccessToken)
+		emailResp, _ := http.DefaultClient.Do(emailReq)
+		if emailResp != nil {
+			defer emailResp.Body.Close()
+			var emails []struct {
+				Email   string `json:"email"`
+				Primary bool   `json:"primary"`
+			}
+			json.NewDecoder(emailResp.Body).Decode(&emails)
+			for _, e := range emails {
+				if e.Primary {
+					ghUser.Email = e.Email
+					break
+				}
+			}
+			if ghUser.Email == "" && len(emails) > 0 {
+				ghUser.Email = emails[0].Email
+			}
+		}
+	}
+
+	if ghUser.Email == "" {
+		ghUser.Email = fmt.Sprintf("%s@github.user", ghUser.Login)
+	}
+	if ghUser.Name == "" {
+		ghUser.Name = ghUser.Login
+	}
+
+	// Find or create user
+	ghID := fmt.Sprintf("gh_%d", ghUser.ID)
+	var userID, userName, userEmail string
+	err = db.QueryRowContext(r.Context(),
+		"SELECT id, name, email FROM users WHERE id = $1", ghID).Scan(&userID, &userName, &userEmail)
+	if err == sql.ErrNoRows {
+		// Create new user
+		now := time.Now().UTC()
+		_, err = db.ExecContext(r.Context(),
+			`INSERT INTO users (id, email, name, password, avatar, created_at, updated_at)
+			 VALUES ($1, $2, $3, '', $4, $5, $6)`,
+			ghID, ghUser.Email, ghUser.Name, ghUser.AvatarURL, now, now)
+		if err != nil {
+			jsonError(w, "Failed to create user", http.StatusInternalServerError)
+			return
+		}
+		userID = ghID
+		userName = ghUser.Name
+		userEmail = ghUser.Email
+	} else if err != nil {
+		jsonError(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	// Generate JWT
+	token := generateToken(userID, userEmail)
+	frontendURL := os.Getenv("FRONTEND_URL")
+	if frontendURL == "" {
+		frontendURL = "https://app.nidus.app"
+	}
+	http.Redirect(w, r, fmt.Sprintf("%s/login?token=%s", frontendURL, token), http.StatusFound)
 }
 
 // ─── Projects ───────────────────────────────────────────────────────────────
@@ -1213,6 +1373,31 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Verify webhook secret if configured
+	webhookSecret := os.Getenv("GITHUB_WEBHOOK_SECRET")
+	if webhookSecret != "" {
+		sigHeader := r.Header.Get("x-hub-signature-256")
+		if sigHeader == "" {
+			jsonError(w, "Missing signature", http.StatusUnauthorized)
+			return
+		}
+		// Read body for signature verification
+		bodyBytes, err := io.ReadAll(r.Body)
+		if err != nil {
+			jsonError(w, "Failed to read body", http.StatusBadRequest)
+			return
+		}
+		r.Body = io.NopCloser(bytes.NewReader(bodyBytes))
+
+		mac := hmac.New(sha256.New, []byte(webhookSecret))
+		mac.Write(bodyBytes)
+		expectedSig := "sha256=" + hex.EncodeToString(mac.Sum(nil))
+		if !hmac.Equal([]byte(sigHeader), []byte(expectedSig)) {
+			jsonError(w, "Invalid signature", http.StatusUnauthorized)
+			return
+		}
+	}
+
 	var body struct {
 		Ref        string `json:"ref"`
 		Repository struct {
@@ -1266,13 +1451,26 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 			"INSERT INTO deployments (id, project_id, branch, type, status) VALUES ($1, $2, $3, $4, 'queued')",
 			deployID, id, branch, deployType)
 
+		safeBranch := sanitizeBranch(branch)
+		imageTag := fmt.Sprintf("nidus-%s:%s", slug, safeBranch)
+		containerName := fmt.Sprintf("nidus-%s", slug)
+		if branch != defaultBranch {
+			imageTag = fmt.Sprintf("nidus-%s:preview-%s", slug, safeBranch)
+			containerName = fmt.Sprintf("nidus-%s-preview-%s", slug, safeBranch)
+		}
+
 		jobData, _ := json.Marshal(map[string]interface{}{
-			"deploymentId": deployID,
-			"projectId":    id,
-			"projectName":  name,
-			"projectSlug":  slug,
-			"repoUrl":      body.Repository.CloneURL,
-			"branch":       branch,
+			"deploymentId":  deployID,
+			"projectId":     id,
+			"projectName":   name,
+			"projectSlug":   slug,
+			"repoUrl":       body.Repository.CloneURL,
+			"branch":        branch,
+			"deployType":    deployType,
+			"containerName": containerName,
+			"imageTag":      imageTag,
+			"isPreview":     branch != defaultBranch,
+			"safeBranch":    safeBranch,
 		})
 
 		ctx := r.Context()

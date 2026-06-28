@@ -255,8 +255,8 @@ export default function ProjectPage() {
             branches diferentes viram preview deployments.
           </p>
           <div className="flex items-center gap-2">
-            <code className="flex-1 p-2 rounded bg-black/40 text-xs text-zinc-300 font-mono break-all">http://2.24.204.31:3001/api/webhook/github</code>
-            <button onClick={() => navigator.clipboard.writeText("http://2.24.204.31:3001/api/webhook/github")} className="btn btn-ghost text-xs">Copiar</button>
+            <code className="flex-1 p-2 rounded bg-black/40 text-xs text-zinc-300 font-mono break-all">https://api.nidus.app/api/webhook/github</code>
+            <button onClick={() => navigator.clipboard.writeText("https://api.nidus.app/api/webhook/github")} className="btn btn-ghost text-xs">Copiar</button>
           </div>
         </div>
       )}
