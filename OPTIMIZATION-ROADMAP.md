@@ -18,7 +18,7 @@
         ▼              ▼              ▼                ▼
    Dashboard       API Go/NestJS   Proxy Rust    Deploy Worker
    Next.js         30-50MB         10-50MB       Go 20-50MB
-   150-300MB                                     
+   150-300MB
         │              │              │                │
         └──────────────┼──────────────┴────────────────┘
                        │
@@ -29,6 +29,7 @@ PostgreSQL 16      Redis 7         Worker Pool
 ```
 
 **Consumo Total Estimado:**
+
 - 🟢 **Lite (512MB):** API Go (64MB) + Worker Go (64MB) + SQLite (5MB) + Sistema (379MB)
 - 🟡 **Médio (1.5GB):** PostgreSQL (200MB) + Redis (256MB) + API (30MB) + Worker (50MB) + Dashboard (150MB) + Caddy (20MB) + Buffer
 - 🔴 **Completo (2GB+):** Acima + Margem para picos e build paralelo
@@ -44,6 +45,7 @@ PostgreSQL 16      Redis 7         Worker Pool
 **RAM Target:** -80% vs Node.js (100MB → 20MB)
 
 #### 1.1 Docker SDK Nativo (Semana 1)
+
 - [x] Implementar docker-go SDK (não CLI exec)
 - [x] Streaming de logs em tempo real
 - [x] Timeout handling e retry logic
@@ -51,11 +53,13 @@ PostgreSQL 16      Redis 7         Worker Pool
 - [ ] Image layer caching (Nidus-side)
 
 **Ficheiros:**
+
 - `workers/deploy/main.go` - Core worker
 - `workers/deploy/Dockerfile` - Build otimizado (multi-stage)
 - `workers/deploy/go.mod` - Dependências (minimizar)
 
 **Benchmark Esperado:**
+
 ```
 Métrica              Node.js    Go        Melhoria
 ─────────────────────────────────────────────────
@@ -67,12 +71,14 @@ Startup time         ~2s        ~0.2s     ⚡ 10x
 ```
 
 #### 1.2 Concorrência de Build (Semana 2)
+
 - [ ] Implementar job queue (BullMQ → native channels)
 - [ ] WORKER_CONCURRENCY = 10 (padrão)
 - [ ] Suportar até 50 builds simultâneos (em 2GB)
 - [ ] Graceful shutdown + job persistence
 
 **Código:**
+
 ```go
 // workers/deploy/main.go
 const MaxConcurrentBuilds = 50
@@ -90,6 +96,7 @@ func (w *Worker) Start(ctx context.Context) {
 ```
 
 **Arquivo de config:**
+
 ```toml
 # workers/deploy/.env.production
 MAX_CONCURRENT_BUILDS=50
@@ -107,6 +114,7 @@ MEMORY_LIMIT_MB=256
 **RAM Target:** -70% vs NestJS (150MB → 45MB)
 
 #### 2.1 Framework & Setup (Semana 3)
+
 - [ ] Avaliar frameworks Go: **Fiber** (velocidade) vs **Chi** (padrão)
 - [ ] Estrutura de projeto: `cmd/api`, `internal/handlers`, `internal/services`
 - [ ] Database driver: `pgx/v5` (performance, prepared statements)
@@ -123,17 +131,19 @@ prometheus/client_golang   → Métricas
 ```
 
 #### 2.2 Endpoints & Services (Semana 4)
+
 Migrar 20 endpoints de `apps/control-plane/src`:
 
-| Módulo | Endpoints | Prioridade | RAM Economia |
-|--------|-----------|-----------|-------------|
-| **auth** | POST /login, POST /register, POST /verify | 🔴 Alta | -15% |
-| **projects** | CRUD projects + deployments | 🔴 Alta | -20% |
-| **deployments** | List, create, logs, stream | 🟡 Média | -15% |
-| **webhook** | GitHub webhooks, trigger | 🟡 Média | -10% |
-| **health** | GET /health, readiness | 🟢 Baixa | N/A |
+| Módulo          | Endpoints                                 | Prioridade | RAM Economia |
+| --------------- | ----------------------------------------- | ---------- | ------------ |
+| **auth**        | POST /login, POST /register, POST /verify | 🔴 Alta    | -15%         |
+| **projects**    | CRUD projects + deployments               | 🔴 Alta    | -20%         |
+| **deployments** | List, create, logs, stream                | 🟡 Média   | -15%         |
+| **webhook**     | GitHub webhooks, trigger                  | 🟡 Média   | -10%         |
+| **health**      | GET /health, readiness                    | 🟢 Baixa   | N/A          |
 
 **Estrutura:**
+
 ```
 apps/api-go/
 ├── cmd/main.go                    # Entrypoint
@@ -160,12 +170,14 @@ apps/api-go/
 ```
 
 #### 2.3 Migration & Rollout (Semana 5)
+
 - [ ] API Gateway approach: Node.js → Go gradualmente
 - [ ] Feature flags: `API_GO_ENABLED=false` default
 - [ ] Canary deployment: 10% → 50% → 100%
 - [ ] Monitoramento de latência vs NestJS
 
 **Health Check:**
+
 ```bash
 # Validar performance antes de 100%
 curl -w "@curl-format.txt" -o /dev/null -s http://api:3001/health
@@ -181,6 +193,7 @@ curl -w "@curl-format.txt" -o /dev/null -s http://api:3001/health
 **RAM Target:** +0MB (substituir Caddy, mesmos recursos)
 
 #### 3.1 Arquitetura Rust
+
 - [ ] Framework: **Axum** (tokio-based, production-ready)
 - [ ] Objetivo: Substituir Caddy com melhor throughput
 - [ ] Recursos: TLS termination, load balancing, rate limiting
@@ -204,7 +217,7 @@ async fn main() {
         .route("/:project_id/*path", get(proxy_handler))
         .layer(middleware::from_fn(rate_limit))
         .layer(CorsLayer::permissive());
-        
+
     let listener = TcpListener::bind("0.0.0.0:3080").await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
@@ -218,12 +231,14 @@ async fn proxy_handler(
 ```
 
 #### 3.2 Performance Improvements
+
 - [ ] **Zero-copy proxying:** Buffer reutilizável
 - [ ] **Connection pooling:** HTTP keep-alive automático
 - [ ] **Load balancing:** Round-robin com health checks
 - [ ] **Rate limiting:** Token bucket algorithm
 
 **Benchmark Esperado:**
+
 ```
 Métrica              Caddy      Rust       Melhoria
 ───────────────────────────────────────────────────
@@ -233,6 +248,7 @@ Memory per conn      ~1MB       ~100KB     ⚡ 10x
 ```
 
 #### 3.3 Deployment
+
 - [ ] `apps/proxy-rust/Dockerfile` (Alpine base)
 - [ ] docker-compose.yml: substituir Caddy
 - [ ] Canary: Router 10% → Rust, 90% → Caddy
@@ -247,33 +263,38 @@ Memory per conn      ~1MB       ~100KB     ⚡ 10x
 **RAM Target:** -20% otimização de queries
 
 #### 4.1 PostgreSQL Optimization
+
 - [ ] **Índices Missing:** Analisar EXPLAIN ANALYZE
+
   ```sql
   -- Adicionar índices críticos
-  CREATE INDEX CONCURRENTLY idx_projects_owner_id 
+  CREATE INDEX CONCURRENTLY idx_projects_owner_id
     ON projects(owner_id);
-  CREATE INDEX CONCURRENTLY idx_deployments_project_created 
+  CREATE INDEX CONCURRENTLY idx_deployments_project_created
     ON deployments(project_id, created_at DESC);
   ```
 
 - [ ] **Connection Pooling:** pgx/v5 (25-50 connections)
 - [ ] **Prepared Statements:** Reescrever queries dinâmicas
 - [ ] **Query Optimization:** N+1 queries detection
+
   ```go
   // Evitar N+1 em deployments list
   // ❌ Ruim:
   for _, project := range projects {
       deployments := db.GetDeploymentsByProjectID(project.ID) // N queries!
   }
-  
+
   // ✅ Bom:
   projectIDs := getProjectIDs(projects)
   allDeployments := db.GetDeploymentsByProjectIDs(projectIDs) // 1 query
   ```
 
 #### 4.2 Redis Optimization
+
 - [ ] **Eviction Policy:** LRU (máximo 256MB)
 - [ ] **Persistence:** AOF (Append-Only File) configurado
+
   ```conf
   # redis.conf
   maxmemory 256mb
@@ -293,6 +314,7 @@ Memory per conn      ~1MB       ~100KB     ⚡ 10x
   ```
 
 #### 4.3 SQLite para Lite Edition
+
 - [ ] Adaptar schema para SQLite (AUTOINCREMENT, tipos)
 - [ ] Implementar migration runner (não Prisma)
 - [ ] Testing em Raspberry Pi Zero 2W
@@ -302,6 +324,7 @@ Memory per conn      ~1MB       ~100KB     ⚡ 10x
 ## 📈 Métricas & KPIs
 
 ### **Antes de Otimização (Baseline)**
+
 ```
 Métrica                Medição          Alvo
 ──────────────────────────────────────────────
@@ -314,6 +337,7 @@ Database queries/s     ~500            < 100 (com cache)
 ```
 
 ### **Depois de Otimização (Target)**
+
 ```
 Métrica                Otimizado        Melhoria
 ──────────────────────────────────────────────
@@ -332,6 +356,7 @@ Database queries/s     ~150             ↓ 70%
 ### **Checklist - Fase 1 (Semanas 1-2)**
 
 #### Semana 1:
+
 - [ ] `workers/deploy/main.go` - Docker SDK implementation
   - [ ] docker.NewClient()
   - [ ] docker.BuildImage() com streaming
@@ -340,6 +365,7 @@ Database queries/s     ~150             ↓ 70%
   - [ ] Unit tests (mocks)
   - [ ] Integration tests (Docker)
 - [ ] Dockerfile: multi-stage build
+
   ```dockerfile
   # Estágio 1: Build
   FROM golang:1.25-alpine as builder
@@ -348,7 +374,7 @@ Database queries/s     ~150             ↓ 70%
   RUN go mod download
   COPY . .
   RUN CGO_ENABLED=0 go build -o worker main.go
-  
+
   # Estágio 2: Runtime
   FROM alpine:latest
   COPY --from=builder /build/worker /usr/local/bin/
@@ -356,6 +382,7 @@ Database queries/s     ~150             ↓ 70%
   ```
 
 #### Semana 2:
+
 - [ ] Job queue implementation
   - [ ] Channel-based distribution
   - [ ] Persistence (RabbitMQ ou Redis)
@@ -371,6 +398,7 @@ Database queries/s     ~150             ↓ 70%
 ### **Checklist - Fase 2 (Semanas 3-5)**
 
 #### Semana 3:
+
 - [ ] Setup novo projeto Go
   ```bash
   cd apps && mkdir api-go && cd api-go
@@ -384,6 +412,7 @@ Database queries/s     ~150             ↓ 70%
 - [ ] Health check endpoint
 
 #### Semana 4:
+
 - [ ] Handlers (auth, projects, deployments)
 - [ ] Services layer
 - [ ] Database layer (queries otimizadas)
@@ -391,6 +420,7 @@ Database queries/s     ~150             ↓ 70%
 - [ ] Tests (testes de performance)
 
 #### Semana 5:
+
 - [ ] Feature flag system
 - [ ] Canary deployment strategy
 - [ ] Monitoring (Prometheus)
@@ -402,6 +432,7 @@ Database queries/s     ~150             ↓ 70%
 ## 📋 Configurações de Ambiente
 
 ### **.env.production (Completo - 2GB)**
+
 ```env
 # API
 API_PORT=3001
@@ -437,6 +468,7 @@ CADDY_PLUGINS=rate-limit,gzip
 ```
 
 ### **.env.lite (512MB - Raspberry Pi)**
+
 ```env
 # API
 API_PORT=3001
@@ -463,44 +495,46 @@ SKIP_PROXY=true
 ## 📊 Comparação vs Concorrentes
 
 ### **vs Vercel**
-| Feature | Nidus | Vercel | Status |
-|---------|-------|--------|--------|
-| Build parallelization | 50 | Unlimited | 🟡 Próxima |
-| Edge locations | 1 | 34+ | 🔴 Futuro |
-| Cold start time | <1s | <100ms | 🟡 Otimizando |
-| RAM mínima | 512MB | N/A | ✅ Vantagem |
-| Deploy time | ~30s | ~60s | ✅ Vantagem |
+
+| Feature               | Nidus | Vercel    | Status        |
+| --------------------- | ----- | --------- | ------------- |
+| Build parallelization | 50    | Unlimited | 🟡 Próxima    |
+| Edge locations        | 1     | 34+       | 🔴 Futuro     |
+| Cold start time       | <1s   | <100ms    | 🟡 Otimizando |
+| RAM mínima            | 512MB | N/A       | ✅ Vantagem   |
+| Deploy time           | ~30s  | ~60s      | ✅ Vantagem   |
 
 ### **vs Commit.com (Competitor local)**
-| Feature | Nidus | Commit | Status |
-|---------|-------|--------|--------|
-| Memory footprint | 2GB | ~3GB | ✅ Vantagem |
-| Deploy concurrency | 50 | 20 | ✅ Vantagem |
-| Startup time (Lite) | ~5s | ~20s | ✅ Vantagem |
-| Open source | ✅ | ❌ | ✅ Vantagem |
+
+| Feature             | Nidus | Commit | Status      |
+| ------------------- | ----- | ------ | ----------- |
+| Memory footprint    | 2GB   | ~3GB   | ✅ Vantagem |
+| Deploy concurrency  | 50    | 20     | ✅ Vantagem |
+| Startup time (Lite) | ~5s   | ~20s   | ✅ Vantagem |
+| Open source         | ✅    | ❌     | ✅ Vantagem |
 
 ---
 
 ## 🚨 Riscos & Mitigação
 
-| Risco | Impacto | Mitigação |
-|-------|--------|-----------|
-| Migration Go falha | Rollback 2 semanas | Canary deploy, feature flags |
-| Memory leak Go | Crash produção | Profiling com pprof, tests |
-| Database performance degrade | Queries lentes | Índices pré-validados, EXPLAIN |
-| Redis eviction errors | Deploy jobs perdem | Persistent queue com database |
-| Rust proxy breaking changes | Downtime | Gradual rollout, monitoring |
+| Risco                        | Impacto            | Mitigação                      |
+| ---------------------------- | ------------------ | ------------------------------ |
+| Migration Go falha           | Rollback 2 semanas | Canary deploy, feature flags   |
+| Memory leak Go               | Crash produção     | Profiling com pprof, tests     |
+| Database performance degrade | Queries lentes     | Índices pré-validados, EXPLAIN |
+| Redis eviction errors        | Deploy jobs perdem | Persistent queue com database  |
+| Rust proxy breaking changes  | Downtime           | Gradual rollout, monitoring    |
 
 ---
 
 ## 📞 Responsáveis & Timeline
 
-| Fase | Owner | Start | End | Status |
-|------|-------|-------|-----|--------|
-| **1 - Worker Go** | DevOps | Jun 24 | Jul 8 | 🟡 Em Progresso |
-| **2 - API Go** | Backend | Jul 1 | Jul 22 | ⏳ Planejado |
-| **3 - Proxy Rust** | Infrastructure | Jul 15 | Aug 5 | 🔮 Backlog |
-| **4 - DB Optimization** | DBA | Jun 24 | Jul 31 | 🟡 Paralelo |
+| Fase                    | Owner          | Start  | End    | Status          |
+| ----------------------- | -------------- | ------ | ------ | --------------- |
+| **1 - Worker Go**       | DevOps         | Jun 24 | Jul 8  | 🟡 Em Progresso |
+| **2 - API Go**          | Backend        | Jul 1  | Jul 22 | ⏳ Planejado    |
+| **3 - Proxy Rust**      | Infrastructure | Jul 15 | Aug 5  | 🔮 Backlog      |
+| **4 - DB Optimization** | DBA            | Jun 24 | Jul 31 | 🟡 Paralelo     |
 
 ---
 
