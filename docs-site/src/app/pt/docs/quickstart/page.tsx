@@ -20,6 +20,30 @@ export default function QuickstartPT() {
         
         <section className="mb-12">
           <h2 className="text-2xl font-semibold mb-4">Pré-requisitos</h2>
+          
+          <div className="bg-gray-900 p-4 rounded-lg mb-6 border border-gray-800">
+            <h3 className="text-lg font-medium mb-3">Requisitos de Sistema</h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="bg-gray-950 p-4 rounded-lg">
+                <h4 className="font-semibold text-green-400 mb-2">Versão Lite</h4>
+                <ul className="text-gray-300 text-sm space-y-1">
+                  <li>• RAM: <strong>512MB</strong> mínimo</li>
+                  <li>• Disco: 2GB</li>
+                  <li>• API + Worker apenas</li>
+                </ul>
+              </div>
+              <div className="bg-gray-950 p-4 rounded-lg">
+                <h4 className="font-semibold text-blue-400 mb-2">Versão Completa</h4>
+                <ul className="text-gray-300 text-sm space-y-1">
+                  <li>• RAM: <strong>2GB</strong> mínimo</li>
+                  <li>• Disco: 10GB</li>
+                  <li>• Todos os componentes</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <h3 className="text-xl font-medium mb-3">Software Necessário</h3>
           <ul className="list-disc list-inside text-gray-300 space-y-2">
             <li>Docker e Docker Compose</li>
             <li>Git</li>

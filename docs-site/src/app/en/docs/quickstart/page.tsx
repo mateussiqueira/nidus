@@ -20,6 +20,30 @@ export default function QuickstartEN() {
         
         <section className="mb-12">
           <h2 className="text-2xl font-semibold mb-4">Prerequisites</h2>
+          
+          <div className="bg-gray-900 p-4 rounded-lg mb-6 border border-gray-800">
+            <h3 className="text-lg font-medium mb-3">System Requirements</h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="bg-gray-950 p-4 rounded-lg">
+                <h4 className="font-semibold text-green-400 mb-2">Lite Version</h4>
+                <ul className="text-gray-300 text-sm space-y-1">
+                  <li>• RAM: <strong>512MB</strong> minimum</li>
+                  <li>• Disk: 2GB</li>
+                  <li>• API + Worker only</li>
+                </ul>
+              </div>
+              <div className="bg-gray-950 p-4 rounded-lg">
+                <h4 className="font-semibold text-blue-400 mb-2">Full Version</h4>
+                <ul className="text-gray-300 text-sm space-y-1">
+                  <li>• RAM: <strong>2GB</strong> minimum</li>
+                  <li>• Disk: 10GB</li>
+                  <li>• All components</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <h3 className="text-xl font-medium mb-3">Required Software</h3>
           <ul className="list-disc list-inside text-gray-300 space-y-2">
             <li>Docker and Docker Compose</li>
             <li>Git</li>

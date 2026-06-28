@@ -23,13 +23,17 @@ O Nimbus é uma plataforma de deploy self-hosted inspirada no Vercel. Conecta se
 | **Banco** | PostgreSQL 16 + Redis 7 | Dados e filas |
 | **Proxy** | Caddy | HTTPS automático |
 
-## Quick Start
+## Pré-requisitos
 
-### Pré-requisitos
+| Versão | RAM Mínima | Disco | Uso |
+|--------|-----------|-------|-----|
+| **Lite** | 512MB | 2GB | API + Worker apenas |
+| **Completa** | 2GB | 10GB | Todos os componentes |
 
+**Requisitos obrigatórios:**
 - Docker + Docker Compose
 - Git
-- 4GB+ RAM (2GB mínimo)
+- Conexão com internet
 
 ### Instalação com Docker
 
