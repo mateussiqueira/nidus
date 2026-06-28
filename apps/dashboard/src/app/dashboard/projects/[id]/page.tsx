@@ -159,10 +159,24 @@ export default function ProjectPage() {
             )}
           </div>
         </div>
-        <button onClick={handleDeploy} disabled={deploying} className="btn btn-primary">
-          <Play size={14} />
-          {deploying ? "Deploying..." : "Deploy Now"}
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={handleDeploy} disabled={deploying} className="btn btn-primary">
+            <Play size={14} />
+            {deploying ? "Deploying..." : "Deploy Now"}
+          </button>
+          <button onClick={async () => {
+            if (!confirm("Tem certeza? Essa ação não pode ser desfeita.")) return
+            try {
+              await api.request(`/api/projects/${id}`, { method: "DELETE" })
+              router.push("/dashboard")
+            } catch (err: any) {
+              alert(err.message || "Erro ao deletar projeto")
+            }
+          }} className="btn btn-ghost text-red-400 hover:text-red-300 border-red-900/30 hover:border-red-700/50">
+            <Trash2 size={14} />
+            Deletar
+          </button>
+        </div>
       </div>
 
       {metrics && (

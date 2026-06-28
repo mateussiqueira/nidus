@@ -696,6 +696,10 @@ func handleProjectRoutes(w http.ResponseWriter, r *http.Request) {
 			handleUpdateProject(w, r, parts[0])
 			return
 		}
+		if r.Method == "DELETE" {
+			handleDeleteProject(w, r, parts[0])
+			return
+		}
 	}
 
 	// GET /api/projects/:id/deployments
@@ -843,6 +847,31 @@ func handleUpdateProject(w http.ResponseWriter, r *http.Request, id string) {
 		"envVars":   nullString(envVars),
 		"createdAt": createdAt.Format(time.RFC3339),
 	})
+}
+
+func handleDeleteProject(w http.ResponseWriter, r *http.Request, id string) {
+	userID := r.Context().Value("userID").(string)
+
+	var exists bool
+	db.QueryRowContext(r.Context(), "SELECT EXISTS(SELECT 1 FROM projects WHERE id = $1 AND user_id = $2)", id, userID).Scan(&exists)
+	if !exists {
+		jsonError(w, "Projeto nao encontrado", http.StatusNotFound)
+		return
+	}
+
+	// Stop and remove Docker container
+	var slug string
+	db.QueryRowContext(r.Context(), "SELECT slug FROM projects WHERE id = $1", id).Scan(&slug)
+	exec.Command("docker", "rm", "-f", "nidus-"+slug).Run()
+
+	// Delete related records
+	db.ExecContext(r.Context(), "DELETE FROM domains WHERE project_id = $1", id)
+	db.ExecContext(r.Context(), "DELETE FROM deployments WHERE project_id = $1", id)
+	db.ExecContext(r.Context(), "DELETE FROM databases WHERE project_id = $1", id)
+	db.ExecContext(r.Context(), "DELETE FROM projects WHERE id = $1 AND user_id = $2", id, userID)
+
+	log.Printf("[project] Deleted project %s (%s)", id, slug)
+	jsonResponse(w, map[string]interface{}{"success": true})
 }
 
 // ─── Deployments ────────────────────────────────────────────────────────────

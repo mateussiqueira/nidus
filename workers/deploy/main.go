@@ -146,6 +146,15 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 	updateDB := func(status, url string) {
 		logsStr := strings.Join(logs, "\n")
 		dp.updateDeploymentStatus(ctx, job.DeploymentID, status, url, logsStr)
+		if status == "failed" {
+			emailCfg := loadEmailConfig()
+			if emailCfg.Enabled {
+				userEmail := fetchUserEmail(job.ProjectID, dp.db)
+				if userEmail != "" {
+					go emailCfg.sendDeployNotification(userEmail, job.ProjectName, "failed", "", job.Branch, time.Since(start))
+				}
+			}
+		}
 	}
 
 	logFn(fmt.Sprintf("🚀 Iniciando deploy de %s (%s)...", job.ProjectName, job.Branch))
@@ -411,6 +420,15 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 
 	deploysTotal.WithLabelValues("success").Inc()
 	deployDuration.Observe(time.Since(start).Seconds())
+
+	// Email notification
+	emailCfg := loadEmailConfig()
+	if emailCfg.Enabled {
+		userEmail := fetchUserEmail(job.ProjectID, dp.db)
+		if userEmail != "" {
+			go emailCfg.sendDeployNotification(userEmail, job.ProjectName, "success", url, job.Branch, time.Since(start))
+		}
+	}
 }
 
 func runCmd(ctx context.Context, name string, args ...string) (string, error) {
