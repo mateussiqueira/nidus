@@ -23,6 +23,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -45,10 +46,30 @@ func main() {
 		log.Fatal("DATABASE_URL is required")
 	}
 
-	// Prisma appends ?schema=public — pgx doesn't need it
-	dbURL = strings.Split(dbURL, "?")[0]
-
-	db, err = sql.Open("pgx", dbURL)
+	// Detect database driver based on URL
+	var dbInit func() error
+	
+	if strings.HasPrefix(dbURL, "sqlite") || strings.HasPrefix(dbURL, "file:") {
+		// Extract file path from URL
+		dbPath := strings.TrimPrefix(dbURL, "sqlite://")
+		dbPath = strings.TrimPrefix(dbPath, "file:")
+		if dbPath == "" {
+			dbPath = "./nidus.db"
+		}
+		log.Printf("Using SQLite database: %s", dbPath)
+		db, err = sql.Open("sqlite3", dbPath+"?_journal_mode=WAL&_busy_timeout=5000")
+		dbInit = func() error {
+			return initSQLite(db)
+		}
+	} else {
+		// PostgreSQL
+		dbURL = strings.Split(dbURL, "?")[0]
+		db, err = sql.Open("pgx", dbURL)
+		dbInit = func() error {
+			return nil
+		}
+	}
+	
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
@@ -65,17 +86,25 @@ func main() {
 		log.Fatalf("Failed to ping database: %v", err)
 	}
 
-	// Redis
+	// Initialize database schema if needed
+	if err := dbInit(); err != nil {
+		log.Printf("Warning: Database init failed: %v", err)
+	}
+
+	// Redis (optional for lite mode)
 	redisURL := os.Getenv("REDIS_URL")
-	if redisURL == "" {
-		redisURL = "redis://localhost:6379"
+	if redisURL != "" {
+		opts, _ := redis.ParseURL(redisURL)
+		rdb = redis.NewClient(opts)
+		if err := rdb.Ping(ctx).Err(); err != nil {
+			log.Printf("Warning: Redis connection failed: %v", err)
+			rdb = nil
+		} else {
+			deployQueue = "bull:deploy-queue"
+		}
+	} else {
+		log.Println("Redis not configured, running without cache/queue")
 	}
-	opts, _ := redis.ParseURL(redisURL)
-	rdb = redis.NewClient(opts)
-	if err := rdb.Ping(ctx).Err(); err != nil {
-		log.Fatalf("Failed to connect to Redis: %v", err)
-	}
-	deployQueue = "bull:deploy-queue"
 
 	jwtSecret = []byte(getEnv("JWT_SECRET", "local_nidus_jwt_secret_change_me"))
 
@@ -1383,6 +1412,61 @@ func handleWebSocketLogs(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
+
+func initSQLite(db *sql.DB) error {
+	schema := `
+	CREATE TABLE IF NOT EXISTS users (
+		id TEXT PRIMARY KEY,
+		email TEXT UNIQUE NOT NULL,
+		name TEXT NOT NULL,
+		password TEXT NOT NULL,
+		avatar TEXT,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	);
+
+	CREATE TABLE IF NOT EXISTS projects (
+		id TEXT PRIMARY KEY,
+		name TEXT NOT NULL,
+		slug TEXT UNIQUE NOT NULL,
+		user_id TEXT NOT NULL,
+		repo_url TEXT,
+		branch TEXT DEFAULT 'main',
+		framework TEXT,
+		status TEXT DEFAULT 'ACTIVE',
+		domain TEXT,
+		env_vars TEXT,
+		database_id TEXT,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (user_id) REFERENCES users(id)
+	);
+
+	CREATE TABLE IF NOT EXISTS deployments (
+		id TEXT PRIMARY KEY,
+		project_id TEXT NOT NULL,
+		branch TEXT NOT NULL,
+		type TEXT NOT NULL,
+		status TEXT NOT NULL,
+		url TEXT,
+		logs TEXT,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		finished_at DATETIME,
+		FOREIGN KEY (project_id) REFERENCES projects(id)
+	);
+
+	CREATE TABLE IF NOT EXISTS databases (
+		id TEXT PRIMARY KEY,
+		project_id TEXT NOT NULL,
+		name TEXT NOT NULL,
+		url TEXT NOT NULL,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (project_id) REFERENCES projects(id)
+	);
+	`
+	_, err := db.Exec(schema)
+	return err
 }
 
 func getEnv(key, fallback string) string {

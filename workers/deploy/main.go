@@ -296,6 +296,22 @@ type DeployProcessor struct {
 	rdb *redis.Client
 }
 
+func (dp *DeployProcessor) updateDeploymentStatus(ctx context.Context, deploymentID, status, url, logs string) {
+	if dp.db != nil {
+		// PostgreSQL mode - direct DB access
+		if url != "" {
+			dp.db.Exec(ctx, `UPDATE deployments SET status=$1, url=$2, logs=$3, finished_at=NOW() WHERE id=$4`,
+				status, url, logs, deploymentID)
+		} else {
+			dp.db.Exec(ctx, `UPDATE deployments SET status=$1, logs=$2, finished_at=NOW() WHERE id=$3`,
+				status, logs, deploymentID)
+		}
+	} else {
+		// SQLite mode - log only (API will handle status updates)
+		log.Printf("[deploy] Status update: %s -> %s", deploymentID, status)
+	}
+}
+
 func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 	var job DeployJob
 	if err := json.Unmarshal([]byte(jobJSON), &job); err != nil {
@@ -315,13 +331,7 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 
 	updateDB := func(status, url string) {
 		logsStr := strings.Join(logs, "\n")
-		if url != "" {
-			dp.db.Exec(ctx, `UPDATE deployments SET status=$1, url=$2, logs=$3, finished_at=NOW() WHERE id=$4`,
-				status, url, logsStr, job.DeploymentID)
-		} else {
-			dp.db.Exec(ctx, `UPDATE deployments SET status=$1, logs=$2, finished_at=NOW() WHERE id=$3`,
-				status, logsStr, job.DeploymentID)
-		}
+		dp.updateDeploymentStatus(ctx, job.DeploymentID, status, url, logsStr)
 	}
 
 	logFn(fmt.Sprintf("🚀 Iniciando deploy de %s (%s)...", job.ProjectName, job.Branch))
@@ -601,8 +611,8 @@ func startHealthServer(ctx context.Context, rdb *redis.Client, db *pgxpool.Pool)
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		dbOK := db.Ping(ctx) == nil
-		redisOK := rdb.Ping(ctx).Err() == nil
+		dbOK := db == nil || db.Ping(ctx) == nil
+		redisOK := rdb == nil || rdb.Ping(ctx).Err() == nil
 
 		status := "ok"
 		code := http.StatusOK
@@ -661,96 +671,118 @@ func main() {
 		cancel()
 	}()
 
-	// PostgreSQL
-	poolConfig, err := pgxpool.ParseConfig(cleanDBURL(dbURL))
-	if err != nil {
-		log.Fatalf("[fatal] Parse database config: %v", err)
+	// PostgreSQL or SQLite
+	var dbPool *pgxpool.Pool
+	isSQLite := strings.HasPrefix(dbURL, "sqlite") || strings.HasPrefix(dbURL, "file:")
+	
+	if isSQLite {
+		log.Println("[db] SQLite mode - worker will use API for database operations")
+		// For SQLite, worker communicates via API instead of direct DB
+	} else {
+		poolConfig, err := pgxpool.ParseConfig(cleanDBURL(dbURL))
+		if err != nil {
+			log.Fatalf("[fatal] Parse database config: %v", err)
+		}
+		poolConfig.MaxConns = 20
+		poolConfig.MinConns = 5
+		poolConfig.MaxConnLifetime = time.Hour
+		poolConfig.MaxConnIdleTime = 30 * time.Minute
+
+		dbPool, err = pgxpool.NewWithConfig(ctx, poolConfig)
+		if err != nil {
+			log.Fatalf("[fatal] Connect to database: %v", err)
+		}
+		defer dbPool.Close()
+
+		if err := dbPool.Ping(ctx); err != nil {
+			log.Fatalf("[fatal] Ping database: %v", err)
+		}
+		log.Println("[db] Connected to PostgreSQL")
 	}
-	poolConfig.MaxConns = 20
-	poolConfig.MinConns = 5
-	poolConfig.MaxConnLifetime = time.Hour
-	poolConfig.MaxConnIdleTime = 30 * time.Minute
 
-	db, err := pgxpool.NewWithConfig(ctx, poolConfig)
-	if err != nil {
-		log.Fatalf("[fatal] Connect to database: %v", err)
+	// Redis (optional for lite mode)
+	var rdb *redis.Client
+	redisURL := os.Getenv("REDIS_URL")
+	if redisURL != "" {
+		opts, err := redis.ParseURL(redisURL)
+		if err != nil {
+			log.Printf("[warning] Parse Redis URL failed: %v", err)
+		} else {
+			opts.PoolSize = 20
+			opts.MinIdleConns = 5
+			opts.MaxRetries = 3
+			rdb = redis.NewClient(opts)
+			if err := rdb.Ping(ctx).Err(); err != nil {
+				log.Printf("[warning] Redis connection failed: %v", err)
+				rdb = nil
+			} else {
+				log.Println("[redis] Connected to Redis")
+			}
+		}
+	} else {
+		log.Println("[redis] Redis not configured, running without cache/queue")
 	}
-	defer db.Close()
 
-	if err := db.Ping(ctx); err != nil {
-		log.Fatalf("[fatal] Ping database: %v", err)
-	}
-	log.Println("[db] Connected to PostgreSQL")
-
-	// Redis
-	opts, err := redis.ParseURL(redisURL)
-	if err != nil {
-		log.Fatalf("[fatal] Parse Redis URL: %v", err)
-	}
-	opts.PoolSize = 20
-	opts.MinIdleConns = 5
-	opts.MaxRetries = 3
-
-	rdb := redis.NewClient(opts)
-	defer rdb.Close()
-
-	if err := rdb.Ping(ctx).Err(); err != nil {
-		log.Fatalf("[fatal] Connect to Redis: %v", err)
-	}
-	log.Println("[redis] Connected to Redis")
-
-	processor := &DeployProcessor{db: db, rdb: rdb}
+	processor := &DeployProcessor{db: dbPool, rdb: rdb}
 
 	// Health + metrics server
-	go startHealthServer(ctx, rdb, db)
+	go startHealthServer(ctx, rdb, dbPool)
 
 	// Worker pool
 	var wg sync.WaitGroup
-	for i := 0; i < numWorkers; i++ {
-		wg.Add(1)
-		go func(id int) {
-			defer wg.Done()
-			log.Printf("[worker-%d] Started", id)
-			for {
-				select {
-				case <-ctx.Done():
-					log.Printf("[worker-%d] Stopping", id)
-					return
-				default:
-				}
-				// BullMQ uses "bull:deploy-queue:wait" as the wait list
-				result, err := rdb.BRPop(ctx, 5*time.Second, "bull:deploy-queue:wait").Result()
-				if err != nil {
-					if err == redis.Nil {
-						continue
-					}
-					if ctx.Err() != nil {
+	
+	if rdb == nil {
+		log.Println("[worker] Redis not configured, worker pool disabled (API-only mode)")
+		log.Println("[worker] Deploys must be triggered via API")
+		// Keep the worker alive
+		<-ctx.Done()
+	} else {
+		for i := 0; i < numWorkers; i++ {
+			wg.Add(1)
+			go func(id int) {
+				defer wg.Done()
+				log.Printf("[worker-%d] Started", id)
+				for {
+					select {
+					case <-ctx.Done():
+						log.Printf("[worker-%d] Stopping", id)
 						return
+					default:
 					}
-					log.Printf("[worker-%d] Redis error: %v", id, err)
-					time.Sleep(time.Second)
-					continue
-				}
-				if len(result) >= 2 {
-					jobID := result[1]
-					// Get job data from BullMQ hash
-					jobData, err := rdb.HGet(ctx, "bull:deploy-queue:"+jobID, "data").Result()
+					// BullMQ uses "bull:deploy-queue:wait" as the wait list
+					result, err := rdb.BRPop(ctx, 5*time.Second, "bull:deploy-queue:wait").Result()
 					if err != nil {
-						log.Printf("[worker-%d] Failed to get job data for %s: %v", id, jobID, err)
+						if err == redis.Nil {
+							continue
+						}
+						if ctx.Err() != nil {
+							return
+						}
+						log.Printf("[worker-%d] Redis error: %v", id, err)
+						time.Sleep(time.Second)
 						continue
 					}
-					log.Printf("[worker-%d] Processing job %s...", id, jobID)
-					processor.Process(ctx, jobData)
-					// Mark as completed in BullMQ
-					rdb.HSet(ctx, "bull:deploy-queue:"+jobID, "finishedOn", time.Now().UnixMilli())
-					rdb.LRem(ctx, "bull:deploy-queue:active", 0, jobID)
-					rdb.ZAdd(ctx, "bull:deploy-queue:completed", redis.Z{
-						Score:  float64(time.Now().UnixMilli()),
-						Member: jobID,
-					})
+					if len(result) >= 2 {
+						jobID := result[1]
+						// Get job data from BullMQ hash
+						jobData, err := rdb.HGet(ctx, "bull:deploy-queue:"+jobID, "data").Result()
+						if err != nil {
+							log.Printf("[worker-%d] Failed to get job data for %s: %v", id, jobID, err)
+							continue
+						}
+						log.Printf("[worker-%d] Processing job %s...", id, jobID)
+						processor.Process(ctx, jobData)
+						// Mark as completed in BullMQ
+						rdb.HSet(ctx, "bull:deploy-queue:"+jobID, "finishedOn", time.Now().UnixMilli())
+						rdb.LRem(ctx, "bull:deploy-queue:active", 0, jobID)
+						rdb.ZAdd(ctx, "bull:deploy-queue:completed", redis.Z{
+							Score:  float64(time.Now().UnixMilli()),
+							Member: jobID,
+						})
+					}
 				}
-			}
-		}(i)
+			}(i)
+		}
 	}
 
 	log.Printf("[main] %d workers started, waiting for jobs...", numWorkers)

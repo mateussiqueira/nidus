@@ -14,13 +14,13 @@ O Nimbus é uma plataforma de deploy self-hosted inspirada no Vercel. Conecta se
 
 | Componente | Tecnologia | Função |
 |------------|-----------|--------|
-| **Control Plane** | NestJS + Prisma | API REST, auth, webhooks |
+| **API** | **Go 1.25** | API REST, auth, webhooks (~30MB RAM) |
+| **Deploy Worker** | **Go 1.25** | Build e deploy de containers (~20MB RAM) |
+| **Data Plane** | **Rust (Axum)** | Reverse proxy de alta performance |
 | **Dashboard** | Next.js 16 + React 19 | Interface do usuário |
-| **Deploy Worker** | Go 1.23 | Build e deploy de containers |
-| **Data Plane** | Rust (Axum) | Reverse proxy de alta performance |
-| **API alternativa** | Go 1.25 | API alternativa em Go |
 | **CLI** | Node.js/TypeScript | Deploy via terminal |
-| **Banco** | PostgreSQL 16 + Redis 7 | Dados e filas |
+| **Banco** | PostgreSQL 16 / SQLite | Dados (SQLite para lite) |
+| **Cache** | Redis 7 / In-memory | Filas e cache |
 | **Proxy** | Caddy | HTTPS automático |
 
 ## Pré-requisitos

@@ -7,6 +7,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/jackc/pgx/v5 v5.7.4
+	github.com/mattn/go-sqlite3 v1.14.47
 	github.com/redis/go-redis/v9 v9.7.3
 	golang.org/x/crypto v0.37.0
 )
