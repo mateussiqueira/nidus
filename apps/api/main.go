@@ -16,6 +16,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -33,6 +34,14 @@ var (
 	rdb            *redis.Client
 	jwtSecret      []byte
 	deployQueue    string
+
+	// Request metrics (atomic for thread safety)
+	reqTotal       atomic.Int64
+	reqSuccess     atomic.Int64
+	reqError       atomic.Int64
+	reqDurationSum atomic.Int64
+	reqCount       atomic.Int64
+	durationBuckets [4]atomic.Int64 // <100ms, <500ms, <1s, >=1s
 )
 
 const Version = "0.2.0"
@@ -228,7 +237,31 @@ func loggingMiddleware(next http.Handler) http.Handler {
 		start := time.Now()
 		sw := &statusWriter{ResponseWriter: w, status: 200}
 		next.ServeHTTP(sw, r)
-		log.Printf("%s %s %d %s", r.Method, r.URL.Path, sw.status, time.Since(start).Round(time.Millisecond))
+
+		duration := time.Since(start)
+		reqTotal.Add(1)
+		reqDurationSum.Add(duration.Microseconds())
+		reqCount.Add(1)
+
+		if sw.status >= 400 {
+			reqError.Add(1)
+		} else {
+			reqSuccess.Add(1)
+		}
+
+		d := duration.Milliseconds()
+		switch {
+		case d < 100:
+			durationBuckets[0].Add(1)
+		case d < 500:
+			durationBuckets[1].Add(1)
+		case d < 1000:
+			durationBuckets[2].Add(1)
+		default:
+			durationBuckets[3].Add(1)
+		}
+
+		log.Printf("%s %s %d %s", r.Method, r.URL.Path, sw.status, duration.Round(time.Millisecond))
 	})
 }
 
@@ -1310,9 +1343,9 @@ func handleMetrics(w http.ResponseWriter, r *http.Request) {
 		lines := strings.Split(string(memOut), "\n")
 		if len(lines) >= 2 {
 			fields := strings.Fields(lines[1])
-			if len(fields) >= 3 {
+			if len(fields) >= 7 {
 				memTotal, _ = strconv.ParseFloat(fields[1], 64)
-				memAvail, _ = strconv.ParseFloat(fields[3], 64)
+				memAvail, _ = strconv.ParseFloat(fields[6], 64)
 			}
 		}
 	}
@@ -1324,7 +1357,55 @@ func handleMetrics(w http.ResponseWriter, r *http.Request) {
 
 	uptime := time.Since(startTime).Seconds()
 
+	// Calculate request metrics
+	total := reqTotal.Load()
+	success := reqSuccess.Load()
+	errors := reqError.Load()
+	count := reqCount.Load()
+	durSum := reqDurationSum.Load()
+	b0 := durationBuckets[0].Load()
+	b1 := durationBuckets[1].Load()
+	b2 := durationBuckets[2].Load()
+	b3 := durationBuckets[3].Load()
+
+	avgDuration := float64(0)
+	p50 := float64(0)
+	p95 := float64(0)
+	p99 := float64(0)
+	if count > 0 {
+		avgDuration = float64(durSum) / float64(count) / 1000 // convert to ms
+		// Approximate percentiles from buckets
+		target50 := count * 50 / 100
+		target95 := count * 95 / 100
+		target99 := count * 99 / 100
+		soFar := int64(0)
+		bucketVals := []struct{ limit int64; val float64 }{
+			{b0, 50}, {b1, 300}, {b2, 750}, {b3, 1500},
+		}
+		for _, bv := range bucketVals {
+			soFar += bv.limit
+			if soFar >= target50 && p50 == 0 {
+				p50 = bv.val
+			}
+			if soFar >= target95 && p95 == 0 {
+				p95 = bv.val
+			}
+			if soFar >= target99 && p99 == 0 {
+				p99 = bv.val
+			}
+		}
+	}
+
 	jsonResponse(w, map[string]interface{}{
+		"requests": map[string]interface{}{
+			"total":       total,
+			"success":     success,
+			"error":       errors,
+			"avgDuration": avgDuration,
+			"p50":         p50,
+			"p95":         p95,
+			"p99":         p99,
+		},
 		"memory": map[string]interface{}{
 			"total":   memTotal,
 			"used":    memUsed,
@@ -1353,10 +1434,6 @@ func handleMetrics(w http.ResponseWriter, r *http.Request) {
 			"success": successDeploys,
 			"failed":  failedDeploys,
 			"active":  activeDeploys,
-		},
-		"requests": map[string]interface{}{
-			"total": 0, "success": 0, "error": 0, "avgDuration": 0,
-			"p50": 0, "p95": 0, "p99": 0,
 		},
 		"cache": map[string]interface{}{
 			"hits": 0, "misses": 0, "hitRate": 0, "size": 0,
