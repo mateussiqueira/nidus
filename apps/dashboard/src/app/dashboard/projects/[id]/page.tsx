@@ -6,7 +6,8 @@ import { useParams, useRouter } from "next/navigation"
 import { api } from "@/lib/api"
 import {
   ArrowLeft, GitBranch, Clock, Rocket, ExternalLink, Play, Settings,
-  Eye, EyeOff, Activity, Cpu, MemoryStick, Timer, Webhook,
+  Eye, EyeOff, Activity, Cpu, MemoryStick, Timer, Webhook, Globe,
+  Undo2, Plus, Trash2, RefreshCw,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -22,7 +23,12 @@ export default function ProjectPage() {
   const [savingEnv, setSavingEnv] = useState(false)
   const [envSaved, setEnvSaved] = useState(false)
   const [metrics, setMetrics] = useState<any>(null)
-  const [activeTab, setActiveTab] = useState<"production" | "previews">("production")
+  const [activeTab, setActiveTab] = useState<"production" | "previews" | "domains">("production")
+  const [domains, setDomains] = useState<any[]>([])
+  const [newDomain, setNewDomain] = useState("")
+  const [addingDomain, setAddingDomain] = useState(false)
+  const [verifyingDomain, setVerifyingDomain] = useState<string | null>(null)
+  const [rollingBack, setRollingBack] = useState<string | null>(null)
 
   function load() {
     if (!id) return
@@ -33,6 +39,7 @@ export default function ProjectPage() {
     api.deployments.list(id).then(setDeployments).catch(() => {})
     api.deployments.listPreviews(id).then(setPreviews).catch(() => {})
     api.deployments.metrics(id).then(setMetrics).catch(() => {})
+    api.domains.list(id).then(setDomains).catch(() => {})
   }
 
   useEffect(load, [id, router])
@@ -64,6 +71,49 @@ export default function ProjectPage() {
       setTimeout(() => setEnvSaved(false), 2000)
     } catch {}
     setSavingEnv(false)
+  }
+
+  async function handleRollback(deploymentId: string) {
+    if (!id) return
+    setRollingBack(deploymentId)
+    try {
+      await api.deployments.rollback(id, deploymentId)
+      load()
+    } catch (err: any) {
+      alert(err.message || "Erro ao fazer rollback")
+    }
+    setRollingBack(null)
+  }
+
+  async function handleAddDomain() {
+    if (!id || !newDomain.trim()) return
+    setAddingDomain(true)
+    try {
+      await api.domains.add(id, newDomain.trim())
+      setNewDomain("")
+      api.domains.list(id).then(setDomains)
+    } catch (err: any) {
+      alert(err.message || "Erro ao adicionar domínio")
+    }
+    setAddingDomain(false)
+  }
+
+  async function handleDeleteDomain(domainId: string) {
+    if (!id) return
+    try {
+      await api.domains.delete(id, domainId)
+      api.domains.list(id).then(setDomains)
+    } catch {}
+  }
+
+  async function handleVerifyDomain(domainId: string) {
+    if (!id) return
+    setVerifyingDomain(domainId)
+    try {
+      await api.domains.verify(id, domainId)
+      api.domains.list(id).then(setDomains)
+    } catch {}
+    setVerifyingDomain(null)
   }
 
   if (!project) return null
@@ -188,6 +238,22 @@ export default function ProjectPage() {
             </span>
           )}
         </button>
+        <button
+          onClick={() => setActiveTab("domains")}
+          className={`px-4 py-2 text-sm font-medium transition border-b-2 -mb-[1px] ${
+            activeTab === "domains"
+              ? "text-white border-accent"
+              : "text-zinc-400 border-transparent hover:text-zinc-200"
+          }`}
+        >
+          <Globe size={14} className="inline mr-1.5" />
+          Domínios
+          {domains.length > 0 && (
+            <span className="ml-1.5 px-1.5 py-0.5 text-[10px] rounded-full bg-zinc-800 text-zinc-300">
+              {domains.length}
+            </span>
+          )}
+        </button>
       </div>
 
       {activeTab === "production" && (
@@ -198,7 +264,7 @@ export default function ProjectPage() {
             </div>
           )}
           {deployments.map((dep: any) => (
-            <DeploymentCard key={dep.id} dep={dep} />
+            <DeploymentCard key={dep.id} dep={dep} projectId={id!} onRollback={handleRollback} rollingBack={rollingBack} />
           ))}
         </div>
       )}
@@ -213,7 +279,63 @@ export default function ProjectPage() {
             </div>
           )}
           {previews.map((dep: any) => (
-            <DeploymentCard key={dep.id} dep={dep} />
+            <DeploymentCard key={dep.id} dep={dep} projectId={id!} onRollback={handleRollback} rollingBack={rollingBack} />
+          ))}
+        </div>
+      )}
+
+      {activeTab === "domains" && (
+        <div>
+          <div className="card mb-4">
+            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><Plus size={14} /> Adicionar Domínio</h3>
+            <div className="flex gap-2">
+              <input
+                className="input flex-1"
+                value={newDomain}
+                onChange={(e) => setNewDomain(e.target.value)}
+                placeholder="meusite.com.br"
+                onKeyDown={(e) => e.key === "Enter" && handleAddDomain()}
+              />
+              <button onClick={handleAddDomain} disabled={addingDomain} className="btn btn-primary text-sm shrink-0">
+                {addingDomain ? "..." : "Adicionar"}
+              </button>
+            </div>
+            <p className="text-xs text-zinc-500 mt-2">
+              Aponte o DNS do seu domínio para o IP <code className="text-zinc-300">2.24.204.31</code> e adicione um registro TXT <code className="text-zinc-300">_nidus-verify.{newDomain || "seudominio"}</code> com o valor <code className="text-zinc-300">nidus-verify={project.slug}</code>
+            </p>
+          </div>
+
+          {domains.length === 0 && (
+            <div className="card text-center py-12">
+              <Globe size={24} className="mx-auto mb-2 text-zinc-600" />
+              <p className="text-sm text-zinc-400">Nenhum domínio personalizado.</p>
+            </div>
+          )}
+
+          {domains.map((dom: any) => (
+            <div key={dom.id} className="card mb-2 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Globe size={16} className="text-zinc-500" />
+                <div>
+                  <p className="text-sm font-medium">{dom.domain}</p>
+                  <p className="text-xs text-zinc-500">
+                    SSL: <span className={dom.sslStatus === "verified" ? "text-green-400" : "text-yellow-400"}>{dom.sslStatus}</span>
+                    {dom.verified ? " ✓ Verificado" : " ❌ Não verificado"}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {!dom.verified && (
+                  <button onClick={() => handleVerifyDomain(dom.id)} disabled={verifyingDomain === dom.id} className="btn btn-ghost text-xs" title="Verificar DNS">
+                    <RefreshCw size={12} className={verifyingDomain === dom.id ? "animate-spin" : ""} />
+                    {verifyingDomain === dom.id ? "Verificando..." : "Verificar"}
+                  </button>
+                )}
+                <button onClick={() => handleDeleteDomain(dom.id)} className="btn btn-ghost text-xs text-red-400 hover:text-red-300" title="Remover">
+                  <Trash2 size={12} />
+                </button>
+              </div>
+            </div>
           ))}
         </div>
       )}
@@ -221,7 +343,7 @@ export default function ProjectPage() {
   )
 }
 
-function DeploymentCard({ dep }: { dep: any }) {
+function DeploymentCard({ dep, projectId, onRollback, rollingBack }: { dep: any; projectId: string; onRollback: (id: string) => void; rollingBack: string | null }) {
   const [showLogs, setShowLogs] = useState(false)
   return (
     <div className="card mb-2">
@@ -232,7 +354,7 @@ function DeploymentCard({ dep }: { dep: any }) {
               {dep.branch}
             </code>
           )}
-          <span className={`badge badge-${dep.status === "success" ? "active" : dep.status === "building" || dep.status === "pending" ? "building" : "failed"} shrink-0`}>
+          <span className={`badge badge-${dep.status === "success" ? "active" : dep.status === "building" || dep.status === "pending" ? "building" : dep.status === "rolled_back" ? "paused" : "failed"} shrink-0`}>
             {dep.status}
           </span>
           <span className="text-sm text-zinc-400 flex items-center gap-1 shrink-0">
@@ -246,6 +368,12 @@ function DeploymentCard({ dep }: { dep: any }) {
               <ExternalLink size={12} />
               {dep.url.replace(/^https?:\/\//, "")}
             </a>
+          )}
+          {dep.imageTag && dep.status === "success" && (
+            <button onClick={() => onRollback(dep.id)} disabled={rollingBack === dep.id} className="text-xs text-yellow-400 hover:text-yellow-300 transition flex items-center gap-1" title="Rollback para este deployment">
+              <Undo2 size={12} />
+              {rollingBack === dep.id ? "Rollback..." : "rollback"}
+            </button>
           )}
           {dep.logs && (
             <button onClick={() => setShowLogs(!showLogs)} className="text-xs text-zinc-500 hover:text-zinc-300 transition">

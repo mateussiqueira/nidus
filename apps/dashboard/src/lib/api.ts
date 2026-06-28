@@ -56,5 +56,16 @@ export const api = {
       request(`/api/projects/${projectId}/deploy${branch ? `?branch=${branch}` : ""}`, { method: "POST" }),
     metrics: (projectId: string, branch?: string) =>
       request(`/api/projects/${projectId}/metrics${branch ? `?branch=${branch}` : ""}`),
+    rollback: (projectId: string, deploymentId: string) =>
+      request(`/api/projects/${projectId}/deployments/${deploymentId}/rollback`, { method: "POST" }),
+  },
+  domains: {
+    list: (projectId: string) => request(`/api/projects/${projectId}/domains`),
+    add: (projectId: string, domain: string) =>
+      request(`/api/projects/${projectId}/domains`, { method: "POST", body: JSON.stringify({ domain }) }),
+    delete: (projectId: string, domainId: string) =>
+      request(`/api/projects/${projectId}/domains/${domainId}`, { method: "DELETE" }),
+    verify: (projectId: string, domainId: string) =>
+      request(`/api/projects/${projectId}/domains/${domainId}/verify`, { method: "POST" }),
   },
 }

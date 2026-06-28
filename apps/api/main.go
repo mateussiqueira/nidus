@@ -66,6 +66,24 @@ func main() {
 		dbURL = strings.Split(dbURL, "?")[0]
 		db, err = sql.Open("pgx", dbURL)
 		dbInit = func() error {
+			// Run migrations for domains and deployment columns
+			migrations := []string{
+				`CREATE TABLE IF NOT EXISTS domains (
+					id TEXT PRIMARY KEY,
+					project_id TEXT NOT NULL REFERENCES projects(id),
+					domain TEXT NOT NULL UNIQUE,
+					verified BOOLEAN DEFAULT FALSE,
+					ssl_status TEXT DEFAULT 'pending',
+					created_at TIMESTAMPTZ DEFAULT NOW()
+				)`,
+				`ALTER TABLE deployments ADD COLUMN IF NOT EXISTS container_name TEXT`,
+				`ALTER TABLE deployments ADD COLUMN IF NOT EXISTS image_tag TEXT`,
+			}
+			for _, m := range migrations {
+				if _, err := db.Exec(m); err != nil {
+					log.Printf("Warning: Migration failed (may be ok): %v", err)
+				}
+			}
 			return nil
 		}
 	}
@@ -134,6 +152,15 @@ func main() {
 	// Metrics
 	mux.HandleFunc("GET /api/metrics", handleMetrics)
 	mux.HandleFunc("GET /api/metrics/prometheus", handlePrometheus)
+
+	// Domains
+	mux.HandleFunc("GET /api/projects/{projectId}/domains", withAuth(handleListDomains))
+	mux.HandleFunc("POST /api/projects/{projectId}/domains", withAuth(handleAddDomain))
+	mux.HandleFunc("DELETE /api/projects/{projectId}/domains/{domainId}", withAuth(handleDeleteDomain))
+	mux.HandleFunc("POST /api/projects/{projectId}/domains/{domainId}/verify", withAuth(handleVerifyDomain))
+
+	// Rollback
+	mux.HandleFunc("POST /api/projects/{projectId}/deployments/{deploymentId}/rollback", withAuth(handleRollback))
 
 	// WebSocket for real-time logs
 	mux.HandleFunc("GET /api/ws/deployments/{id}/logs", handleWebSocketLogs)
@@ -1434,6 +1461,331 @@ func handleWebSocketLogs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// ─── Domains ─────────────────────────────────────────────────────────────
+
+func handleListDomains(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("userID").(string)
+	projectID := r.PathValue("projectId")
+	if projectID == "" {
+		jsonError(w, "Project ID required", http.StatusBadRequest)
+		return
+	}
+
+	var exists bool
+	db.QueryRowContext(r.Context(), "SELECT EXISTS(SELECT 1 FROM projects WHERE id = $1 AND user_id = $2)", projectID, userID).Scan(&exists)
+	if !exists {
+		jsonError(w, "Projeto nao encontrado", http.StatusNotFound)
+		return
+	}
+
+	rows, err := db.QueryContext(r.Context(),
+		`SELECT id, domain, verified, ssl_status, created_at FROM domains WHERE project_id = $1 ORDER BY created_at DESC`, projectID)
+	if err != nil {
+		jsonError(w, "Erro interno", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	domains := []map[string]interface{}{}
+	for rows.Next() {
+		var id, domain, sslStatus string
+		var verified bool
+		var createdAt time.Time
+		if err := rows.Scan(&id, &domain, &verified, &sslStatus, &createdAt); err != nil {
+			continue
+		}
+		domains = append(domains, map[string]interface{}{
+			"id":         id,
+			"domain":     domain,
+			"verified":   verified,
+			"sslStatus":  sslStatus,
+			"createdAt":  createdAt.Format(time.RFC3339),
+		})
+	}
+	jsonResponse(w, domains)
+}
+
+func handleAddDomain(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("userID").(string)
+	projectID := r.PathValue("projectId")
+	if projectID == "" {
+		jsonError(w, "Project ID required", http.StatusBadRequest)
+		return
+	}
+
+	var exists bool
+	db.QueryRowContext(r.Context(), "SELECT EXISTS(SELECT 1 FROM projects WHERE id = $1 AND user_id = $2)", projectID, userID).Scan(&exists)
+	if !exists {
+		jsonError(w, "Projeto nao encontrado", http.StatusNotFound)
+		return
+	}
+
+	var body struct {
+		Domain string `json:"domain"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.Domain == "" {
+		jsonError(w, "Domain é obrigatório", http.StatusBadRequest)
+		return
+	}
+
+	// Check if domain already exists
+	var count int
+	db.QueryRowContext(r.Context(), "SELECT COUNT(*) FROM domains WHERE domain = $1", body.Domain).Scan(&count)
+	if count > 0 {
+		jsonError(w, "Domínio já cadastrado", http.StatusConflict)
+		return
+	}
+
+	id := uuid.New().String()
+	now := time.Now().UTC()
+
+	_, err := db.ExecContext(r.Context(),
+		`INSERT INTO domains (id, project_id, domain, verified, ssl_status, created_at)
+		 VALUES ($1, $2, $3, $4, $5, $6)`,
+		id, projectID, body.Domain, false, "pending", now)
+	if err != nil {
+		jsonError(w, "Erro ao adicionar domínio", http.StatusInternalServerError)
+		return
+	}
+
+	jsonResponse(w, map[string]interface{}{
+		"id":        id,
+		"domain":    body.Domain,
+		"verified":  false,
+		"sslStatus": "pending",
+		"createdAt": now.Format(time.RFC3339),
+	}, http.StatusCreated)
+}
+
+func handleDeleteDomain(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("userID").(string)
+	projectID := r.PathValue("projectId")
+	domainID := r.PathValue("domainId")
+	if projectID == "" || domainID == "" {
+		jsonError(w, "Project ID and Domain ID required", http.StatusBadRequest)
+		return
+	}
+
+	var exists bool
+	db.QueryRowContext(r.Context(),
+		"SELECT EXISTS(SELECT 1 FROM domains d JOIN projects p ON d.project_id = p.id WHERE d.id = $1 AND d.project_id = $2 AND p.user_id = $3)",
+		domainID, projectID, userID).Scan(&exists)
+	if !exists {
+		jsonError(w, "Domínio não encontrado", http.StatusNotFound)
+		return
+	}
+
+	db.ExecContext(r.Context(), "DELETE FROM domains WHERE id = $1", domainID)
+	jsonResponse(w, map[string]interface{}{"success": true})
+}
+
+func handleVerifyDomain(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("userID").(string)
+	projectID := r.PathValue("projectId")
+	domainID := r.PathValue("domainId")
+	if projectID == "" || domainID == "" {
+		jsonError(w, "Project ID and Domain ID required", http.StatusBadRequest)
+		return
+	}
+
+	var domain, projectSlug string
+	err := db.QueryRowContext(r.Context(),
+		`SELECT d.domain, p.slug FROM domains d JOIN projects p ON d.project_id = p.id
+		 WHERE d.id = $1 AND d.project_id = $2 AND p.user_id = $3`,
+		domainID, projectID, userID).Scan(&domain, &projectSlug)
+	if err != nil {
+		jsonError(w, "Domínio não encontrado", http.StatusNotFound)
+		return
+	}
+
+	// Verify domain via DNS TXT record
+	nidusIP := getEnv("NIDUS_SERVER_IP", "2.24.204.31")
+	txtValue := fmt.Sprintf("nidus-verify=%s", projectSlug)
+	verified := verifyDNSTXT(domain, txtValue)
+
+	if verified {
+		db.ExecContext(r.Context(),
+			`UPDATE domains SET verified = 1, ssl_status = 'verified' WHERE id = $1`, domainID)
+		db.ExecContext(r.Context(),
+			`UPDATE projects SET domain = $1 WHERE id = $2`, domain, projectID)
+
+		// Trigger Caddy SSL provisioning via API
+		go provisionSSLCaddy(domain, r.Context())
+	}
+
+	jsonResponse(w, map[string]interface{}{
+		"id":       domainID,
+		"domain":   domain,
+		"verified": verified,
+		"sslStatus": map[bool]string{true: "verified", false: "pending"}[verified],
+		"expectedTxt": txtValue,
+		"ip":          nidusIP,
+	})
+}
+
+func verifyDNSTXT(domain, expected string) bool {
+	// Attempt DNS TXT lookup for verification
+	// Fallback: if lookup fails, we still allow manual verification
+	cmd := exec.Command("dig", "+short", "TXT", "_nidus-verify."+domain)
+	out, err := cmd.Output()
+	if err != nil {
+		log.Printf("[domain] DNS lookup failed for %s: %v", domain, err)
+		return false
+	}
+	txtRecords := strings.TrimSpace(string(out))
+	return strings.Contains(txtRecords, expected)
+}
+
+func provisionSSLCaddy(domain string, ctx context.Context) {
+	// Call Caddy admin API to provision cert
+	caddyAdmin := getEnv("CADDY_ADMIN_URL", "http://localhost:2019")
+	config := map[string]interface{}{
+		"@id": domain,
+		"match": []map[string]interface{}{{"host": []string{domain}}},
+		"handle": []map[string]interface{}{
+			{
+				"handler": "subroute",
+				"routes": []map[string]interface{}{
+					{
+						"handle": []map[string]interface{}{
+							{"handler": "reverse_proxy", "upstreams": []map[string]interface{}{{"dial": "localhost:3080"}},
+							"headers": map[string]interface{}{
+								"request": map[string]interface{}{
+									"set": map[string]string{"X-Forwarded-Host": "{hostport}"},
+								},
+							}},
+						},
+					},
+				},
+			},
+		},
+		"tls": map[string]interface{}{},
+	}
+
+	body, _ := json.Marshal(config)
+	resp, err := http.Post(fmt.Sprintf("%s/config/apps/http/servers/srv0/routes/", caddyAdmin),
+		"application/json", strings.NewReader(string(body)))
+	if err != nil {
+		log.Printf("[domain] Caddy SSL provisioning failed for %s: %v", domain, err)
+		return
+	}
+	defer resp.Body.Close()
+	log.Printf("[domain] Caddy SSL provisioned for %s (status: %d)", domain, resp.StatusCode)
+}
+
+// ─── Rollback ───────────────────────────────────────────────────────────
+
+func handleRollback(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("userID").(string)
+	projectID := r.PathValue("projectId")
+	deploymentID := r.PathValue("deploymentId")
+	if projectID == "" || deploymentID == "" {
+		jsonError(w, "Project ID and Deployment ID required", http.StatusBadRequest)
+		return
+	}
+
+	// Verify project ownership and get deployment info
+	var depBranch, depType string
+	var depURL, containerName, imageTag sql.NullString
+	err := db.QueryRowContext(r.Context(),
+		`SELECT d.branch, d.type, d.url, d.container_name, d.image_tag
+		 FROM deployments d JOIN projects p ON d.project_id = p.id
+		 WHERE d.id = $1 AND d.project_id = $2 AND p.user_id = $3`,
+		deploymentID, projectID, userID,
+	).Scan(&depBranch, &depType, &depURL, &containerName, &imageTag)
+	if err == sql.ErrNoRows {
+		jsonError(w, "Deployment não encontrado", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		jsonError(w, "Erro interno", http.StatusInternalServerError)
+		return
+	}
+
+	if !imageTag.Valid || imageTag.String == "" {
+		jsonError(w, "Este deployment não possui imagem para rollback", http.StatusBadRequest)
+		return
+	}
+
+	var slug string
+	db.QueryRowContext(r.Context(),
+		"SELECT slug FROM projects WHERE id = $1", projectID).Scan(&slug)
+
+	newContainerName := containerName.String
+	newDeployID := uuid.New().String()
+
+	log.Printf("[rollback] Rolling back project %s to deployment %s (image: %s)", projectID, deploymentID, imageTag.String)
+
+	// Stop and remove current container
+	exec.Command("docker", "rm", "-f", newContainerName).Run()
+
+	// Start container with the old image
+	exposedPort := getExposedPortFromImage(imageTag.String)
+	runArgs := []string{"-d", "--name", newContainerName,
+		"-p", fmt.Sprintf("0:%d", exposedPort),
+		"--restart", "unless-stopped", imageTag.String}
+
+	if out, err := exec.Command("docker", append([]string{"run"}, runArgs...)...).CombinedOutput(); err != nil {
+		log.Printf("[rollback] Docker run failed: %s", out)
+		jsonError(w, "Erro ao iniciar container do rollback", http.StatusInternalServerError)
+		return
+	}
+
+	// Get new port
+	portOutput, _ := exec.Command("docker", "port", newContainerName, fmt.Sprintf("%d", exposedPort)).CombinedOutput()
+	port := ""
+	if lines := strings.Split(strings.TrimSpace(string(portOutput)), "\n"); len(lines) > 0 {
+		parts := strings.Split(lines[0], ":")
+		if len(parts) > 1 {
+			port = parts[len(parts)-1]
+		}
+	}
+
+	host := getEnv("NIDUS_HOST", "localhost")
+	newURL := fmt.Sprintf("http://%s:%s", host, port)
+	if depURL.Valid {
+		newURL = depURL.String
+	}
+
+	// Create rollback deployment record
+	now := time.Now().UTC()
+	db.ExecContext(r.Context(),
+		`INSERT INTO deployments (id, project_id, branch, type, status, url, container_name, image_tag, created_at, finished_at)
+		 VALUES ($1, $2, $3, 'rollback', 'success', $4, $5, $6, $7, $7)`,
+		newDeployID, projectID, depBranch, newURL, newContainerName, imageTag.String, now)
+
+	db.ExecContext(r.Context(),
+		`UPDATE deployments SET status = 'rolled_back' WHERE id = $1`, deploymentID)
+
+	log.Printf("[rollback] Rollback complete: %s -> %s (image: %s)", projectID, newDeployID, imageTag.String)
+
+	jsonResponse(w, map[string]interface{}{
+		"id":             newDeployID,
+		"rollbackFrom":   deploymentID,
+		"status":         "success",
+		"url":            newURL,
+		"imageTag":       imageTag.String,
+		"createdAt":      now.Format(time.RFC3339),
+	})
+}
+
+func getExposedPortFromImage(imageTag string) int {
+	// Try to inspect image for exposed port
+	out, err := exec.Command("docker", "inspect", "--format", "{{range $p, $v := .Config.ExposedPorts}}{{$p}} {{end}}", imageTag).Output()
+	if err == nil {
+		parts := strings.Fields(string(out))
+		for _, p := range parts {
+			if strings.Contains(p, "/tcp") {
+				portStr := strings.Split(p, "/")[0]
+				if port, err := strconv.Atoi(portStr); err == nil {
+					return port
+				}
+			}
+		}
+	}
+	return 3000
+}
+
 func initSQLite(db *sql.DB) error {
 	schema := `
 	CREATE TABLE IF NOT EXISTS users (
@@ -1471,6 +1823,8 @@ func initSQLite(db *sql.DB) error {
 		status TEXT NOT NULL,
 		url TEXT,
 		logs TEXT,
+		container_name TEXT,
+		image_tag TEXT,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		finished_at DATETIME,
 		FOREIGN KEY (project_id) REFERENCES projects(id)
@@ -1481,6 +1835,15 @@ func initSQLite(db *sql.DB) error {
 		project_id TEXT NOT NULL,
 		name TEXT NOT NULL,
 		url TEXT NOT NULL,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (project_id) REFERENCES projects(id)
+	);
+	CREATE TABLE IF NOT EXISTS domains (
+		id TEXT PRIMARY KEY,
+		project_id TEXT NOT NULL,
+		domain TEXT NOT NULL UNIQUE,
+		verified INTEGER DEFAULT 0,
+		ssl_status TEXT DEFAULT 'pending',
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		FOREIGN KEY (project_id) REFERENCES projects(id)
 	);
