@@ -19,8 +19,8 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 # Detect OS for nanosecond timing
-if command -v gdate &>/dev/null; then
-    DATE_CMD="gdate"
+if command -v $DATE_CMD &>/dev/null; then
+    DATE_CMD="$DATE_CMD"
 else
     DATE_CMD="date"
 fi
@@ -39,7 +39,7 @@ measure_throughput() {
     local url=$2
     local concurrent=$3
     
-    local start=$(gdate +%s%N)
+    local start=$($DATE_CMD +%s%N)
     for i in $(seq 1 $requests); do
         curl -s "$url" > /dev/null &
         if (( i % concurrent == 0 )); then
@@ -47,7 +47,7 @@ measure_throughput() {
         fi
     done
     wait
-    local end=$(gdate +%s%N)
+    local end=$($DATE_CMD +%s%N)
     local duration=$(( (end - start) / 1000000 ))
     local rps=$(( requests * 1000 / duration ))
     echo "$rps"
@@ -59,12 +59,12 @@ echo -e "  Health endpoint: ${GREEN}${api_time}ms${NC}"
 
 echo ""
 echo -e "${YELLOW}[2/6] Database Connection Pool${NC}"
-db_start=$(gdate +%s%N)
+db_start=$($DATE_CMD +%s%N)
 for i in $(seq 1 10); do
     curl -s "$API_URL/health" > /dev/null &
 done
 wait
-db_end=$(gdate +%s%N)
+db_end=$($DATE_CMD +%s%N)
 db_duration=$(( (db_end - db_start) / 1000000 ))
 echo -e "  10 parallel requests: ${GREEN}${db_duration}ms${NC}"
 
@@ -84,15 +84,15 @@ fi
 echo ""
 echo -e "${YELLOW}[4/6] Cache Performance${NC}"
 # First request (MISS)
-start=$(gdate +%s%N)
+start=$($DATE_CMD +%s%N)
 curl -s "$API_URL/api/projects" > /dev/null 2>&1
-end=$(gdate +%s%N)
+end=$($DATE_CMD +%s%N)
 first_time=$(( (end - start) / 1000000 ))
 
 # Second request (HIT)
-start=$(gdate +%s%N)
+start=$($DATE_CMD +%s%N)
 curl -s "$API_URL/api/projects" > /dev/null 2>&1
-end=$(gdate +%s%N)
+end=$($DATE_CMD +%s%N)
 second_time=$(( (end - start) / 1000000 ))
 
 echo -e "  First request (MISS): ${first_time}ms"
