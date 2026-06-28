@@ -1336,16 +1336,23 @@ func handleMetrics(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Memory info
+	// Memory info from /proc/meminfo
 	memTotal, memAvail := float64(0), float64(0)
-	memOut, err := exec.Command("free", "-b").Output()
-	if err == nil {
-		lines := strings.Split(string(memOut), "\n")
-		if len(lines) >= 2 {
-			fields := strings.Fields(lines[1])
-			if len(fields) >= 7 {
-				memTotal, _ = strconv.ParseFloat(fields[1], 64)
-				memAvail, _ = strconv.ParseFloat(fields[6], 64)
+	if data, err := os.ReadFile("/proc/meminfo"); err == nil {
+		for _, line := range strings.Split(string(data), "\n") {
+			if strings.HasPrefix(line, "MemTotal:") {
+				fields := strings.Fields(line)
+				if len(fields) >= 2 {
+					memTotal, _ = strconv.ParseFloat(fields[1], 64)
+					memTotal *= 1024 // kB to bytes
+				}
+			}
+			if strings.HasPrefix(line, "MemAvailable:") {
+				fields := strings.Fields(line)
+				if len(fields) >= 2 {
+					memAvail, _ = strconv.ParseFloat(fields[1], 64)
+					memAvail *= 1024
+				}
 			}
 		}
 	}
