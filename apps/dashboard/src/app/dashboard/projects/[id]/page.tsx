@@ -30,12 +30,16 @@ export default function ProjectPage() {
   const [verifyingDomain, setVerifyingDomain] = useState<string | null>(null)
   const [rollingBack, setRollingBack] = useState<string | null>(null)
   const [branchInput, setBranchInput] = useState("")
+  const [repoUrlInput, setRepoUrlInput] = useState("")
+  const [savingRepo, setSavingRepo] = useState(false)
+  const [repoSaved, setRepoSaved] = useState(false)
 
   function load() {
     if (!id) return
     api.projects.get(id).then((p: any) => {
       setProject(p)
       setEnvText(p.envVars || "")
+      setRepoUrlInput(p.repoUrl || "")
     }).catch(() => router.push("/dashboard"))
     api.deployments.list(id).then(setDeployments).catch(() => {})
     api.deployments.listPreviews(id).then(setPreviews).catch(() => {})
@@ -72,6 +76,18 @@ export default function ProjectPage() {
       setTimeout(() => setEnvSaved(false), 2000)
     } catch {}
     setSavingEnv(false)
+  }
+
+  async function handleSaveRepo() {
+    if (!id) return
+    setSavingRepo(true)
+    try {
+      await api.request(`/api/projects/${id}`, { method: "PATCH", body: JSON.stringify({ repoUrl: repoUrlInput }) })
+      setRepoSaved(true)
+      setTimeout(() => setRepoSaved(false), 2000)
+      load()
+    } catch {}
+    setSavingRepo(false)
   }
 
   async function handleRollback(deploymentId: string) {
@@ -176,6 +192,24 @@ export default function ProjectPage() {
           )}
         </div>
       )}
+
+      <div className="card mb-6">
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><GitBranch size={16} /> Repositório Git</h2>
+        <div className="flex gap-2">
+          <input
+            className="input flex-1"
+            value={repoUrlInput}
+            onChange={(e) => { setRepoUrlInput(e.target.value); setRepoSaved(false) }}
+            placeholder="https://github.com/user/repo.git"
+          />
+          <button onClick={handleSaveRepo} disabled={savingRepo} className="btn btn-primary text-sm shrink-0">
+            {savingRepo ? "Salvando..." : repoSaved ? "✓ Salvo" : "Salvar"}
+          </button>
+        </div>
+        <p className="text-xs text-zinc-500 mt-2">
+          Configure o repositório Git para habilitar auto-deploy via webhook.
+        </p>
+      </div>
 
       {project.repoUrl && (
         <div className="card mb-6">
