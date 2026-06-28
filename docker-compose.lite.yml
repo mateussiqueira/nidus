@@ -1,0 +1,84 @@
+# ============================================
+# NIDUS LITE — Versão otimizada para 512MB RAM
+# ============================================
+# Uso: docker compose -f docker-compose.lite.yml up -d
+#
+# Componentes incluídos:
+#   - API (Go) — leve, ~30MB RAM
+#   - Worker (Go) — leve, ~20MB RAM
+#   - SQLite — substitui PostgreSQL, ~5MB RAM
+#
+# Componentes removidos vs versão completa:
+#   - Dashboard (Next.js) — economiza ~150MB
+#   - PostgreSQL — substituído por SQLite
+#   - Redis — substituído por cache em memória
+#   - Proxy (Rust) — opcional, adicione depois se necessário
+
+services:
+  # ============================================
+  # API Server (Go) — ~30MB RAM
+  # ============================================
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: nidus-api-lite
+    environment:
+      DATABASE_URL: "file:/data/nidus.db"
+      JWT_SECRET: "change-me-in-production"
+      API_PORT: "3001"
+      CORS_ORIGINS: "http://localhost:3000"
+      LOG_LEVEL: "warn"
+    ports:
+      - "3001:3001"
+    volumes:
+      - api-data:/data
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: "0.5"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "1"
+
+  # ============================================
+  # Deploy Worker (Go) — ~20MB RAM
+  # ============================================
+  worker:
+    build:
+      context: .
+      dockerfile: workers/deploy/Dockerfile
+    container_name: nidus-worker-lite
+    environment:
+      DATABASE_URL: "file:/data/nidus.db"
+      NIDUS_HOST: "localhost"
+      NIDUS_DEPLOYS_DIR: "/tmp/nidus-deploys"
+      LOG_LEVEL: "warn"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - deploy-data:/tmp/nidus-deploys
+      - api-data:/data
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: "0.5"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "1"
+
+volumes:
+  api-data:
+  deploy-data:

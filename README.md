@@ -35,7 +35,9 @@ O Nimbus é uma plataforma de deploy self-hosted inspirada no Vercel. Conecta se
 - Git
 - Conexão com internet
 
-### Instalação com Docker
+## Quick Start
+
+### Versão Completa (2GB+ RAM)
 
 ```bash
 git clone https://github.com/mateussiqueira/nidus.git
@@ -43,6 +45,16 @@ cd nidus
 cp .env.example .env
 docker compose up -d
 ```
+
+### Versão Lite (512MB RAM)
+
+```bash
+git clone https://github.com/mateussiqueira/nidus.git
+cd nidus
+docker compose -f docker-compose.lite.yml up -d
+```
+
+A versão lite usa SQLite em vez de PostgreSQL e não inclui Dashboard/Redis/Proxy.
 
 ### Acesse
 
