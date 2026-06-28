@@ -1,9 +1,9 @@
 "use client"
 export const dynamic = "force-dynamic"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 import { api } from "@/lib/api"
-import { FileText, Search, Filter, ChevronDown, ChevronUp, Copy, Check } from "lucide-react"
+import { FileText, Search, ChevronDown, ChevronUp, Copy, Check, Wifi, WifiOff } from "lucide-react"
 
 interface Deployment {
   id: string
@@ -24,6 +24,10 @@ export default function DeploymentLogsPage() {
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [copied, setCopied] = useState<string | null>(null)
+  const [liveLogs, setLiveLogs] = useState<Record<string, string>>({})
+  const [wsConnected, setWsConnected] = useState(false)
+  const wsRef = useRef<WebSocket | null>(null)
+  const liveLogsRef = useRef<Record<string, string>>({})
 
   useEffect(() => {
     loadDeployments()
@@ -58,6 +62,31 @@ export default function DeploymentLogsPage() {
       setLoading(false)
     }
   }
+
+  const connectWebSocket = useCallback((deploymentId: string) => {
+    if (wsRef.current) {
+      wsRef.current.close()
+    }
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+    const wsUrl = apiUrl.replace(/^http/, "ws")
+    const ws = new WebSocket(`${wsUrl}/api/ws/deployments/${deploymentId}/logs`)
+    wsRef.current = ws
+    ws.onopen = () => setWsConnected(true)
+    ws.onmessage = (event) => {
+      liveLogsRef.current[deploymentId] = (liveLogsRef.current[deploymentId] || "") + event.data
+      setLiveLogs({ ...liveLogsRef.current })
+    }
+    ws.onclose = () => setWsConnected(false)
+    ws.onerror = () => setWsConnected(false)
+  }, [])
+
+  const disconnectWebSocket = useCallback(() => {
+    if (wsRef.current) {
+      wsRef.current.close()
+      wsRef.current = null
+    }
+    setWsConnected(false)
+  }, [])
 
   function copyToClipboard(text: string, id: string) {
     navigator.clipboard.writeText(text)
@@ -145,7 +174,17 @@ export default function DeploymentLogsPage() {
             <div key={deploy.id} className="card">
               <div
                 className="flex items-center justify-between cursor-pointer"
-                onClick={() => setExpandedId(expandedId === deploy.id ? null : deploy.id)}
+                onClick={() => {
+                  if (expandedId === deploy.id) {
+                    setExpandedId(null)
+                    disconnectWebSocket()
+                  } else {
+                    setExpandedId(deploy.id)
+                    if (deploy.status === "building" || deploy.status === "pending") {
+                      connectWebSocket(deploy.id)
+                    }
+                  }
+                }}
               >
                 <div className="flex items-center gap-3">
                   <div className="flex-1">
@@ -196,10 +235,18 @@ export default function DeploymentLogsPage() {
               </div>
 
               {/* Expanded Logs */}
-              {expandedId === deploy.id && deploy.logs && (
+              {expandedId === deploy.id && (
                 <div className="mt-4 pt-4 border-t border-border">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">Logs</span>
+                    <span className="text-sm font-medium flex items-center gap-2">
+                      Logs
+                      {(deploy.status === "building" || deploy.status === "pending") && (
+                        <span className={`flex items-center gap-1 text-xs ${wsConnected ? "text-green-400" : "text-yellow-400"}`}>
+                          {wsConnected ? <Wifi size={12} /> : <WifiOff size={12} />}
+                          {wsConnected ? "tempo real" : "conectando..."}
+                        </span>
+                      )}
+                    </span>
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
@@ -218,8 +265,8 @@ export default function DeploymentLogsPage() {
                       )}
                     </button>
                   </div>
-                  <pre className="bg-zinc-900 rounded-lg p-4 text-xs font-mono text-zinc-400 overflow-x-auto max-h-96 overflow-y-auto">
-                    {deploy.logs}
+                  <pre className="bg-zinc-900 rounded-lg p-4 text-xs font-mono text-zinc-400 overflow-x-auto max-h-96 overflow-y-auto whitespace-pre-wrap">
+                    {(liveLogs[deploy.id] || deploy.logs || "(sem logs)")}
                   </pre>
                 </div>
               )}

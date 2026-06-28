@@ -29,6 +29,7 @@ export default function ProjectPage() {
   const [addingDomain, setAddingDomain] = useState(false)
   const [verifyingDomain, setVerifyingDomain] = useState<string | null>(null)
   const [rollingBack, setRollingBack] = useState<string | null>(null)
+  const [branchInput, setBranchInput] = useState("")
 
   function load() {
     if (!id) return
@@ -173,6 +174,42 @@ export default function ProjectPage() {
           {metrics.restartCount > 0 && (
             <p className="mt-2 text-xs text-yellow-400">⚠️ Reiniciado {metrics.restartCount}x</p>
           )}
+        </div>
+      )}
+
+      {project.repoUrl && (
+        <div className="card mb-6">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><GitBranch size={16} /> Deploy por Branch</h2>
+          <p className="text-sm text-zinc-400 mb-3">
+            Faça deploy de uma branch específica como preview.
+          </p>
+          <div className="flex gap-2">
+            <input
+              className="input flex-1"
+              value={branchInput}
+              onChange={(e) => setBranchInput(e.target.value)}
+              placeholder="nome-da-branch"
+              onKeyDown={async (e) => {
+                if (e.key === "Enter" && branchInput.trim()) {
+                  setDeploying(true)
+                  try { await api.deployments.deploy(id!, branchInput.trim()); setBranchInput(""); load() } catch {}
+                  setDeploying(false)
+                }
+              }}
+            />
+            <button
+              onClick={async () => {
+                if (!branchInput.trim()) return
+                setDeploying(true)
+                try { await api.deployments.deploy(id!, branchInput.trim()); setBranchInput(""); load() } catch {}
+                setDeploying(false)
+              }}
+              disabled={deploying}
+              className="btn btn-primary text-sm shrink-0"
+            >
+              Deploy Branch
+            </button>
+          </div>
         </div>
       )}
 

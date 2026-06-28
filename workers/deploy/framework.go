@@ -10,6 +10,21 @@ import (
 
 // detectFramework identifies the project framework by checking config files and dependencies.
 func detectFramework(repoDir string) string {
+	// Dart/Vaden detection first (pubspec.yaml is unique)
+	if _, err := os.Stat(filepath.Join(repoDir, "pubspec.yaml")); err == nil {
+		data, _ := os.ReadFile(filepath.Join(repoDir, "pubspec.yaml"))
+		if strings.Contains(string(data), "vaden") || strings.Contains(string(data), "shelf") {
+			return "vaden"
+		}
+		if strings.Contains(string(data), "flutter") {
+			return "flutter"
+		}
+		return "dart"
+	}
+	if _, err := os.Stat(filepath.Join(repoDir, "pubspec.yml")); err == nil {
+		return "dart"
+	}
+
 	configs := map[string]string{
 		"next.config.js":   "nextjs",
 		"next.config.ts":   "nextjs",
@@ -129,6 +144,45 @@ RUN npm run build
 FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
 EXPOSE 80`,
+		"vaden": `FROM dart:stable AS builder
+WORKDIR /app
+COPY pubspec.* ./
+RUN dart pub get
+COPY . .
+RUN dart compile exe bin/server.dart -o /app/server
+
+FROM scratch
+COPY --from=builder /app/server /server
+COPY --from=builder /app/public /public
+EXPOSE 8080
+CMD ["/server"]`,
+		"dart": `FROM dart:stable AS builder
+WORKDIR /app
+COPY pubspec.* ./
+RUN dart pub get
+COPY . .
+RUN dart compile exe bin/server.dart -o /app/server 2>/dev/null || \
+    dart compile kernel bin/server.dart -o /app/server.dill 2>/dev/null || true
+
+FROM dart:stable
+WORKDIR /app
+COPY --from=builder /app/server /app/server 2>/dev/null || true
+COPY --from=builder /app/server.dill /app/server.dill 2>/dev/null || true
+COPY --from=builder /app/public ./public
+COPY . .
+EXPOSE 8080
+CMD ["dart", "run", "bin/server.dart"]`,
+		"flutter": `FROM ubuntu:22.04 AS builder
+RUN apt-get update && apt-get install -y curl git unzip xz-utils zip libglu1-mesa
+RUN curl -sSL https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.22.0-stable.tar.xz | tar xJ -C /opt
+ENV PATH="/opt/flutter/bin:${PATH}"
+WORKDIR /app
+COPY . .
+RUN flutter build web --release
+
+FROM nginx:alpine
+COPY --from=builder /app/build/web /usr/share/nginx/html
+EXPOSE 80`,
 		"static": `FROM nginx:alpine
 COPY . /usr/share/nginx/html
 EXPOSE 80`,
@@ -141,10 +195,16 @@ EXPOSE 80`,
 
 // getExposedPort returns the internal port used by the framework's runtime.
 func getExposedPort(framework string) int {
-	if framework == "nextjs" || framework == "nuxt" {
+	switch framework {
+	case "nextjs", "nuxt":
 		return 3000
+	case "vaden", "dart":
+		return 8080
+	case "flutter":
+		return 80
+	default:
+		return 80
 	}
-	return 80
 }
 
 // sanitizeBranch converts a git branch name to a safe string for container names.
