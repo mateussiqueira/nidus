@@ -18,11 +18,18 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
+# Detect OS for nanosecond timing
+if command -v gdate &>/dev/null; then
+    DATE_CMD="gdate"
+else
+    DATE_CMD="date"
+fi
+
 # Benchmark functions
 measure_time() {
-    local start=$(gdate +%s%N)
+    local start=$($DATE_CMD +%s%N 2>/dev/null || $DATE_CMD +%s000000000)
     eval "$2" > /dev/null 2>&1
-    local end=$(gdate +%s%N)
+    local end=$($DATE_CMD +%s%N 2>/dev/null || $DATE_CMD +%s000000000)
     local duration=$(( (end - start) / 1000000 ))
     echo "$duration"
 }

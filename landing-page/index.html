@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nimbus — Deploy que voa</title>
-<meta name="description" content="Nimbus é uma plataforma de deploy self-hosted inspirada no Vercel. Deploy de apps full-stack em segundos com suporte a múltiplos frameworks.">
+<title>Nidus — Sua PaaS pessoal</title>
+<meta name="description" content="Nidus é uma plataforma de deploy open-source. Deploy de apps full-stack em segundos com suporte nativo a Dart/Vaden.">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -450,14 +450,14 @@ footer a:hover { color: var(--green); }
 <header>
 <nav>
   <a href="/" class="logo">
-    <img src="logo.svg" alt="Nimbus" class="logo-icon">
-    Nimbus
+    <img src="logo.svg" alt="Nidus" class="logo-icon">
+    Nidus
   </a>
   <div class="nav-links">
     <a href="#features">Recursos</a>
     <a href="#architecture">Arquitetura</a>
     <a href="#pricing">Preços</a>
-    <a href="https://github.com/mateussiqueira/nimbus" target="_blank">GitHub</a>
+    <a href="https://github.com/mateussiqueira/nidus" target="_blank">GitHub</a>
     <a href="http://2.24.204.31:3000" class="btn-primary">Dashboard →</a>
   </div>
 </nav>
@@ -466,10 +466,10 @@ footer a:hover { color: var(--green); }
 <section class="hero">
   <div class="badge">🚀 Open Source & Self-Hosted</div>
   <h1>Deploy que <span>voa de verdade</span></h1>
-  <p>De um Raspberry Pi a um servidor potente. Nimbus roda em qualquer lugar com Docker — sem lock-in, sem custos escondidos.</p>
+  <p>De um Raspberry Pi a um servidor potente. Nidus roda em qualquer lugar com Docker — sem lock-in, sem custos escondidos.</p>
   <div class="hero-buttons">
     <a href="http://2.24.204.31:3000" class="btn-primary">Acessar Dashboard →</a>
-    <a href="https://github.com/mateussiqueira/nimbus" class="btn-outline">Ver no GitHub</a>
+    <a href="https://github.com/mateussiqueira/nidus" class="btn-outline">Ver no GitHub</a>
   </div>
 </section>
 
@@ -584,7 +584,7 @@ footer a:hover { color: var(--green); }
     <thead>
       <tr>
         <th>Feature</th>
-        <th>Nimbus</th>
+        <th>Nidus</th>
         <th>Vercel</th>
         <th>Railway</th>
         <th>Fly.io</th>
@@ -649,7 +649,7 @@ footer a:hover { color: var(--green); }
         <li>3 projetos</li>
         <li>PostgreSQL por projeto</li>
         <li>Deploy manual</li>
-        <li>Domínio *.nimbus.app</li>
+        <li>Domínio *.nidus.app</li>
         <li>Comunidade</li>
       </ul>
       <a href="http://2.24.204.31:3000" class="btn-outline">Começar</a>
@@ -690,7 +690,7 @@ footer a:hover { color: var(--green); }
   <div class="testimonial-grid">
     <div class="testimonial-card">
       <div class="quote">
-        "Migrei do Vercel pro Nimbus e economizo $200/mês. A performance do deploy worker em Go é impressionante."
+        "Migrei do Vercel pro Nidus e economizo $200/mês. A performance do deploy worker em Go é impressionante."
       </div>
       <div class="author">
         <div class="avatar">M</div>
@@ -731,11 +731,11 @@ footer a:hover { color: var(--green); }
   <h2>Perguntas Frequentes</h2>
   <div class="faq-item">
     <h4>Preciso de um servidor dedicado?</h4>
-    <p>Não necessariamente. O Nimbus roda em qualquer VPS com 2GB+ de RAM. Recomendamos DigitalOcean, Hetzner ou AWS EC2 para produção.</p>
+    <p>Não necessariamente. O Nidus roda em qualquer VPS com 2GB+ de RAM. Recomendamos DigitalOcean, Hetzner ou AWS EC2 para produção.</p>
   </div>
   <div class="faq-item">
     <h4>Funciona com qualquer framework?</h4>
-    <p>Sim! Suporta Next.js, React, Vue, Nuxt, Express, Fastify, Python, Go, Dart e mais. O Nimbus detecta automaticamente o framework.</p>
+    <p>Sim! Suporta Next.js, React, Vue, Nuxt, Express, Fastify, Python, Go, Dart e mais. O Nidus detecta automaticamente o framework.</p>
   </div>
   <div class="faq-item">
     <h4>Como funciona o backup?</h4>
@@ -752,14 +752,41 @@ footer a:hover { color: var(--green); }
   <p>Faça deploy do seu primeiro projeto em menos de 5 minutos. Código aberto, sem lock-in.</p>
   <div style="display: flex; gap: 12px; justify-content: center;">
     <a href="http://2.24.204.31:3000" class="btn-primary">Acessar Dashboard →</a>
-    <a href="https://github.com/mateussiqueira/nimbus" class="btn-outline">Ver Documentação</a>
+    <a href="https://github.com/mateussiqueira/nidus" class="btn-outline">Ver Documentação</a>
   </div>
 </section>
 
 <footer>
-  <p>Nimbus — PaaS open-source inspirada em Vercel, Railway e Coolify.</p>
-  <p><a href="https://github.com/mateussiqueira/nimbus">GitHub</a> · MIT License · Feito com ☕ no Brasil</p>
+  <p>Nidus — PaaS open-source inspirada em Vercel, Railway e Coolify.</p>
+  <p style="margin-top:8px"><span id="live-stats" style="font-size:13px;color:#52525b">Carregando stats...</span></p>
+  <p style="margin-top:4px"><a href="https://github.com/mateussiqueira/nidus">GitHub</a> · MIT License · Feito com ☕ no Brasil</p>
 </footer>
+
+<script>
+(function() {
+  var API = location.hostname === "nidus.app" ? "https://api.nidus.app" : "http://2.24.204.31:3001";
+  var el = document.getElementById("live-stats");
+  if (!el) return;
+
+  function update() {
+    fetch(API + "/api/metrics")
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        var m = d.memory, k = d.disk, c = d.containers, dp = d.deploys, rq = d.requests;
+        el.textContent = "Uptime: " + Math.floor(d.uptime/86400) + "d | "
+          + "RAM: " + (m.percent || 0).toFixed(0) + "% | "
+          + "Disk: " + (k.percent || 0).toFixed(0) + "% | "
+          + "Containers: " + (c && c.running || 0) + " | "
+          + "Deploys: " + (dp && dp.total || 0) + " | "
+          + "Requests: " + (rq && rq.total || 0);
+      })
+      .catch(function() { el.textContent = "API offline"; });
+  }
+
+  update();
+  setInterval(update, 30000);
+})();
+</script>
 
 </body>
 </html>
