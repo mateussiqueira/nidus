@@ -61,15 +61,15 @@ export interface DeployJobResult {
   error?: string
 }
 
-function sanitizeBranch(branch: string): string {
+export function sanitizeBranch(branch: string): string {
   return branch.toLowerCase().replace(/[^a-z0-9-_.]/g, "-").slice(0, 50)
 }
 
-function sanitizeShell(str: string): string {
+export function sanitizeShell(str: string): string {
   return str.replace(/[^a-zA-Z0-9._\/-]/g, "")
 }
 
-function detectFramework(repoDir: string): string {
+export function detectFramework(repoDir: string): string {
   const pkgJson = join(repoDir, "package.json")
   const nextConfig = join(repoDir, "next.config.js")
   const nextConfigTs = join(repoDir, "next.config.ts")
@@ -97,7 +97,7 @@ function detectFramework(repoDir: string): string {
   return "static"
 }
 
-function generateDockerfile(framework: string): string {
+export function generateDockerfile(framework: string): string {
   const cacheMount = "--mount=type=cache,target=/root/.npm"
   switch (framework) {
     case "nextjs":
@@ -157,7 +157,7 @@ COPY . /usr/share/nginx/html`
   }
 }
 
-function getExposedPort(framework: string): number {
+export function getExposedPort(framework: string): number {
   return framework === "nextjs" || framework === "nuxt" ? 3000 : 80
 }
 
@@ -312,4 +312,4 @@ function getDeployWorker(): Worker {
   return _deployWorker
 }
 
-export { getDeployQueue, getDeployWorker, sanitizeBranch }
+export { getDeployQueue, getDeployWorker }

@@ -1,89 +1,125 @@
-# Nidus
+# Nimbus
 
-Self-hosted deploy platform. Think Vercel that runs on your own machine.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-0.2.0-orange.svg)](https://github.com/mateussiqueira/nidus/releases)
+[![CI](https://github.com/mateussiqueira/nidus/actions/workflows/ci.yml/badge.svg)](https://github.com/mateussiqueira/nidus/actions)
 
-## What is it
+> Deploy de aplicações self-hosted sem dor de cabeça. De um Raspberry Pi a um VPS potente.
 
-Nidus deploys web apps via Docker. Connect GitHub, push, and it builds + runs the container automatically.
+## O que é o Nimbus?
 
-**Still in beta** — works but needs polish.
+O Nimbus é uma plataforma de deploy self-hosted inspirada no Vercel. Conecta seu GitHub, faz push, e ele builda + roda seu app em containers Docker isolados. Tudo no seu servidor, sem lock-in.
 
 ## Stack
 
-- **Frontend:** Next.js 16 + Tailwind
-- **API:** NestJS + Prisma + PostgreSQL
-- **Proxy:** Caddy (auto HTTPS)
-- **Deploy:** Isolated Docker containers
-- **CLI:** `npx nidus`
+| Componente | Tecnologia | Função |
+|------------|-----------|--------|
+| **Control Plane** | NestJS + Prisma | API REST, auth, webhooks |
+| **Dashboard** | Next.js 16 + React 19 | Interface do usuário |
+| **Deploy Worker** | Go 1.23 | Build e deploy de containers |
+| **Data Plane** | Rust (Axum) | Reverse proxy de alta performance |
+| **API alternativa** | Go 1.25 | API alternativa em Go |
+| **CLI** | Node.js/TypeScript | Deploy via terminal |
+| **Banco** | PostgreSQL 16 + Redis 7 | Dados e filas |
+| **Proxy** | Caddy | HTTPS automático |
 
-## Quick start
+## Quick Start
+
+### Pré-requisitos
+
+- Docker + Docker Compose
+- Git
+- 4GB+ RAM (2GB mínimo)
+
+### Instalação com Docker
 
 ```bash
-# With Docker (easiest)
+git clone https://github.com/mateussiqueira/nidus.git
+cd nidus
+cp .env.example .env
 docker compose up -d
-
-# Without Docker
-cd apps/control-plane
-npm install
-npm run build
-npm start
-
-# In another terminal
-cd apps/dashboard
-npm run dev
 ```
 
-Open http://localhost:3000
+### Acesse
+
+- **Dashboard:** http://localhost:3000
+- **API:** http://localhost:3001
+- **Proxy:** http://localhost:3080
+
+### Credenciais padrão
+
+- Email: `demo@nidus.dev`
+- Senha: `demo123`
 
 ## Deploy
 
-```bash
-# Via CLI
-npx nidus login
-cd my-project
-npx nidus deploy
-
-# Via GitHub
-Set up webhook in GitHub pointing to http://your-ip:3001/api/webhook
-```
-
-## Environment variables
-
-Copy `.env.example` to `.env` and adjust:
+### Via CLI
 
 ```bash
-DATABASE_URL=postgresql://user:pass@localhost:5432/nidus
-REDIS_URL=redis://localhost:6379
-NIDUS_HOST=localhost
-JWT_SECRET=change-this
+npm install -g nidus-cli
+nidus login
+cd meu-projeto
+nidus deploy
 ```
 
-## Structure
+### Via GitHub
+
+Configure um webhook apontando para `http://seu-servidor:3001/api/webhook`.
+
+## Estrutura
 
 ```
 nidus/
 ├── apps/
-│   ├── dashboard/        # Next.js
-│   └── control-plane/    # NestJS API
+│   ├── control-plane/    # NestJS API
+│   ├── dashboard/        # Next.js frontend
+│   ├── api/              # Go API (alternativa)
+│   └── proxy/            # Rust reverse proxy
 ├── workers/
-│   └── deploy/           # Go worker (fast deploys)
-├── cli/                  # CLI
+│   └── deploy/           # Go deploy worker
+├── cli/                  # CLI Node.js
 ├── packages/
-│   ├── runtime/          # Deploy engine
-│   └── shared/           # Shared types
-└── docker/               # Caddyfile
+│   ├── shared/           # Tipos compartilhados
+│   └── runtime/          # Engine de deploy
+├── docker/               # Configurações Docker
+├── docs/                 # Documentação
+└── docs-site/            # Site da documentação
+```
+
+## Variáveis de Ambiente
+
+Copie `.env.example` para `.env`:
+
+```bash
+DATABASE_URL=postgresql://user:pass@localhost:5432/nidus
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=sua-chave-secreta
 ```
 
 ## Performance
 
-Deploy worker written in Go for speed:
+O Deploy Worker em Go oferece:
 
-- Git clone: ~0.5s (vs ~5s in Node)
-- Docker build: ~25s with layer caching
-- Memory: ~15MB (vs ~100MB+ in Node)
+- **10x mais rápido** que Node.js para git clone
+- **~15MB** de memória em idle
+- **~0.5s** para git clone
+- **Cache de camadas** Docker para builds incrementais
 
-Run `./benchmark.sh` to see the numbers.
+Rode `./benchmark.sh` para ver os números.
 
-## License
+## Documentação
 
-MIT
+- [Primeiros Passos](https://nimbus200.vercel.app/pt/docs/quickstart)
+- [Arquitetura](https://nimbus200.vercel.app/pt/docs/architecture)
+- [Deploy](https://nimbus200.vercel.app/pt/docs/deployment)
+- [API](https://nimbus200.vercel.app/pt/docs/api)
+- [CLI](https://nimbus200.vercel.app/pt/docs/cli)
+- [FAQ](https://nimbus200.vercel.app/pt/docs/faq)
+
+## Contribuindo
+
+Veja [CONTRIBUTING.md](CONTRIBUTING.md) para detalhes.
+
+## Licença
+
+MIT License - veja [LICENSE](LICENSE) para detalhes.

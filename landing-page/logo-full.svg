@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <defs>
+    <linearGradient id="broomGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#8B4513"/>
+      <stop offset="100%" style="stop-color:#D2691E"/>
+    </linearGradient>
+    <linearGradient id="bristleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#DAA520"/>
+      <stop offset="100%" style="stop-color:#FFD700"/>
+    </linearGradient>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#fafafa"/>
+      <stop offset="100%" style="stop-color:#a1a1aa"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background (transparent) -->
+  
+  <!-- Speed lines -->
+  <g opacity="0.4">
+    <line x1="5" y1="52" x2="35" y2="52" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/>
+    <line x1="10" y1="60" x2="40" y2="60" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="8" y1="68" x2="38" y2="68" stroke="#22c55e" stroke-width="1" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Broom icon (small, elegant) -->
+  <g transform="translate(45, 35) scale(0.5)">
+    <!-- Handle -->
+    <rect x="55" y="78" width="100" height="8" rx="4" fill="url(#broomGrad)" transform="rotate(-20 105 82)"/>
+    <circle cx="155" cy="70" r="5" fill="#8B4513" transform="rotate(-20 155 70)"/>
+    
+    <!-- Bristles -->
+    <g transform="rotate(-20 55 82)">
+      <path d="M55,78 Q30,72 15,60" stroke="url(#bristleGrad)" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M55,82 Q25,80 8,75" stroke="url(#bristleGrad)" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M55,86 Q30,92 12,105" stroke="url(#bristleGrad)" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      <ellipse cx="55" cy="82" rx="5" ry="10" fill="#DAA520"/>
+    </g>
+    
+    <!-- Magical sparkles -->
+    <g filter="url(#glow)">
+      <circle cx="168" cy="62" r="3" fill="#22c55e"/>
+      <circle cx="180" cy="58" r="2" fill="#4ade80" opacity="0.8"/>
+      <circle cx="190" cy="55" r="1.5" fill="#86efac" opacity="0.6"/>
+    </g>
+  </g>
+  
+  <!-- NIMBUS text -->
+  <text x="110" y="75" font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif" font-size="52" font-weight="800" fill="url(#textGrad)" letter-spacing="4">NIMBUS</text>
+  
+  <!-- Subtle underline accent -->
+  <line x1="110" y1="85" x2="370" y2="85" stroke="#22c55e" stroke-width="2" opacity="0.5"/>
+</svg>

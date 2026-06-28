@@ -154,7 +154,7 @@ func maskEnvVar(value string) string {
 }
 
 func sanitizeShell(s string) string {
-	reg := regexp.MustCompile(`[^a-zA-Z0-9._\/\-]`)
+	reg := regexp.MustCompile(`[^a-zA-Z0-9._\/\-:]`)
 	return reg.ReplaceAllString(s, "")
 }
 
@@ -343,15 +343,46 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 	// ── Git clone / fetch ──
 	repoDir := filepath.Join(deploysDir, job.ProjectSlug)
 	if job.RepoURL != "" {
-		if _, err := os.Stat(repoDir); os.IsNotExist(err) {
-			logFn("📦 Clonando repositorio (depth=1)...")
+		// Check if directory exists and has content
+		hasContent := false
+		if info, err := os.Stat(repoDir); !os.IsNotExist(err) && info.IsDir() {
+			// Check if directory has actual files (not just .git)
+			entries, _ := os.ReadDir(repoDir)
+			for _, entry := range entries {
+				if entry.Name() != ".git" {
+					hasContent = true
+					break
+				}
+			}
+		}
+
+		if !hasContent {
+			// Remove old directory if it exists
+			if _, err := os.Stat(repoDir); !os.IsNotExist(err) {
+				os.RemoveAll(repoDir)
+			}
+			
+			logFn("📦 Clonando repositorio...")
 			safeURL := sanitizeShell(job.RepoURL)
 			safeDir := sanitizeShell(repoDir)
-			if out, err := runCmd(ctx, "git", "clone", "--depth", "1", "--single-branch", safeURL, safeDir); err != nil {
-				logFn(fmt.Sprintf("❌ Error clonando: %s", out))
-				updateDB("failed", "")
-				deploysTotal.WithLabelValues("failed").Inc()
-				return
+			
+			// Try git clone first
+			if out, err := runCmd(ctx, "git", "clone", "--single-branch", safeURL, safeDir); err != nil {
+				logFn(fmt.Sprintf("⚠️ Git clone falhou, tentando copia direta: %s", out))
+				
+				// Fallback: copy files directly if it's a local path
+				if _, err := os.Stat(safeURL); err == nil {
+					os.MkdirAll(safeDir, 0755)
+					runCmd(ctx, "cp", "-r", safeURL+"/.", safeDir)
+				} else {
+					logFn(fmt.Sprintf("❌ Error clonando: %s", out))
+					updateDB("failed", "")
+					deploysTotal.WithLabelValues("failed").Inc()
+					return
+				}
+			} else {
+				// Checkout files after clone
+				runCmd(ctx, "git", "-C", safeDir, "checkout", "HEAD", "--", ".")
 			}
 		} else {
 			logFn("🔄 Actualizando repositorio...")
@@ -364,8 +395,9 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 				return
 			}
 			runCmd(ctx, "git", "-C", repoDir, "pull", "origin", safeBranch)
+			runCmd(ctx, "git", "-C", repoDir, "checkout", "HEAD", "--", ".")
 		}
-		logFn(fmt.Sprintf("✅ Branch %s actualizada", job.Branch))
+		logFn(fmt.Sprintf("✅ Branch %s atualizada", job.Branch))
 	} else {
 		logFn("⚠️ Sin repositorio configurado")
 		os.MkdirAll(filepath.Join(repoDir, "src"), 0755)
@@ -395,6 +427,7 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 	logFn("🐳 Build da imagen Docker...")
 
 	var buildArgs []string
+	buildArgs = append(buildArgs, "build")
 	buildArgs = append(buildArgs, "-t", job.ImageTag)
 
 	if useCustomDockerfile {
@@ -418,6 +451,7 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 
 	buildArgs = append(buildArgs, "--progress=plain", repoDir)
 
+	logFn(fmt.Sprintf("🔨 Comando: docker %s", strings.Join(buildArgs, " ")))
 	buildCmd := exec.CommandContext(ctx, "docker", buildArgs...)
 
 	buildStdout, _ := buildCmd.StdoutPipe()
