@@ -596,7 +596,8 @@ func handleUpdateProject(w http.ResponseWriter, r *http.Request, id string) {
 		return
 	}
 
-	sets = append(sets, "updated_at = NOW()")
+	// Use SQLite-compatible timestamp
+	sets = append(sets, "updated_at = datetime('now')")
 	args = append(args, id, userID)
 
 	query := fmt.Sprintf("UPDATE projects SET %s WHERE id = $%d AND user_id = $%d RETURNING id, name, slug, framework, status, domain, repo_url, env_vars, created_at",
@@ -817,35 +818,54 @@ func handleDeploy(w http.ResponseWriter, r *http.Request, projectID string) {
 		return
 	}
 
-	// Enqueue BullMQ job
-	jobData, _ := json.Marshal(map[string]interface{}{
-		"deploymentId": deployID,
-		"projectId":    projectID,
-		"projectName":  name.String,
-		"projectSlug":  slug.String,
-		"repoUrl":      repoURL.String,
-		"branch":       branch,
-	})
+	// If Redis is available, enqueue BullMQ job
+	if rdb != nil {
+		jobData, _ := json.Marshal(map[string]interface{}{
+			"deploymentId": deployID,
+			"projectId":    projectID,
+			"projectName":  name.String,
+			"projectSlug":  slug.String,
+			"repoUrl":      repoURL.String,
+			"branch":       branch,
+		})
 
-	ctx := r.Context()
-	jobID := fmt.Sprintf("%d", time.Now().UnixNano())
+		ctx := r.Context()
+		jobID := fmt.Sprintf("%d", time.Now().UnixNano())
 
-	// BullMQ protocol: LPUSH to wait set, HSET job data
-	rdb.LPush(ctx, deployQueue+":wait", jobID)
-	rdb.HSet(ctx, deployQueue+":"+jobID, map[string]interface{}{
-		"data": string(jobData),
-		"id":   jobID,
-		"name": "deploy",
-	})
-	rdb.ZAdd(ctx, deployQueue+":delayed", redis.Z{Score: 0, Member: jobID})
+		// BullMQ protocol: LPUSH to wait set, HSET job data
+		rdb.LPush(ctx, deployQueue+":wait", jobID)
+		rdb.HSet(ctx, deployQueue+":"+jobID, map[string]interface{}{
+			"data": string(jobData),
+			"id":   jobID,
+			"name": "deploy",
+		})
+		rdb.ZAdd(ctx, deployQueue+":delayed", redis.Z{Score: 0, Member: jobID})
 
-	jsonResponse(w, map[string]interface{}{
-		"id":      deployID,
-		"status":  "queued",
-		"jobId":   jobID,
-		"branch":  branch,
-		"type":    deployType,
-	}, http.StatusCreated)
+		jsonResponse(w, map[string]interface{}{
+			"id":      deployID,
+			"status":  "queued",
+			"jobId":   jobID,
+			"branch":  branch,
+			"type":    deployType,
+		}, http.StatusCreated)
+	} else {
+		// SQLite mode - deploy directly via API
+		log.Printf("[deploy] Triggering deploy for %s (branch: %s)", name.String, branch)
+		
+		// Update status to building
+		db.ExecContext(r.Context(), "UPDATE deployments SET status = 'building' WHERE id = $1", deployID)
+		
+		// TODO: Execute deploy synchronously or via background goroutine
+		// For now, mark as queued and let the user know
+		jsonResponse(w, map[string]interface{}{
+			"id":      deployID,
+			"status":  "queued",
+			"jobId":   deployID,
+			"branch":  branch,
+			"type":    deployType,
+			"message": "Deploy queued (Redis not available, manual execution needed)",
+		}, http.StatusCreated)
+	}
 }
 
 func handleProjectMetrics(w http.ResponseWriter, r *http.Request, projectID string) {
