@@ -1,66 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
-  <defs>
-    <linearGradient id="broomGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#8B4513"/>
-      <stop offset="100%" style="stop-color:#D2691E"/>
-    </linearGradient>
-    <linearGradient id="bristleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#DAA520"/>
-      <stop offset="100%" style="stop-color:#FFD700"/>
-    </linearGradient>
-    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#22c55e;stop-opacity:0.8"/>
-      <stop offset="100%" style="stop-color:#22c55e;stop-opacity:0"/>
-    </linearGradient>
-    <filter id="glow">
-      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-      <feMerge>
-        <feMergeNode in="coloredBlur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-    <filter id="motionBlur">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="8 0"/>
-    </filter>
-  </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <!-- Broom handle -->
+  <line x1="22" y1="90" x2="78" y2="18" stroke="#22c55e" stroke-width="5" stroke-linecap="round"/>
   
-  <!-- Speed lines / motion trail -->
-  <g opacity="0.3">
-    <line x1="10" y1="85" x2="60" y2="85" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/>
-    <line x1="5" y1="95" x2="50" y2="95" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/>
-    <line x1="15" y1="105" x2="55" y2="105" stroke="#22c55e" stroke-width="1" stroke-linecap="round"/>
-    <line x1="8" y1="115" x2="45" y2="115" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/>
-  </g>
+  <!-- Broom bristles -->
+  <path d="M22 90L8 102 L0 114" stroke="#22c55e" stroke-width="5" stroke-linecap="round"/>
+  <path d="M22 90L12 108 L6 120" stroke="#4ade80" stroke-width="4.5" stroke-linecap="round"/>
+  <path d="M22 90L20 110 L18 120" stroke="#22c55e" stroke-width="4" stroke-linecap="round"/>
+  <path d="M22 90L28 108 L30 120" stroke="#4ade80" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M22 90L36 104 L42 120" stroke="#22c55e" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Bristle bindings -->
+  <ellipse cx="22" cy="90" rx="6" ry="4" fill="#16a34a" transform="rotate(-55 22 90)"/>
+  <ellipse cx="26" cy="85" rx="5" ry="3" fill="#16a34a" transform="rotate(-55 26 85)"/>
   
-  <!-- Broom handle (diagonal, flying) -->
-  <rect x="55" y="78" width="100" height="8" rx="4" fill="url(#broomGrad)" transform="rotate(-15 105 82)"/>
+  <!-- Speed lines -->
+  <line x1="85" y1="15" x2="105" y2="5" stroke="#4ade80" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+  <line x1="88" y1="22" x2="110" y2="18" stroke="#22c55e" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <line x1="82" y1="10" x2="100" y2="0" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
   
-  <!-- Handle tip (front) -->
-  <circle cx="155" cy="72" r="5" fill="#8B4513" transform="rotate(-15 155 72)"/>
-  
-  <!-- Broom bristles (back) -->
-  <g transform="rotate(-15 55 82)">
-    <!-- Bristle bundle -->
-    <path d="M55,78 Q30,75 15,65" stroke="url(#bristleGrad)" stroke-width="3" fill="none" stroke-linecap="round"/>
-    <path d="M55,80 Q25,80 10,78" stroke="url(#bristleGrad)" stroke-width="3" fill="none" stroke-linecap="round"/>
-    <path d="M55,82 Q30,85 12,90" stroke="url(#bristleGrad)" stroke-width="3" fill="none" stroke-linecap="round"/>
-    <path d="M55,84 Q28,90 15,100" stroke="url(#bristleGrad)" stroke-width="3" fill="none" stroke-linecap="round"/>
-    <path d="M55,86 Q32,95 18,108" stroke="url(#bristleGrad)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    <!-- Bristle tie -->
-    <ellipse cx="55" cy="82" rx="4" ry="8" fill="#DAA520"/>
-  </g>
-  
-  <!-- Magical sparkle trail -->
-  <g filter="url(#glow)">
-    <circle cx="165" cy="68" r="2" fill="#22c55e" opacity="0.9"/>
-    <circle cx="175" cy="65" r="1.5" fill="#4ade80" opacity="0.7"/>
-    <circle cx="185" cy="62" r="1" fill="#86efac" opacity="0.5"/>
-    <circle cx="170" cy="75" r="1.5" fill="#22c55e" opacity="0.6"/>
-    <circle cx="180" cy="70" r="1" fill="#4ade80" opacity="0.4"/>
-  </g>
-  
-  <!-- Speed motion blur effect -->
-  <g filter="url(#motionBlur)" opacity="0.2">
-    <rect x="20" y="78" width="40" height="8" rx="4" fill="#DAA520" transform="rotate(-15 40 82)"/>
-  </g>
+  <!-- Stars/sparkles -->
+  <circle cx="100" cy="8" r="2" fill="#22c55e" opacity="0.7"/>
+  <circle cx="108" cy="15" r="1.5" fill="#4ade80" opacity="0.6"/>
+  <circle cx="96" cy="4" r="1" fill="#22c55e" opacity="0.5"/>
 </svg>
