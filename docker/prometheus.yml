@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "nidus-api"
+    static_configs:
+      - targets: ["2.24.204.31:3001"]
+    metrics_path: /api/metrics/prometheus
+
+  - job_name: "cadvisor"
+    static_configs:
+      - targets: ["nidus-cadvisor:8080"]
+
+  - job_name: "node-exporter"
+    static_configs:
+      - targets: ["nidus-node-exporter:9100"]

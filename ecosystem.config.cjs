@@ -1,0 +1,63 @@
+module.exports = {
+  apps: [
+    {
+      name: "nidus-api",
+      cwd: "/root/nidus/apps/api",
+      script: "/root/nidus/apps/api/nidus-api",
+      interpreter: "none",
+      env: {
+        DATABASE_URL: "postgresql://nidus:nidus_prod_123@localhost:5432/nidus",
+        REDIS_URL: "redis://:nidus_53abf19648886baa@localhost:6379/0",
+        API_PORT: "3001",
+        NODE_ENV: "production",
+        JWT_SECRET: "nidus_prod_jwt_secret_2026",
+        CORS_ORIGINS: "http://2.24.204.31:3000,http://localhost:3000",
+        NIDUS_HOST: "2.24.204.31",
+        NIDUS_DEPLOYS_DIR: "/root/nidus/deploys",
+        CADDY_ADMIN_URL: "http://localhost:2019",
+        GITHUB_CLIENT_ID: "",
+        GITHUB_CLIENT_SECRET: "",
+        RESEND_API_KEY: "",
+        EMAIL_FROM: "nidus@nidus.app",
+        EMAIL_FROM_NAME: "Nidus",
+      },
+    },
+    {
+      name: "nidus-worker",
+      cwd: "/root/nidus/workers/deploy",
+      script: "/root/nidus/workers/deploy/nidus-deploy-worker",
+      interpreter: "none",
+      env: {
+        DATABASE_URL: "postgresql://nidus:nidus_prod_123@localhost:5432/nidus",
+        REDIS_URL: "redis://:nidus_53abf19648886baa@localhost:6379/0",
+        DOCKER_HOST: "unix:///var/run/docker.sock",
+        NIDUS_HOST: "2.24.204.31",
+        NIDUS_DEPLOYS_DIR: "/root/nidus/deploys",
+        WORKER_PORT: "8081",
+        WORKER_CONCURRENCY: "4",
+        RESEND_API_KEY: "",
+        EMAIL_FROM: "nidus@nidus.app",
+        EMAIL_FROM_NAME: "Nidus",
+      },
+    },
+    {
+      name: "nidus-dashboard",
+      cwd: "/root/nidus/apps/dashboard",
+      script: "npm",
+      args: "run start",
+      env: {
+        PORT: "3000",
+        NEXT_PUBLIC_API_URL: "http://2.24.204.31:3001",
+      },
+    },
+    {
+      name: "nidus-docs",
+      cwd: "/root/nidus/docs-site",
+      script: "npm",
+      args: "run start",
+      env: {
+        PORT: "3002",
+      },
+    },
+  ],
+}

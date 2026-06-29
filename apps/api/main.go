@@ -10,6 +10,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/nidus-dev/nidus-api/mail"
 	"io"
 	"log"
 	"math/big"
@@ -22,6 +23,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"unicode"
 	"sync/atomic"
 	"syscall"
 	"time"
@@ -119,6 +121,14 @@ func main() {
 		log.Fatalf("Failed to ping database: %v", err)
 	}
 
+	// Mail service
+	mail.Init(db)
+	mail.Configure(mail.Config{
+		Provider:  "sendmail",
+		FromName:  "Nidus",
+		FromEmail: "noreply@nidus.app",
+	})
+
 	// Initialize database schema if needed
 	if err := dbInit(); err != nil {
 		log.Printf("Warning: Database init failed: %v", err)
@@ -163,18 +173,32 @@ func main() {
 	mux.HandleFunc("POST /api/databases", withAuth(handleCreateDatabase))
 	mux.HandleFunc("GET /api/databases", withAuth(handleListDatabases))
 
+	// Mail
+	mux.HandleFunc("POST /api/mail/send", withAuth(handleSendMail))
+	mux.HandleFunc("GET /api/mail/templates", withAuth(handleListTemplates))
+	mux.HandleFunc("POST /api/mail/templates", withAuth(handleCreateTemplate))
+	mux.HandleFunc("/api/mail/templates/", withAuth(handleTemplateRoutes))
+	mux.HandleFunc("GET /api/mail/logs", withAuth(handleMailLogs))
+
 	// Webhook
 	mux.HandleFunc("POST /api/webhook/github", handleWebhook)
 
 	// Metrics
 	mux.HandleFunc("GET /api/metrics", handleMetrics)
 	mux.HandleFunc("GET /api/metrics/prometheus", handlePrometheus)
+	mux.HandleFunc("GET /api/projects/{projectId}/metrics/history", withAuth(handleProjectMetricsHistory))
 
 	// Domains
 	mux.HandleFunc("GET /api/projects/{projectId}/domains", withAuth(handleListDomains))
 	mux.HandleFunc("POST /api/projects/{projectId}/domains", withAuth(handleAddDomain))
 	mux.HandleFunc("DELETE /api/projects/{projectId}/domains/{domainId}", withAuth(handleDeleteDomain))
 	mux.HandleFunc("POST /api/projects/{projectId}/domains/{domainId}/verify", withAuth(handleVerifyDomain))
+
+	// Env vars
+	mux.HandleFunc("GET /api/projects/{projectId}/envs", withAuth(handleListEnvVars))
+	mux.HandleFunc("POST /api/projects/{projectId}/envs", withAuth(handleCreateEnvVar))
+	mux.HandleFunc("PATCH /api/projects/{projectId}/envs/{envID}", withAuth(handleUpdateEnvVar))
+	mux.HandleFunc("DELETE /api/projects/{projectId}/envs/{envID}", withAuth(handleDeleteEnvVar))
 
 	// Rollback
 	mux.HandleFunc("POST /api/projects/{projectId}/deployments/{deploymentId}/rollback", withAuth(handleRollback))
@@ -599,7 +623,7 @@ func handleListProjects(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(string)
 
 	rows, err := db.QueryContext(r.Context(),
-		`SELECT id, name, slug, framework, status, domain, repo_url, env_vars, created_at
+		`SELECT id, name, slug, framework, status, domain, repo_url, env_vars, port, created_at
 		 FROM projects WHERE user_id = $1 ORDER BY created_at DESC`, userID)
 	if err != nil {
 		jsonError(w, "Erro interno", http.StatusInternalServerError)
@@ -611,8 +635,9 @@ func handleListProjects(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var id, name, slug, status string
 		var framework, domain, repoURL, envVars sql.NullString
+		var port int
 		var createdAt time.Time
-		if err := rows.Scan(&id, &name, &slug, &framework, &status, &domain, &repoURL, &envVars, &createdAt); err != nil {
+		if err := rows.Scan(&id, &name, &slug, &framework, &status, &domain, &repoURL, &envVars, &port, &createdAt); err != nil {
 			continue
 		}
 		projects = append(projects, map[string]interface{}{
@@ -624,6 +649,7 @@ func handleListProjects(w http.ResponseWriter, r *http.Request) {
 			"domain":    nullString(domain),
 			"repoUrl":   nullString(repoURL),
 			"envVars":   nullString(envVars),
+			"port":      port,
 			"createdAt": createdAt.Format(time.RFC3339),
 		})
 	}
@@ -658,12 +684,13 @@ func handleCreateProject(w http.ResponseWriter, r *http.Request) {
 	var createdAt time.Time
 	id = uuid.New().String()
 	now := time.Now().UTC()
+	var port int
 	err := db.QueryRowContext(r.Context(),
-		`INSERT INTO projects (id, name, slug, user_id, framework, repo_url, status, created_at, updated_at)
-		 VALUES ($1, $2, $3, $4, nullif($5,''), nullif($6,''), 'ACTIVE', $7, $7)
-		 RETURNING id, name, slug, framework, status, domain, repo_url, env_vars, created_at`,
+		`INSERT INTO projects (id, name, slug, user_id, framework, repo_url, status, port, created_at, updated_at)
+		 VALUES ($1, $2, $3, $4, nullif($5,''), nullif($6,''), 'ACTIVE', (SELECT COALESCE(MAX(port), 8081) + 1 FROM projects WHERE port BETWEEN 8082 AND 8181), $7, $7)
+		 RETURNING id, name, slug, framework, status, domain, repo_url, env_vars, created_at, port`,
 		id, body.Name, slug, userID, body.Framework, body.RepoURL, now,
-	).Scan(&id, &body.Name, &slug, &framework, &status, &domain, &repoURL, &envVars, &createdAt)
+	).Scan(&id, &body.Name, &slug, &framework, &status, &domain, &repoURL, &envVars, &createdAt, &port)
 	if err != nil {
 		jsonError(w, "Erro ao criar projeto", http.StatusInternalServerError)
 		return
@@ -1040,14 +1067,164 @@ func handleDeploymentLogs(w http.ResponseWriter, r *http.Request, projectID, dep
 	}
 }
 
+// ── Env Vars CRUD ─────────────────────────────────────────────────────
+
+func handleListEnvVars(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("userID").(string)
+	projectID := r.PathValue("projectId")
+
+	var projectUserID string
+	err := db.QueryRow("SELECT user_id FROM projects WHERE id = $1", projectID).Scan(&projectUserID)
+	if err != nil || projectUserID != userID {
+		jsonError(w, "Projeto nao encontrado", http.StatusNotFound)
+		return
+	}
+
+	rows, err := db.Query("SELECT id, key, value, secret, created_at FROM project_env_vars WHERE project_id = $1 ORDER BY key", projectID)
+	if err != nil {
+		jsonError(w, "Erro ao listar env vars", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var envs []map[string]interface{}
+	for rows.Next() {
+		var id, key, value string
+		var secret bool
+		var createdAt time.Time
+		rows.Scan(&id, &key, &value, &secret, &createdAt)
+		if secret {
+			value = "********"
+		}
+		envs = append(envs, map[string]interface{}{
+			"id":        id,
+			"key":       key,
+			"value":     value,
+			"secret":    secret,
+			"createdAt": createdAt.Format(time.RFC3339),
+		})
+	}
+	if envs == nil {
+		envs = []map[string]interface{}{}
+	}
+	jsonResponse(w, map[string]interface{}{"envs": envs}, http.StatusOK)
+}
+
+func handleCreateEnvVar(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("userID").(string)
+	projectID := r.PathValue("projectId")
+
+	var projectUserID string
+	err := db.QueryRow("SELECT user_id FROM projects WHERE id = $1", projectID).Scan(&projectUserID)
+	if err != nil || projectUserID != userID {
+		jsonError(w, "Projeto nao encontrado", http.StatusNotFound)
+		return
+	}
+
+	var body struct {
+		Key    string `json:"key"`
+		Value  string `json:"value"`
+		Secret bool   `json:"secret"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		jsonError(w, "Body invalido", http.StatusBadRequest)
+		return
+	}
+	if body.Key == "" || body.Value == "" {
+		jsonError(w, "key e value sao obrigatorios", http.StatusBadRequest)
+		return
+	}
+
+	id := uuid.New().String()
+	_, err = db.Exec(
+		`INSERT INTO project_env_vars (id, project_id, key, value, secret) VALUES ($1, $2, $3, $4, $5)
+		 ON CONFLICT (project_id, key) DO UPDATE SET value = $4, secret = $5`,
+		id, projectID, body.Key, body.Value, body.Secret,
+	)
+	if err != nil {
+		jsonError(w, "Erro ao criar env var", http.StatusInternalServerError)
+		return
+	}
+
+	jsonResponse(w, map[string]interface{}{"id": id, "key": body.Key, "secret": body.Secret}, http.StatusCreated)
+}
+
+func handleUpdateEnvVar(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("userID").(string)
+	projectID := r.PathValue("projectId")
+	envID := r.PathValue("envID")
+
+	var projectUserID string
+	err := db.QueryRow("SELECT user_id FROM projects WHERE id = $1", projectID).Scan(&projectUserID)
+	if err != nil || projectUserID != userID {
+		jsonError(w, "Projeto nao encontrado", http.StatusNotFound)
+		return
+	}
+
+	var body struct {
+		Value  string `json:"value"`
+		Secret bool   `json:"secret"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		jsonError(w, "Body invalido", http.StatusBadRequest)
+		return
+	}
+
+	result, err := db.Exec(
+		"UPDATE project_env_vars SET value = $1, secret = $2 WHERE id = $3 AND project_id = $4",
+		body.Value, body.Secret, envID, projectID,
+	)
+	if err != nil {
+		jsonError(w, "Erro ao atualizar env var", http.StatusInternalServerError)
+		return
+	}
+	rows, _ := result.RowsAffected()
+	if rows == 0 {
+		jsonError(w, "Env var nao encontrada", http.StatusNotFound)
+		return
+	}
+
+	jsonResponse(w, map[string]interface{}{"ok": true}, http.StatusOK)
+}
+
+func handleDeleteEnvVar(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("userID").(string)
+	projectID := r.PathValue("projectId")
+	envID := r.PathValue("envID")
+
+	var projectUserID string
+	err := db.QueryRow("SELECT user_id FROM projects WHERE id = $1", projectID).Scan(&projectUserID)
+	if err != nil || projectUserID != userID {
+		jsonError(w, "Projeto nao encontrado", http.StatusNotFound)
+		return
+	}
+
+	result, err := db.Exec(
+		"DELETE FROM project_env_vars WHERE id = $1 AND project_id = $2",
+		envID, projectID,
+	)
+	if err != nil {
+		jsonError(w, "Erro ao deletar env var", http.StatusInternalServerError)
+		return
+	}
+	rows, _ := result.RowsAffected()
+	if rows == 0 {
+		jsonError(w, "Env var nao encontrada", http.StatusNotFound)
+		return
+	}
+
+	jsonResponse(w, map[string]interface{}{"ok": true}, http.StatusOK)
+}
+
 func handleDeploy(w http.ResponseWriter, r *http.Request, projectID string) {
 	userID := r.Context().Value("userID").(string)
 
 	var name, slug, repoURL sql.NullString
 	var branch string
+	var projectPort int
 	err := db.QueryRowContext(r.Context(),
-		"SELECT name, slug, repo_url, branch FROM projects WHERE id = $1 AND user_id = $2", projectID, userID,
-	).Scan(&name, &slug, &repoURL, &branch)
+		"SELECT name, slug, repo_url, branch, port FROM projects WHERE id = $1 AND user_id = $2", projectID, userID,
+	).Scan(&name, &slug, &repoURL, &branch, &projectPort)
 	if err == sql.ErrNoRows {
 		jsonError(w, "Projeto nao encontrado", http.StatusNotFound)
 		return
@@ -1104,6 +1281,7 @@ func handleDeploy(w http.ResponseWriter, r *http.Request, projectID string) {
 			"imageTag":      imageTag,
 			"isPreview":     branch != "main",
 			"safeBranch":    sanitizeBranch(branch),
+			"port":          projectPort,
 		})
 
 		ctx := r.Context()
@@ -1116,7 +1294,6 @@ func handleDeploy(w http.ResponseWriter, r *http.Request, projectID string) {
 			"id":   jobID,
 			"name": "deploy",
 		})
-		rdb.ZAdd(ctx, deployQueue+":delayed", redis.Z{Score: 0, Member: jobID})
 
 		jsonResponse(w, map[string]interface{}{
 			"id":      deployID,
@@ -1309,35 +1486,44 @@ func handleCreateDatabase(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbName := "nidus_" + body.Name
+	// Use unicode for cleaner rune check
+	dbName := strings.Map(func(r rune) rune {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) || r == '_' {
+			return r
+		}
+		return '_'
+	}, strings.ToLower(body.Name))
+	dbName = "nidus_" + dbName
 	password := generatePassword(16)
 
-	psqlPath := "/opt/homebrew/bin/psql"
-	createdbPath := "/opt/homebrew/bin/createdb"
+	// Create database using system PostgreSQL
+	dbCreate := exec.Command("sudo", "-u", "postgres", "createdb", dbName)
+	dbCreate.Run()
 
-	// Create database
-	exec.Command(createdbPath, "-U", "broto", dbName).Run()
+	// Create user and grant privileges
+	userCreate := exec.Command("sudo", "-u", "postgres", "psql", "-c",
+		fmt.Sprintf("CREATE USER %s WITH PASSWORD '%s'", dbName, password))
+	userCreate.Run()
 
-	// Create user + grant
-	dbURL := os.Getenv("DATABASE_URL")
-	if dbURL == "" {
-		dbURL = "postgresql://broto@localhost:5432/nidus"
-	}
-	dbURL = strings.Split(dbURL, "?")[0]
+	grantDB := exec.Command("sudo", "-u", "postgres", "psql", "-c",
+		fmt.Sprintf("GRANT ALL PRIVILEGES ON DATABASE %s TO %s", dbName, dbName))
+	grantDB.Run()
 
-	sqlConn, err := sql.Open("pgx", dbURL)
-	if err == nil {
-		sqlConn.Exec(fmt.Sprintf("CREATE USER %s WITH PASSWORD '%s'", dbName, password))
-		sqlConn.Exec(fmt.Sprintf("GRANT ALL PRIVILEGES ON DATABASE %s TO %s", dbName, dbName))
-		sqlConn.Exec(fmt.Sprintf("GRANT ALL ON SCHEMA public TO %s", dbName))
-		sqlConn.Close()
-	}
+	// Grant schema permissions (requires connecting to the database)
+	grantSchema := exec.Command("sudo", "-u", "postgres", "psql", "-d", dbName, "-c",
+		fmt.Sprintf("GRANT ALL ON SCHEMA public TO %s", dbName))
+	grantSchema.Run()
+
+	grantTables := exec.Command("sudo", "-u", "postgres", "psql", "-d", dbName, "-c",
+		fmt.Sprintf("ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO %s", dbName))
+	grantTables.Run()
 
 	connURL := fmt.Sprintf("postgresql://%s:%s@localhost:5432/%s", dbName, password, dbName)
 
 	var id string
 	var createdAt time.Time
 	id = uuid.New().String()
+	var err error
 	err = db.QueryRowContext(r.Context(),
 		`INSERT INTO databases (id, project_id, name, url) VALUES ($1, $2, $3, $4)
 		 RETURNING id, created_at`, id, body.ProjectID, body.Name, connURL,
@@ -1350,10 +1536,11 @@ func handleCreateDatabase(w http.ResponseWriter, r *http.Request) {
 	// Link to project
 	db.ExecContext(r.Context(), "UPDATE projects SET database_id = $1 WHERE id = $2", id, body.ProjectID)
 
-	// Update psql permissions
-	exec.Command(psqlPath, "-U", "broto", "-d", dbName, "-c",
-		fmt.Sprintf("GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO %s; GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO %s", dbName, dbName),
-	).Run()
+	// Grant remaining permissions via sudo
+	exec.Command("sudo", "-u", "postgres", "psql", "-d", dbName, "-c",
+		fmt.Sprintf("GRANT ALL ON ALL TABLES IN SCHEMA public TO %s", dbName)).Run()
+	exec.Command("sudo", "-u", "postgres", "psql", "-d", dbName, "-c",
+		fmt.Sprintf("GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO %s", dbName)).Run()
 
 	jsonResponse(w, map[string]interface{}{
 		"id":        id,
@@ -1538,6 +1725,123 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// ─── Project Metrics History (Prometheus) ──────────────────────────────────
+
+func handleProjectMetricsHistory(w http.ResponseWriter, r *http.Request) {
+	projectID := r.PathValue("projectId")
+	userID := r.Context().Value("userID").(string)
+
+	var slug string
+	err := db.QueryRowContext(r.Context(),
+		"SELECT slug FROM projects WHERE id = $1 AND user_id = $2", projectID, userID,
+	).Scan(&slug)
+	if err != nil {
+		jsonError(w, "Projeto nao encontrado", http.StatusNotFound)
+		return
+	}
+
+	containerName := "nidus-" + slug
+	branch := r.URL.Query().Get("branch")
+	if branch != "" && branch != "main" {
+		containerName = "nidus-" + slug + "-preview-" + sanitizeBranch(branch)
+	}
+
+	range_ := r.URL.Query().Get("range")
+	if range_ == "" {
+		range_ = "1h"
+	}
+
+	type metricPoint struct {
+		Time  float64 `json:"t"`
+		Value float64 `json:"v"`
+	}
+
+	result := map[string]interface{}{
+		"container": containerName,
+		"cpu":       []metricPoint{},
+		"memory":    []metricPoint{},
+	}
+
+	now := time.Now()
+	start := now.Add(-parseDuration(range_))
+
+	// Query Prometheus for CPU
+	// Use url.Values for proper encoding
+	cpuParams := url.Values{}
+	cpuParams.Set("query", "sum(rate(container_cpu_usage_seconds_total{name=~\""+containerName+".*\"}[1m]))")
+	cpuParams.Set("start", strconv.FormatInt(start.Unix(), 10))
+	cpuParams.Set("end", strconv.FormatInt(now.Unix(), 10))
+	cpuParams.Set("step", "60")
+	cpuResp, err := http.Get("http://localhost:9090/api/v1/query_range?" + cpuParams.Encode())
+	if err == nil && cpuResp.StatusCode == 200 {
+		defer cpuResp.Body.Close()
+		var cpuData map[string]interface{}
+		if json.NewDecoder(cpuResp.Body).Decode(&cpuData) == nil {
+			if data, ok := cpuData["data"].(map[string]interface{}); ok {
+				if results, ok := data["result"].([]interface{}); ok && len(results) > 0 {
+					if r0, ok := results[0].(map[string]interface{}); ok {
+						if values, ok := r0["values"].([]interface{}); ok {
+							cpuPoints := []metricPoint{}
+							for _, v := range values {
+								if pair, ok := v.([]interface{}); ok && len(pair) == 2 {
+									t, _ := pair[0].(float64)
+									vs := fmt.Sprintf("%%v", pair[1])
+									val, _ := strconv.ParseFloat(vs, 64)
+									cpuPoints = append(cpuPoints, metricPoint{Time: t, Value: val * 100})
+								}
+							}
+							result["cpu"] = cpuPoints
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// Query Prometheus for Memory
+	memParams := url.Values{}
+	memParams.Set("query", "container_memory_usage_bytes{name=~\""+containerName+".*\"}")
+	memParams.Set("start", strconv.FormatInt(start.Unix(), 10))
+	memParams.Set("end", strconv.FormatInt(now.Unix(), 10))
+	memParams.Set("step", "60")
+	memResp, err := http.Get("http://localhost:9090/api/v1/query_range?" + memParams.Encode())
+	if err == nil && memResp.StatusCode == 200 {
+		defer memResp.Body.Close()
+		var memData map[string]interface{}
+		if json.NewDecoder(memResp.Body).Decode(&memData) == nil {
+			if data, ok := memData["data"].(map[string]interface{}); ok {
+				if results, ok := data["result"].([]interface{}); ok && len(results) > 0 {
+					if r0, ok := results[0].(map[string]interface{}); ok {
+						if values, ok := r0["values"].([]interface{}); ok {
+							memPoints := []metricPoint{}
+							for _, v := range values {
+								if pair, ok := v.([]interface{}); ok && len(pair) == 2 {
+									t, _ := pair[0].(float64)
+									vs := fmt.Sprintf("%%v", pair[1])
+									val, _ := strconv.ParseFloat(vs, 64)
+									memPoints = append(memPoints, metricPoint{Time: t, Value: val / 1048576})
+								}
+							}
+							result["memory"] = memPoints
+						}
+					}
+				}
+			}
+		}
+	}
+
+	jsonResponse(w, result)
+}
+
+func parseDuration(s string) time.Duration {
+	d, err := time.ParseDuration(s)
+	if err != nil {
+		return time.Hour
+	}
+	return d
+}
+
+
 // ─── Metrics ────────────────────────────────────────────────────────────────
 
 func handleMetrics(w http.ResponseWriter, r *http.Request) {
@@ -1659,8 +1963,9 @@ func handleMetrics(w http.ResponseWriter, r *http.Request) {
 			"used":    memUsed,
 			"free":    memAvail,
 			"percent": memPercent,
-			"heapUsed":  float64(m.HeapInuse) / 1048576,
-			"heapTotal": float64(m.HeapAlloc) / 1048576,
+			"heapAlloc":  float64(m.HeapAlloc) / 1048576,
+			"heapTotal":  float64(m.HeapSys) / 1048576,
+			"heapInuse":  float64(m.HeapInuse) / 1048576,
 			"rss":       float64(m.Sys) / 1048576,
 		},
 		"disk": map[string]interface{}{
@@ -2293,5 +2598,168 @@ func loadEnv() {
 				os.Setenv(key, val)
 			}
 		}
+	}
+}
+
+// ─── Mail ───────────────────────────────────────────────────────────────────
+
+func handleSendMail(w http.ResponseWriter, r *http.Request) {
+	var input mail.SendInput
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		jsonError(w, "Invalid body", http.StatusBadRequest)
+		return
+	}
+	if input.ToEmail == "" {
+		jsonError(w, "to_email is required", http.StatusBadRequest)
+		return
+	}
+
+	result, err := mail.Send(input)
+	if err != nil {
+		jsonError(w, fmt.Sprintf("Failed to send: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(result)
+}
+
+func handleListTemplates(w http.ResponseWriter, r *http.Request) {
+	templates, err := mail.GetTemplates()
+	if err != nil {
+		jsonError(w, "Failed to list templates", http.StatusInternalServerError)
+		return
+	}
+	if templates == nil {
+		templates = []mail.TemplateData{}
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(templates)
+}
+
+func handleGetTemplate(w http.ResponseWriter, r *http.Request) {
+	// GET /api/mail/templates/{id}
+	path := strings.TrimPrefix(r.URL.Path, "/api/mail/templates/")
+	if path == "" || path == r.URL.Path {
+		http.NotFound(w, r)
+		return
+	}
+	id := strings.Split(path, "/")[0]
+
+	var t mail.TemplateData
+	err := db.QueryRow("SELECT id, name, subject, html_body, text_body, created_at FROM email_templates WHERE id = $1", id).
+		Scan(&t.ID, &t.Name, &t.Subject, &t.HTMLBody, &t.TextBody, &t.CreatedAt)
+	if err != nil {
+		jsonError(w, "Template not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(t)
+}
+
+func handleCreateTemplate(w http.ResponseWriter, r *http.Request) {
+	var t mail.TemplateData
+	if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
+		jsonError(w, "Invalid body", http.StatusBadRequest)
+		return
+	}
+	if t.Name == "" || t.Subject == "" {
+		jsonError(w, "name and subject are required", http.StatusBadRequest)
+		return
+	}
+
+	// Generate ID from name
+	t.ID = strings.ToLower(strings.ReplaceAll(t.Name, " ", "-"))
+	
+	now := time.Now()
+	_, err := db.Exec(`INSERT INTO email_templates (id, name, subject, html_body, text_body, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		ON CONFLICT (id) DO UPDATE SET name=$2, subject=$3, html_body=$4, text_body=$5, updated_at=$7`,
+		t.ID, t.Name, t.Subject, t.HTMLBody, t.TextBody, now, now)
+	if err != nil {
+		jsonError(w, fmt.Sprintf("Failed to create template: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	t.CreatedAt = now.Format(time.RFC3339)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(t)
+}
+
+func handleDeleteTemplate(w http.ResponseWriter, r *http.Request) {
+	path := strings.TrimPrefix(r.URL.Path, "/api/mail/templates/")
+	if path == "" || path == r.URL.Path {
+		http.NotFound(w, r)
+		return
+	}
+	id := strings.Split(path, "/")[0]
+
+	_, err := db.Exec("DELETE FROM email_templates WHERE id = $1", id)
+	if err != nil {
+		jsonError(w, "Failed to delete template", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func handleMailLogs(w http.ResponseWriter, r *http.Request) {
+	rows, err := db.Query("SELECT id, template_id, to_email, subject, status, provider, error_message, sent_at, created_at FROM email_logs ORDER BY created_at DESC LIMIT 50")
+	if err != nil {
+		jsonError(w, "Failed to list logs", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	type LogEntry struct {
+		ID           string  `json:"id"`
+		TemplateID   *string `json:"template_id"`
+		ToEmail      string  `json:"to"`
+		Subject      string  `json:"subject"`
+		Status       string  `json:"status"`
+		Provider     string  `json:"provider"`
+		ErrorMessage *string `json:"error,omitempty"`
+		SentAt       *string `json:"sent_at"`
+		CreatedAt    string  `json:"created_at"`
+	}
+
+	var logs []LogEntry
+	for rows.Next() {
+		var l LogEntry
+		var sentAt, createdAt time.Time
+		var tmplID, errMsg sql.NullString
+		if err := rows.Scan(&l.ID, &tmplID, &l.ToEmail, &l.Subject, &l.Status, &l.Provider, &errMsg, &sentAt, &createdAt); err != nil {
+			continue
+		}
+		if tmplID.Valid {
+			l.TemplateID = &tmplID.String
+		}
+		if errMsg.Valid {
+			l.ErrorMessage = &errMsg.String
+		}
+		s := sentAt.Format(time.RFC3339)
+		l.SentAt = &s
+		l.CreatedAt = createdAt.Format(time.RFC3339)
+		logs = append(logs, l)
+	}
+	if logs == nil {
+		logs = []LogEntry{}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(logs)
+}
+
+
+func handleTemplateRoutes(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		handleGetTemplate(w, r)
+	case http.MethodDelete:
+		handleDeleteTemplate(w, r)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
