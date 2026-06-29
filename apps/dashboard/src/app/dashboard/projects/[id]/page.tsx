@@ -7,9 +7,10 @@ import { api } from "@/lib/api"
 import {
   ArrowLeft, GitBranch, Clock, Rocket, ExternalLink, Play, Settings,
   Eye, EyeOff, Activity, Cpu, MemoryStick, Timer, Webhook, Globe,
-  Undo2, Plus, Trash2, RefreshCw,
+  Undo2, Plus, Trash2, RefreshCw, TrendingUp,
 } from "lucide-react"
 import Link from "next/link"
+import MetricsChart from "@/components/MetricsChart"
 
 export default function ProjectPage() {
   const { id } = useParams<{ id: string }>()
@@ -223,6 +224,7 @@ export default function ProjectPage() {
             <p className="mt-2 text-xs text-yellow-400">⚠️ Reiniciado {metrics.restartCount}x</p>
           )}
         </div>
+
       )}
 
       <div className="card mb-6">
@@ -473,6 +475,8 @@ export default function ProjectPage() {
       )}
     </div>
   )
+
+      {id && <MetricsChart projectId={id} />}
 }
 
 function DeploymentCard({ dep, projectId, onRollback, rollingBack }: { dep: any; projectId: string; onRollback: (id: string) => void; rollingBack: string | null }) {

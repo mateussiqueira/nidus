@@ -43,3 +43,19 @@ backups/
 .env.production
 .env.staging
 .env.secrets
+apps/control-plane/
+# Build artifacts
+apps/api/nidus-api
+apps/api/nidus-api-linux
+apps/dashboard/.next/
+*.d.ts.map
+*.js.map
+
+# Backups
+*.bak
+*.bak2
+
+# MCP
+mcp/mail/node_modules/
+deploys/
+*.bak

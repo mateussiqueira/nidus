@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic"
 
 import { useEffect, useState } from "react"
 import { api } from "@/lib/api"
-import { Activity, Cpu, HardDrive, MemoryStick, Server, RefreshCw } from "lucide-react"
+import { Activity, Cpu, HardDrive, MemoryStick, Server, RefreshCw, BarChart3 } from "lucide-react"
 
 interface SystemMetrics {
   memory: {
@@ -80,6 +80,13 @@ export default function MonitoringPage() {
           <span className="text-xs text-zinc-500">
             Última atualização: {lastRefresh.toLocaleTimeString("pt-BR")}
           </span>
+          <a
+            href="https://metrics.nidus.app/d/abcjdl/nidus-platform"
+            target="_blank"
+            className="flex items-center gap-2 px-3 py-2 text-xs bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors"
+          >
+            <BarChart3 size={14} /> Grafana
+          </a>
           <button
             onClick={loadMetrics}
             className="p-2 rounded-md hover:bg-zinc-800 text-zinc-500 hover:text-white transition"

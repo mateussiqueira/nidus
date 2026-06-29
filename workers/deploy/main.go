@@ -54,6 +54,7 @@ type DeployJob struct {
 	ImageTag      string            `json:"imageTag"`
 	IsPreview     bool              `json:"isPreview"`
 	SafeBranch    string            `json:"safeBranch"`
+	Port          int               `json:"port"`
 	EnvVars       map[string]string `json:"envVars,omitempty"`
 }
 
@@ -352,7 +353,7 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 	var runArgs []string
 	runArgs = append(runArgs, "-d",
 		"--name", job.ContainerName,
-		"-p", fmt.Sprintf("0:%d", exposedPort),
+		"-p", fmt.Sprintf("127.0.0.1:%d:%d", job.Port, exposedPort),
 		"--restart", "unless-stopped")
 
 	// Add environment variables
@@ -370,16 +371,6 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 		updateDB("failed", "")
 		deploysTotal.WithLabelValues("failed").Inc()
 		return
-	}
-
-	// ── Get mapped port ──
-	portOutput, _ := runCmd(ctx, "docker", "port", job.ContainerName, fmt.Sprintf("%d", exposedPort))
-	port := ""
-	if lines := strings.Split(strings.TrimSpace(portOutput), "\n"); len(lines) > 0 {
-		parts := strings.Split(lines[0], ":")
-		if len(parts) > 1 {
-			port = parts[len(parts)-1]
-		}
 	}
 
 	// ── Container health check ──
@@ -409,7 +400,7 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 
 	url := job.Domain
 	if url == "" || job.IsPreview {
-		url = fmt.Sprintf("http://%s:%s", host, port)
+		url = fmt.Sprintf("http://%s:%d", host, job.Port)
 	}
 	logFn(fmt.Sprintf("✅ Deploy concluido em %s", url))
 

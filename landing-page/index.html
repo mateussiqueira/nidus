@@ -92,6 +92,7 @@ nav {
   transition: all 0.15s;
 }
 .btn-outline:hover { background: var(--surface); }
+.monitoring-badge { display: inline-block; padding: 4px 10px; background: var(--green-glow); color: var(--green); border-radius: 4px; font-size: 11px; font-weight: 600; }
 
 .hero {
   padding: 160px 24px 80px;
@@ -465,8 +466,8 @@ footer a:hover { color: var(--green); }
 
 <section class="hero">
   <div class="badge">🚀 Open Source & Self-Hosted</div>
-  <h1>Deploy que <span>voa de verdade</span></h1>
-  <p>De um Raspberry Pi a um servidor potente. Nidus roda em qualquer lugar com Docker — sem lock-in, sem custos escondidos.</p>
+  <h1>Deploy + Observabilidade <span>numa plataforma só</span></h1>
+  <p>Deploy instantâneo com monitoramento Prometheus + Grafana integrado. Métricas, alertas e dashboards em tempo real na sua infra.</p>
   <div class="hero-buttons">
     <a href="http://2.24.204.31:3000" class="btn-primary">Acessar Dashboard →</a>
     <a href="https://github.com/mateussiqueira/nidus" class="btn-outline">Ver no GitHub</a>
@@ -527,6 +528,11 @@ footer a:hover { color: var(--green); }
       <div class="icon">🔧</div>
       <h3>Roda em Qualquer Lugar</h3>
       <p>De um Raspberry Pi a um servidor enterprise. Docker Compose é tudo que você precisa. Sem dependências complexas.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">📊</div>
+      <h3>Monitoramento Nativo</h3>
+      <p>Prometheus + Grafana integrados de fábrica. Dashboards prontos, alertas automáticos e visibilidade total dos seus deploys.</p>
     </div>
   </div>
 </section>
@@ -648,7 +654,7 @@ footer a:hover { color: var(--green); }
       <ul>
         <li>3 projetos</li>
         <li>PostgreSQL por projeto</li>
-        <li>Deploy manual</li>
+        <li>Grafana monitoring básico</li>
         <li>Domínio *.nidus.app</li>
         <li>Comunidade</li>
       </ul>
@@ -665,6 +671,10 @@ footer a:hover { color: var(--green); }
         <li>Suporte a Dart/Vaden</li>
         <li>Logs e métricas</li>
         <li>Webhooks</li>
+        <li>Grafana dashboards avançados</li>
+        <li>Prometheus métricas históricas</li>
+        <li>Alertas de monitoramento</li>
+        <li>Banco de dados gerenciado</li>
       </ul>
       <a href="http://2.24.204.31:3000" class="btn-primary">Assinar Pro</a>
     </div>
@@ -679,6 +689,9 @@ footer a:hover { color: var(--green); }
         <li>Audit logs</li>
         <li>SLA 99.9%</li>
         <li>Suporte prioritário</li>
+        <li>Grafana multi-cluster</li>
+        <li>SLA monitorado</li>
+        <li>Métricas customizadas</li>
       </ul>
       <a href="#" class="btn-outline">Falar com vendas</a>
     </div>

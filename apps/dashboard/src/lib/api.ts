@@ -56,6 +56,8 @@ export const api = {
       request(`/api/projects/${projectId}/deploy${branch ? `?branch=${branch}` : ""}`, { method: "POST" }),
     metrics: (projectId: string, branch?: string) =>
       request(`/api/projects/${projectId}/metrics${branch ? `?branch=${branch}` : ""}`),
+    metricsHistory: (projectId: string) =>
+      request(`/api/projects/${projectId}/metrics/history`),
     rollback: (projectId: string, deploymentId: string) =>
       request(`/api/projects/${projectId}/deployments/${deploymentId}/rollback`, { method: "POST" }),
   },
