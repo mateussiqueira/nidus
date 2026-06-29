@@ -5,7 +5,7 @@ export default function Home() {
       <header className="fixed top-0 w-full z-50 bg-[#0a0a0b]/90 backdrop-blur-xl border-b border-[#1f1f23]">
         <nav className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <a href="/" className="flex items-center gap-2.5 font-bold text-lg no-underline text-[#fafafa]">
-            <img src="/logo.svg" alt="Nimbus" className="w-8 h-8" />
+            <img src="/logo.png" alt="Nimbus" className="h-8" />
             Nimbus
           </a>
           <div className="flex items-center gap-6">

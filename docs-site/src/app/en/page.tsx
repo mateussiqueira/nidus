@@ -16,7 +16,7 @@ export default function ENHome() {
     <main className="min-h-screen bg-gray-950 text-white">
       <nav className="border-b border-gray-800 p-4">
         <div className="container mx-auto flex justify-between items-center">
-          <Link href="/" className="text-xl font-bold">Nidus Docs</Link>
+          <Link href="/" className="text-xl font-bold">Nimbus Docs</Link>
           <div className="flex gap-4">
             <Link href="/pt" className="text-gray-400 hover:text-white">PT</Link>
             <Link href="/en" className="text-blue-400">EN</Link>
