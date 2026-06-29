@@ -9,7 +9,7 @@
 
 Nimbus is a self-hosted platform for deploying applications. Connect your Git repo, push, and it builds + runs your app in isolated Docker containers — with managed databases, custom domains, real-time metrics, and transactional email. All on your server, no vendor lock-in.
 
-**Try it:** [nimbus-ecru-nine.vercel.app](https://nimbus-ecru-nine.vercel.app) | **Docs:** [nimbus-docs-tau.vercel.app](https://nimbus-docs-tau.vercel.app)
+**Try it:** [nimbus200.vercel.app](https://nimbus200.vercel.app)
 
 ## Features
 
@@ -205,12 +205,12 @@ SMTP_PASS=your-api-key
 
 ## Documentation
 
-- [Quickstart](https://nimbus-docs-tau.vercel.app/en/docs/quickstart)
-- [Architecture](https://nimbus-docs-tau.vercel.app/en/docs/architecture)
-- [Deployment](https://nimbus-docs-tau.vercel.app/en/docs/deployment)
-- [API Reference](https://nimbus-docs-tau.vercel.app/en/docs/api)
-- [CLI Guide](https://nimbus-docs-tau.vercel.app/en/docs/cli)
-- [FAQ](https://nimbus-docs-tau.vercel.app/en/docs/faq)
+- [Quickstart](https://nimbus200.vercel.app/en/docs/quickstart)
+- [Architecture](https://nimbus200.vercel.app/en/docs/architecture)
+- [Deployment](https://nimbus200.vercel.app/en/docs/deployment)
+- [API Reference](https://nimbus200.vercel.app/en/docs/api)
+- [CLI Guide](https://nimbus200.vercel.app/en/docs/cli)
+- [FAQ](https://nimbus200.vercel.app/en/docs/faq)
 
 ## Contributing
 
