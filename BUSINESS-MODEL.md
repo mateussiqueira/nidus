@@ -201,3 +201,77 @@ ROI: 88x
 Payback: 2 clientes (R$894 cobre o VPS)
 ```
 
+
+## 💳 Stack de Pagamento
+
+### Brasil → AbacatePay
+```
+┌─────────────────────────────────────────┐
+│              ABACATEPAY                  │
+├─────────────────────────────────────────┤
+│ PIX:        0.99%  (D+0)               │
+│ Cartão:     2.99%  (D+30)              │
+│ Boleto:     R$3.50 (D+3)               │
+│ Sem mensalidade                        │
+│ API REST simples                       │
+│ Webhook de confirmação                 │
+│ Split payment nativo                   │
+└─────────────────────────────────────────┘
+```
+
+### Internacional → Stripe
+```
+┌─────────────────────────────────────────┐
+│               STRIPE                     │
+├─────────────────────────────────────────┤
+│ Cartão:     2.9% + $0.30               │
+│ PIX (beta): 0.99%                      │
+│ 135+ moedas                            │
+│ 47 países                              │
+│ Billing automático                     │
+│ Invoice + Subscription                 │
+│ Dashboard analytics                    │
+└─────────────────────────────────────────┘
+```
+
+### Fluxo de Pagamento
+
+```
+Cliente BR → AbacatePay → PIX/Cartão/Boleto → Confirmado
+Cliente Global → Stripe → Cartão → Confirmado
+
+StackRun API:
+  POST /api/billing/checkout
+  {
+    "plan": "cloud",
+    "country": "BR",        // auto-detect
+    "paymentMethod": "pix"  // pix | card | boleto
+  }
+  → Redirect para AbacatePay (BR) ou Stripe (global)
+  → Webhook confirma pagamento
+  → Ativa assinatura no banco
+```
+
+### Por que AbacatePay + Stripe?
+
+| Razão | Detalhe |
+|-------|---------|
+| **Taxa zero no PIX BR** | 0.99% vs 3.99% do Stripe |
+| **Sem mensalidade** | AbacatePay não cobra fixo |
+| **Stripe maduro** | 10+ anos, usado por toda startup |
+| **Boleto nativo** | AbacatePay gera boleto registrado |
+| **Split payment** | Futuro: afiliados ganham % |
+
+### Integração Técnica
+
+```
+stackrun-api (Go)
+  ├─ POST /api/billing/checkout  → cria cobrança AbacatePay/Stripe
+  ├─ POST /api/billing/webhook   → recebe confirmação (HMAC validation)
+  └─ GET  /api/billing/status    → status da assinatura
+
+Tabelas novas:
+  payments (id, user_id, plan_id, gateway, gateway_id, 
+            amount_cents, status, payment_method, created_at)
+```
+

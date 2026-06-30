@@ -223,6 +223,9 @@ func main() {
         mux.HandleFunc("POST /api/projects/{projectId}/webhooks", withAuth(handleCreateWebhook))
         mux.HandleFunc("DELETE /api/projects/{projectId}/webhooks/{webhookId}", withAuth(handleDeleteWebhook))
 
+	mux.HandleFunc("POST /api/billing/checkout", withAuth(handleBillingCheckout))
+	mux.HandleFunc("POST /api/billing/webhook", handleBillingWebhook)
+
         mux.HandleFunc("POST /api/webhook/github", handleWebhook)
 
 	// Metrics
