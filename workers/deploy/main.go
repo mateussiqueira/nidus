@@ -459,6 +459,24 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 	}
 }
 
+	// ── Zero-Downtime Deploy Strategy (Phase 4) ──
+	//
+	// Blue/Green:
+	//   1. Build new image (docker build)
+	//   2. Start green container on port+1 (docker run -p PORT+1:3000)
+	//   3. Health check green (10 attempts, 2s interval)
+	//   4. If healthy: update nidus-proxy route → green port
+	//   5. Send SIGTERM to blue, wait 30s
+	//   6. Stop blue, rename green → blue
+	//
+	// Canary:
+	//   1. Start canary on port+1 (5% traffic)
+	//   2. Monitor errors (5xx rate) for 30s
+	//   3. Step up: 25% → 50% → 75% → 100%
+	//   4. IF errors > 1%: auto-rollback
+	//
+	// Invoke: /root/nidus/scripts/zero-downtime-deploy.sh <slug> <image>
+
 func runCmd(ctx context.Context, name string, args ...string) (string, error) {
 	cmd := exec.CommandContext(ctx, name, args...)
 	out, err := cmd.CombinedOutput()

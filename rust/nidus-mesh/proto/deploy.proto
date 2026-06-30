@@ -1,0 +1,24 @@
+syntax = "proto3";
+package nidus.mesh.v1;
+
+service DeployService {
+  rpc TriggerBuild(TriggerBuildRequest) returns (TriggerBuildResponse);
+  rpc StreamBuildLogs(BuildLogsRequest) returns (stream BuildLogEntry);
+  rpc RegisterPort(RegisterPortRequest) returns (RegisterPortResponse);
+}
+
+message TriggerBuildRequest {
+  string project_id = 1;
+  string project_slug = 2;
+  string repo_url = 3;
+  string branch = 4;
+  string dockerfile = 5;
+  string image_tag = 6;
+  map<string, string> build_args = 7;
+}
+
+message TriggerBuildResponse { string build_id = 1; string status = 2; }
+message BuildLogEntry { int64 timestamp = 1; string stage = 2; string message = 3; }
+message BuildLogsRequest { string build_id = 1; }
+message RegisterPortRequest { string project_id = 1; string slug = 2; int32 port = 3; }
+message RegisterPortResponse { bool ok = 1; }

@@ -1,0 +1,25 @@
+syntax = "proto3";
+package nidus.mesh.v1;
+
+service ProjectService {
+  rpc GetProject(GetProjectRequest) returns (Project);
+  rpc ListProjects(ListProjectsRequest) returns (ListProjectsResponse);
+  rpc ResolveSlug(ResolveSlugRequest) returns (ResolveSlugResponse);
+}
+
+message Project {
+  string id = 1;
+  string name = 2;
+  string slug = 3;
+  string status = 4;
+  int32 port = 5;
+  string framework = 6;
+  string domain = 7;
+  int64 created_at = 8;
+}
+
+message GetProjectRequest { string id = 1; }
+message ListProjectsRequest { string user_id = 1; int32 limit = 2; }
+message ListProjectsResponse { repeated Project projects = 1; }
+message ResolveSlugRequest { string slug = 1; }
+message ResolveSlugResponse { int32 port = 1; string status = 2; }

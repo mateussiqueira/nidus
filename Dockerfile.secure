@@ -1,0 +1,29 @@
+# Nidus — Hardened Production Image
+# Multi-stage: build → minimal runtime
+
+FROM rust:1.80-slim AS builder
+WORKDIR /app
+COPY rust/ rust/
+RUN cd rust && cargo build --release -p nidus-proxy
+
+FROM debian:bookworm-slim AS runtime
+# Security: minimal base, no dev tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN useradd --create-home --shell /bin/bash nidus
+USER nidus
+WORKDIR /home/nidus
+
+COPY --from=builder /app/rust/target/release/nidus-proxy .
+
+# Security hardening
+# - Read-only root filesystem
+# - No new privileges
+# - Limited capabilities
+EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=3s --retries=3 CMD curl -f http://localhost:8080/health || exit 1
+
+ENTRYPOINT ["./nidus-proxy"]

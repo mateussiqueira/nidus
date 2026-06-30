@@ -12,6 +12,8 @@ use tokio::net::TcpListener;
 use tokio::sync::RwLock;
 use tokio_postgres::{Client, NoTls};
 use tracing::{info, warn, error};
+use nidus_mesh::project_service_client::ProjectServiceClient;
+use nidus_mesh::ResolveSlugRequest;
 
 struct ProxyState {
     db: Client,
@@ -26,11 +28,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .init();
 
     info!("🦀 Nidus Proxy v0.2.0 starting...");
-    
-    // Connect to PostgreSQL
+
     let db_url = std::env::var("DATABASE_URL")
         .unwrap_or_else(|_| "host=localhost user=nidus password=nidus_dev_2026 dbname=nidus".into());
-    
+
     let (client, conn) = tokio_postgres::connect(&db_url, NoTls).await?;
     tokio::spawn(async move {
         if let Err(e) = conn.await {
@@ -44,7 +45,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         dashboard_port: 3000,
     });
 
-    // Warm cache: load all active projects
     warm_cache(&state).await;
 
     let addr: SocketAddr = "0.0.0.0:8081".parse()?;
@@ -65,6 +65,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         });
     }
+}
+
+async fn resolve_via_grpc(slug: &str) -> Option<u16> {
+    let mut client = ProjectServiceClient::connect("http://127.0.0.1:3001").await.ok()?;
+    let req = tonic::Request::new(ResolveSlugRequest { slug: slug.to_string() });
+    let resp = client.resolve_slug(req).await.ok()?;
+    Some(resp.into_inner().port as u16)
 }
 
 async fn warm_cache(state: &Arc<ProxyState>) {
@@ -94,33 +101,28 @@ async fn handle(state: Arc<ProxyState>, req: Request<Incoming>) -> Result<Respon
         .get("host")
         .and_then(|h| h.to_str().ok())
         .unwrap_or("unknown");
-    
+
     let path = req.uri().path();
 
-    // Health check
     if path == "/health" {
         let cache_size = state.cache.read().await.len();
         let body = format!(r#"{{"status":"ok","proxy":"rust-hyper","version":"0.2.0","cache_routes":{cache_size}}}"#);
         return Ok(Response::new(Full::new(Bytes::from(body))));
     }
 
-    // Metrics endpoint
     if path == "/metrics" {
-        let body = format!("# HELP nidus_proxy_cache_routes Total cached routes\n# TYPE nidus_proxy_cache_routes gauge\nnidus_proxy_cache_routes {}\n", 
+        let body = format!("# HELP nidus_proxy_cache_routes Total cached routes\n# TYPE nidus_proxy_cache_routes gauge\nnidus_proxy_cache_routes {}\n",
             state.cache.read().await.len());
         return Ok(Response::new(Full::new(Bytes::from(body))));
     }
 
-    // Parse subdomain
     let slug = host.split('.').next().unwrap_or("unknown");
-    
-    // Known system subdomains → dashboard
+
     let system: &[&str] = &["app", "api", "docs", "metrics", "nidus", "localhost", "127"];
     if system.contains(&slug) || !host.contains('.') {
         return forward(req, state.dashboard_port).await;
     }
 
-    // Check cache first (fast path, no lock contention with read lock)
     {
         let cache = state.cache.read().await;
         if let Some(port) = cache.get(slug) {
@@ -128,9 +130,8 @@ async fn handle(state: Arc<ProxyState>, req: Request<Incoming>) -> Result<Respon
         }
     }
 
-    // Cache miss — query DB
     let row = state.db.query_one(
-        "SELECT port FROM projects WHERE slug = $1 AND status = 'ACTIVE' AND port > 0 LIMIT 1",
+        "SELECT port FROM projects WHERE slug = $1 AND status = ACTIVE AND port > 0 LIMIT 1",
         &[&slug]
     ).await;
 
@@ -146,7 +147,6 @@ async fn handle(state: Arc<ProxyState>, req: Request<Incoming>) -> Result<Respon
         Err(_) => {}
     }
 
-    // Fallback: forward to dashboard
     forward(req, state.dashboard_port).await
 }
 
@@ -160,7 +160,7 @@ async fn forward_to_port(req: Request<Incoming>, port: u16) -> Result<Response<F
         .map(|p| p.as_str())
         .unwrap_or("/");
     let uri = format!("http://127.0.0.1:{}{}", port, path);
-    
+
     match client.get(&uri).timeout(std::time::Duration::from_secs(30)).send().await {
         Ok(resp) => {
             let status = resp.status();

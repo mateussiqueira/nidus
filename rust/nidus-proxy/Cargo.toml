@@ -18,6 +18,8 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tokio-rustls = "0.26"
 rustls = "0.23"
 rustls-pemfile = "2"
+nidus-mesh = { path = "../nidus-mesh" }
+tonic = "0.11"
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["async_tokio"] }
