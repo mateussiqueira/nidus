@@ -9,7 +9,7 @@ use std::time::Duration;
 const API_DEFAULT: &str = "https://api.stackrun.vercel.app";
 
 #[derive(Parser)]
-#[command(name = "nidus", version = "0.2.0", about = "🦀 StackRun PaaS CLI", long_about = None)]
+#[command(name = "stackrun", version = "0.2.0", about = "🦀 StackRun PaaS CLI", long_about = None)]
 struct Cli {
     #[arg(short, long, default_value = API_DEFAULT)]
     api: String,

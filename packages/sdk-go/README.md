@@ -17,7 +17,7 @@ import (
     "fmt"
     "log"
 
-    "github.com/mateussiqueira/stackrun/packages/sdk-go/nidus"
+    "github.com/mateussiqueira/stackrun/packages/sdk-go/stackrun"
 )
 
 func main() {

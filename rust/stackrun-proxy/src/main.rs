@@ -30,7 +30,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("🦀 StackRun Proxy v0.2.0 starting...");
 
     let db_url = std::env::var("DATABASE_URL")
-        .unwrap_or_else(|_| "host=localhost user=nidus password=nidus_dev_2026 dbname=nidus".into());
+        .unwrap_or_else(|_| "host=localhost user=nidus password=stackrun_dev_2026 dbname=nidus".into());
 
     let (client, conn) = tokio_postgres::connect(&db_url, NoTls).await?;
     tokio::spawn(async move {
@@ -118,7 +118,7 @@ async fn handle(state: Arc<ProxyState>, req: Request<Incoming>) -> Result<Respon
 
     let slug = host.split('.').next().unwrap_or("unknown");
 
-    let system: &[&str] = &["app", "api", "docs", "metrics", "nidus", "localhost", "127"];
+    let system: &[&str] = &["app", "api", "docs", "metrics", "stackrun", "localhost", "127"];
     if system.contains(&slug) || !host.contains('.') {
         return forward(req, state.dashboard_port).await;
     }

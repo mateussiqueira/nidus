@@ -2063,106 +2063,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1d87ecb2933e8aeadb3e3a02b828fed80a7528047e68b4f424523a0981a3a084"
 
 [[package]]
-name = "nidus-builder"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "bollard",
- "futures-util",
- "serde",
- "serde_json",
- "tokio",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "nidus-cli"
-version = "0.2.0"
-dependencies = [
- "clap",
- "colored",
- "console",
- "dirs 5.0.1",
- "futures-util",
- "indicatif",
- "reqwest",
- "serde",
- "serde_json",
- "spinoff",
- "tokio",
- "tokio-tungstenite",
-]
-
-[[package]]
-name = "nidus-edge"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "bytes",
- "http-body-util",
- "hyper 1.10.1",
- "hyper-util",
- "lru",
- "parking_lot",
- "serde",
- "serde_json",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "wasmtime",
- "wasmtime-wasi",
-]
-
-[[package]]
-name = "nidus-mesh"
-version = "0.1.0"
-dependencies = [
- "prost",
- "serde",
- "tokio",
- "tonic",
- "tonic-build",
-]
-
-[[package]]
-name = "nidus-proxy"
-version = "0.2.0"
-dependencies = [
- "bytes",
- "criterion",
- "http-body-util",
- "hyper 1.10.1",
- "hyper-util",
- "nidus-mesh",
- "reqwest",
- "rustls 0.23.41",
- "rustls-pemfile",
- "serde",
- "serde_json",
- "tokio",
- "tokio-postgres",
- "tokio-rustls 0.26.4",
- "tonic",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "nidus-vmm"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "nix",
- "serde",
- "serde_json",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "uuid",
-]
-
-[[package]]
 name = "nix"
 version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3264,6 +3164,106 @@ name = "stable_deref_trait"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
+
+[[package]]
+name = "stackrun-builder"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bollard",
+ "futures-util",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "stackrun-cli"
+version = "0.2.0"
+dependencies = [
+ "clap",
+ "colored",
+ "console",
+ "dirs 5.0.1",
+ "futures-util",
+ "indicatif",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "spinoff",
+ "tokio",
+ "tokio-tungstenite",
+]
+
+[[package]]
+name = "stackrun-edge"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bytes",
+ "http-body-util",
+ "hyper 1.10.1",
+ "hyper-util",
+ "lru",
+ "parking_lot",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "wasmtime",
+ "wasmtime-wasi",
+]
+
+[[package]]
+name = "stackrun-mesh"
+version = "0.1.0"
+dependencies = [
+ "prost",
+ "serde",
+ "tokio",
+ "tonic",
+ "tonic-build",
+]
+
+[[package]]
+name = "stackrun-proxy"
+version = "0.2.0"
+dependencies = [
+ "bytes",
+ "criterion",
+ "http-body-util",
+ "hyper 1.10.1",
+ "hyper-util",
+ "reqwest",
+ "rustls 0.23.41",
+ "rustls-pemfile",
+ "serde",
+ "serde_json",
+ "stackrun-mesh",
+ "tokio",
+ "tokio-postgres",
+ "tokio-rustls 0.26.4",
+ "tonic",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "stackrun-vmm"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "nix",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
+]
 
 [[package]]
 name = "stringprep"
