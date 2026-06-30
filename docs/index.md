@@ -20,6 +20,14 @@ features:
     details: Deploy worker em Go. 10-50x mais rápido que Node.js.
   - title: Docker
     details: Cada app roda em container isolado. Sem conflitos.
+  - title: SDKs (JS, Python, Go)
+    details: Integração programática com SDKs oficiais para JavaScript, Python e Go.
+  - title: Docker Compose
+    details: Deploy stacks multi-container com um só YAML. WordPress + MySQL, MongoDB + Node, ou qualquer combinação.
+  - title: Volumes Persistentes
+    details: Dados que sobrevivem a redeploys. Banco de dados, uploads, arquivos de configuração.
+  - title: Domínios Customizados
+    details: Adicione seu próprio domínio com HTTPS automático via Caddy.
 ---
 
 # Nidus
