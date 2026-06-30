@@ -1901,7 +1901,7 @@ func handleProjectMetricsHistory(w http.ResponseWriter, r *http.Request) {
 							for _, v := range values {
 								if pair, ok := v.([]interface{}); ok && len(pair) == 2 {
 									t, _ := pair[0].(float64)
-									vs := fmt.Sprintf("%%v", pair[1])
+									vs := fmt.Sprintf("%v", pair[1])
 									val, _ := strconv.ParseFloat(vs, 64)
 									cpuPoints = append(cpuPoints, metricPoint{Time: t, Value: val * 100})
 								}
@@ -1933,7 +1933,7 @@ func handleProjectMetricsHistory(w http.ResponseWriter, r *http.Request) {
 							for _, v := range values {
 								if pair, ok := v.([]interface{}); ok && len(pair) == 2 {
 									t, _ := pair[0].(float64)
-									vs := fmt.Sprintf("%%v", pair[1])
+									vs := fmt.Sprintf("%v", pair[1])
 									val, _ := strconv.ParseFloat(vs, 64)
 									memPoints = append(memPoints, metricPoint{Time: t, Value: val / 1048576})
 								}
@@ -2647,6 +2647,9 @@ func initSQLite(db *sql.DB) error {
 		name TEXT NOT NULL,
 		password TEXT NOT NULL,
 		avatar TEXT,
+		role TEXT DEFAULT "user",
+		plan_id TEXT DEFAULT "free",
+		subscription_status TEXT,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	);
@@ -2663,6 +2666,7 @@ func initSQLite(db *sql.DB) error {
 		domain TEXT,
 		env_vars TEXT,
 		database_id TEXT,
+		port INTEGER DEFAULT 8081,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		FOREIGN KEY (user_id) REFERENCES users(id)
@@ -2699,6 +2703,77 @@ func initSQLite(db *sql.DB) error {
 		ssl_status TEXT DEFAULT 'pending',
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		FOREIGN KEY (project_id) REFERENCES projects(id)
+	);
+	CREATE TABLE IF NOT EXISTS project_env_vars (
+		id TEXT PRIMARY KEY,
+		project_id TEXT NOT NULL,
+		key TEXT NOT NULL,
+		value TEXT NOT NULL,
+		secret INTEGER DEFAULT 0,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		UNIQUE(project_id, key),
+		FOREIGN KEY (project_id) REFERENCES projects(id)
+	);
+	CREATE TABLE IF NOT EXISTS project_volumes (
+		id TEXT PRIMARY KEY,
+		project_id TEXT NOT NULL,
+		name TEXT NOT NULL,
+		mount_path TEXT NOT NULL,
+		size_mb INTEGER DEFAULT 1024,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (project_id) REFERENCES projects(id)
+	);
+	CREATE TABLE IF NOT EXISTS plans (
+		id TEXT PRIMARY KEY,
+		name TEXT NOT NULL,
+		price_cents INTEGER DEFAULT 0,
+		max_projects INTEGER DEFAULT 3,
+		max_databases INTEGER DEFAULT 1,
+		features TEXT DEFAULT "[]"
+	);
+	CREATE TABLE IF NOT EXISTS payments (
+		id TEXT PRIMARY KEY,
+		user_id TEXT NOT NULL,
+		plan_id TEXT NOT NULL,
+		gateway TEXT DEFAULT "stripe",
+		gateway_id TEXT,
+		amount_cents INTEGER DEFAULT 0,
+		status TEXT DEFAULT "pending",
+		payment_method TEXT DEFAULT "pix",
+		paid_at DATETIME,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	);
+	CREATE TABLE IF NOT EXISTS subscriptions (
+		user_id TEXT NOT NULL,
+		plan_id TEXT NOT NULL,
+		status TEXT DEFAULT "active",
+		current_period_start DATETIME DEFAULT CURRENT_TIMESTAMP,
+		current_period_end DATETIME DEFAULT CURRENT_TIMESTAMP
+	);
+	CREATE TABLE IF NOT EXISTS api_tokens (
+		id TEXT PRIMARY KEY,
+		user_id TEXT NOT NULL,
+		name TEXT NOT NULL,
+		token TEXT NOT NULL UNIQUE,
+		last_used_at DATETIME,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (user_id) REFERENCES users(id)
+	);
+	CREATE TABLE IF NOT EXISTS audit_logs (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		user_id TEXT,
+		action TEXT NOT NULL,
+		resource TEXT,
+		resource_id TEXT,
+		details TEXT,
+		ip_address TEXT,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	);
+	CREATE TABLE IF NOT EXISTS health_checks (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		project_id TEXT,
+		status TEXT DEFAULT "up",
+		checked_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	);
 	`
 	_, err := db.Exec(schema)
