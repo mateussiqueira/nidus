@@ -1,10 +1,10 @@
 import requests
 
-from nidus.auth import AuthAPI
-from nidus.projects import ProjectsAPI
-from nidus.deployments import DeploymentsAPI
-from nidus.domains import DomainsAPI
-from nidus.databases import DatabasesAPI
+from stackrun.auth import AuthAPI
+from stackrun.projects import ProjectsAPI
+from stackrun.deployments import DeploymentsAPI
+from stackrun.domains import DomainsAPI
+from stackrun.databases import DatabasesAPI
 
 
 class NidusClient:
