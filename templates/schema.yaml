@@ -1,0 +1,17 @@
+# Nidus Template Schema v1.0
+name: string           # template name
+version: "1.0"
+description: string    # short description
+icon: string           # emoji icon
+category: string       # web, api, cms, automation, static, database
+tags: [string]         # search tags
+framework: string      # nextjs, express, vite, static, fastify, docker, etc
+dockerfile: string     # relative path to Dockerfile (default: Dockerfile)
+compose: string        # or docker-compose.yml path
+env:                   # default env vars
+  KEY: value
+ports: [integer]       # exposed ports
+volumes:               # recommended volumes
+  - name: data
+    mountPath: /app/data
+repo: string           # starter repo URL (optional)

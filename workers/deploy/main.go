@@ -138,6 +138,7 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 	start := time.Now()
 	deployActive.Inc()
 	defer deployActive.Dec()
+	exec.Command("docker", "network", "create", "nidus").Run() // ignore error if exists
 
 	var logs []string
 	logFn := func(msg string) {
@@ -155,7 +156,7 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 				if userEmail != "" {
 					go emailCfg.sendDeployNotification(userEmail, job.ProjectName, "failed", "", job.Branch, time.Since(start))
 				}
-			}
+		}
 		}
 	}
 
@@ -199,14 +200,14 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 					hasContent = true
 					break
 				}
-			}
+		}
 		}
 
 		if !hasContent {
 			// Remove old directory if it exists
 			if _, err := os.Stat(repoDir); !os.IsNotExist(err) {
 				os.RemoveAll(repoDir)
-			}
+		}
 			
 			logFn("📦 Clonando repositorio...")
 			safeURL := sanitizeShell(job.RepoURL)
@@ -226,10 +227,10 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 					deploysTotal.WithLabelValues("failed").Inc()
 					return
 				}
-			} else {
+		} else {
 				// Checkout files after clone
 				runCmd(ctx, "git", "-C", safeDir, "checkout", "HEAD", "--", ".")
-			}
+		}
 		} else {
 			logFn("🔄 Actualizando repositorio...")
 			runCmd(ctx, "git", "-C", repoDir, "fetch", "--all")
@@ -239,7 +240,7 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 				updateDB("failed", "")
 				deploysTotal.WithLabelValues("failed").Inc()
 				return
-			}
+		}
 			runCmd(ctx, "git", "-C", repoDir, "pull", "origin", safeBranch)
 			runCmd(ctx, "git", "-C", repoDir, "checkout", "HEAD", "--", ".")
 		}
@@ -324,7 +325,7 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 		for scanner.Scan() {
 			if buildCtx.Err() != nil {
 				return
-			}
+		}
 			logFn(scanner.Text())
 		}
 	}()
@@ -334,7 +335,7 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 		for scanner.Scan() {
 			if buildCtx.Err() != nil {
 				return
-			}
+		}
 			logFn(scanner.Text())
 		}
 	}()
@@ -366,13 +367,24 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 	runArgs = append(runArgs, "-d",
 		"--name", job.ContainerName,
 		"-p", fmt.Sprintf("0.0.0.0:%d:%d", job.Port, exposedPort),
-		"--restart", "unless-stopped")
+		"--restart", "unless-stopped",
+		"--network", "nidus")
 
 	// Add environment variables
 	for key, value := range envVars {
 		runArgs = append(runArgs, "-e", fmt.Sprintf("%s=%s", key, value))
 		logFn(fmt.Sprintf("🔧 ENV: %s=%s", key, maskEnvVar(value)))
 	}
+
+	// Add volume mounts
+	volRows, _ := dp.db.Query(ctx, "SELECT name, mount_path FROM project_volumes WHERE project_id=$1", job.ProjectID)
+	for volRows.Next() {
+		var name, mountPath string
+		volRows.Scan(&name, &mountPath)
+		volName := fmt.Sprintf("nidus-%s-%s", job.ProjectSlug, name)
+		runArgs = append(runArgs, "-v", volName+":"+mountPath)
+	}
+	volRows.Close()
 
 	runArgs = append(runArgs, job.ImageTag)
 
@@ -563,9 +575,9 @@ func main() {
 			if err := rdb.Ping(ctx).Err(); err != nil {
 				log.Printf("[warning] Redis connection failed: %v", err)
 				rdb = nil
-			} else {
+		} else {
 				log.Println("[redis] Connected to Redis")
-			}
+		}
 		}
 	} else {
 		log.Println("[redis] Redis not configured, running without cache/queue")
@@ -632,7 +644,7 @@ func main() {
 						})
 					}
 				}
-			}(i)
+		}(i)
 		}
 	}
 

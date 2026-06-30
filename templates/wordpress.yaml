@@ -1,0 +1,19 @@
+name: WordPress
+version: "1.0"
+description: CMS mais popular do mundo
+icon: "📝"
+category: cms
+tags:
+  - php
+  - cms
+  - wordpress
+framework: docker
+compose: docker-compose.yml
+ports:
+  - 80
+  - 3306
+volumes:
+  - name: wp-content
+    mountPath: /var/www/html/wp-content
+  - name: db
+    mountPath: /var/lib/mysql

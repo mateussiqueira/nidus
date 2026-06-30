@@ -1,0 +1,18 @@
+name: Express API
+version: "1.0"
+description: Node.js REST API server
+icon: "🚀"
+category: api
+tags:
+  - node
+  - express
+  - rest
+framework: express
+dockerfile: Dockerfile
+env:
+  PORT: "3000"
+ports:
+  - 3000
+volumes:
+  - name: app
+    mountPath: /app

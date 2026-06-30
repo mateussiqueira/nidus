@@ -220,6 +220,11 @@ func main() {
 	mux.HandleFunc("DELETE /api/projects/{projectId}/domains/{domainId}", withAuth(handleDeleteDomain))
 	mux.HandleFunc("POST /api/projects/{projectId}/domains/{domainId}/verify", withAuth(handleVerifyDomain))
 
+	// Volumes
+	mux.HandleFunc("GET /api/projects/{projectId}/volumes", withAuth(handleListVolumes))
+	mux.HandleFunc("POST /api/projects/{projectId}/volumes", withAuth(handleCreateVolume))
+	mux.HandleFunc("DELETE /api/projects/{projectId}/volumes/{volumeId}", withAuth(handleDeleteVolume))
+
 	// Env vars
 	mux.HandleFunc("GET /api/projects/{projectId}/envs", withAuth(handleListEnvVars))
 	mux.HandleFunc("POST /api/projects/{projectId}/envs", withAuth(handleCreateEnvVar))
@@ -3066,3 +3071,118 @@ func handleDeleteWebhook(w http.ResponseWriter, r *http.Request) {
 	jsonResponse(w, map[string]interface{}{"ok": true})
 }
 
+
+// ─── Volumes ──────────────────────────────────────────────────────────────
+
+func handleListVolumes(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("userID").(string)
+	projectID := r.PathValue("projectId")
+
+	var projectUserID string
+	err := db.QueryRow("SELECT user_id FROM projects WHERE id = $1", projectID).Scan(&projectUserID)
+	if err != nil || projectUserID != userID {
+		jsonError(w, "Projeto nao encontrado", http.StatusNotFound)
+		return
+	}
+
+	rows, err := db.QueryContext(r.Context(), `SELECT id, name, mount_path, size_mb, created_at FROM project_volumes WHERE project_id = $1 ORDER BY created_at`, projectID)
+	if err != nil {
+		jsonError(w, "Erro ao listar volumes", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	volumes := []map[string]interface{}{}
+	for rows.Next() {
+		var id, name, mountPath string
+		var sizeMb int
+		var createdAt time.Time
+		if err := rows.Scan(&id, &name, &mountPath, &sizeMb, &createdAt); err != nil {
+			continue
+		}
+		volumes = append(volumes, map[string]interface{}{
+			"id":        id,
+			"name":      name,
+			"mountPath": mountPath,
+			"sizeMb":    sizeMb,
+			"createdAt": createdAt.Format(time.RFC3339),
+		})
+	}
+	if volumes == nil {
+		volumes = []map[string]interface{}{}
+	}
+	jsonResponse(w, volumes)
+}
+
+func handleCreateVolume(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("userID").(string)
+	projectID := r.PathValue("projectId")
+
+	var projectUserID string
+	err := db.QueryRow("SELECT user_id FROM projects WHERE id = $1", projectID).Scan(&projectUserID)
+	if err != nil || projectUserID != userID {
+		jsonError(w, "Projeto nao encontrado", http.StatusNotFound)
+		return
+	}
+
+	var body struct {
+		Name      string `json:"name"`
+		MountPath string `json:"mountPath"`
+		SizeMb    int    `json:"sizeMb"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		jsonError(w, "Body invalido", http.StatusBadRequest)
+		return
+	}
+	if body.Name == "" || body.MountPath == "" {
+		jsonError(w, "name e mountPath sao obrigatorios", http.StatusBadRequest)
+		return
+	}
+
+	id := uuid.New().String()
+	_, err = db.Exec(
+		`INSERT INTO project_volumes (id, project_id, name, mount_path, size_mb)
+		 VALUES ($1, $2, $3, $4, $5)`,
+		id, projectID, body.Name, body.MountPath, body.SizeMb,
+	)
+	if err != nil {
+		jsonError(w, "Erro ao criar volume: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	jsonResponse(w, map[string]interface{}{
+		"id":        id,
+		"name":      body.Name,
+		"mountPath": body.MountPath,
+		"sizeMb":    body.SizeMb,
+	}, http.StatusCreated)
+}
+
+func handleDeleteVolume(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("userID").(string)
+	projectID := r.PathValue("projectId")
+	volumeID := r.PathValue("volumeId")
+
+	var projectUserID string
+	err := db.QueryRow("SELECT user_id FROM projects WHERE id = $1", projectID).Scan(&projectUserID)
+	if err != nil || projectUserID != userID {
+		jsonError(w, "Projeto nao encontrado", http.StatusNotFound)
+		return
+	}
+
+	result, err := db.Exec(
+		"DELETE FROM project_volumes WHERE id = $1 AND project_id = $2",
+		volumeID, projectID,
+	)
+	if err != nil {
+		jsonError(w, "Erro ao deletar volume", http.StatusInternalServerError)
+		return
+	}
+	rows, _ := result.RowsAffected()
+	if rows == 0 {
+		jsonError(w, "Volume nao encontrado", http.StatusNotFound)
+		return
+	}
+
+	jsonResponse(w, map[string]interface{}{"ok": true})
+}

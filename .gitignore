@@ -62,3 +62,5 @@ deploys/
 workers/deploy/nidus-worker
 apps/api/nidus-api
 apps/proxy/nidus-proxy
+__pycache__/
+*.pyc
