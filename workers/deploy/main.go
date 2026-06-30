@@ -55,6 +55,7 @@ type DeployJob struct {
 	IsPreview     bool              `json:"isPreview"`
 	SafeBranch    string            `json:"safeBranch"`
 	Port          int               `json:"port"`
+	Compose       string            `json:"compose,omitempty"`
 	EnvVars       map[string]string `json:"envVars,omitempty"`
 }
 
@@ -158,6 +159,17 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 		}
 	}
 
+
+	// ── Compose deploy ──
+	if job.DeployType == "compose" {
+		if err := dp.deployCompose(job.DeploymentID, job.ProjectID, job.ProjectSlug, job.Compose, logFn); err != nil {
+			logFn(fmt.Sprintf("❌ Compose deploy failed: %v", err))
+			updateDB("failed", "")
+		} else {
+			updateDB("success", "http://"+job.ProjectSlug+".nidus.app")
+		}
+		return
+	}
 	logFn(fmt.Sprintf("🚀 Iniciando deploy de %s (%s)...", job.ProjectName, job.Branch))
 	dp.db.Exec(ctx, `UPDATE deployments SET status='building', logs=$1 WHERE id=$2`,
 		strings.Join(logs, "\n"), job.DeploymentID)

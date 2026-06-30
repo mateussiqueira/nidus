@@ -204,6 +204,7 @@ func main() {
 	// DB metrics
 	mux.HandleFunc("GET /api/databases/{dbId}/metrics", withAuth(handleDatabaseMetrics))
 
+	mux.HandleFunc("POST /api/projects/{projectId}/compose", withAuth(handleDeployCompose))
 	mux.HandleFunc("POST /api/webhook/github", handleWebhook)
 
 	// Metrics
@@ -2937,4 +2938,41 @@ func handleDatabaseMetrics(w http.ResponseWriter, r *http.Request) {
 
 // ─── Admin routes registration patch ────────────────────────────────────
 // (registered below in existing route setup)
+
+
+// ─── Docker Compose ──────────────────────────────────────────────────────
+
+func handleDeployCompose(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("userID").(string)
+	projectID := r.PathValue("projectId")
+
+	var body struct{ Compose string `json:"compose"` }
+	json.NewDecoder(r.Body).Decode(&body)
+	if body.Compose == "" { jsonError(w, "compose yaml obrigatorio", http.StatusBadRequest); return }
+
+	var projectSlug string
+	db.QueryRow("SELECT slug FROM projects WHERE id=$1 AND user_id=$2", projectID, userID).Scan(&projectSlug)
+	if projectSlug == "" { jsonError(w, "Projeto nao encontrado", http.StatusNotFound); return }
+
+	deployID := uuid.New().String()
+	db.Exec("INSERT INTO deployments (id, project_id, branch, type, status) VALUES ($1,$2,compose,compose,queued)", deployID, projectID)
+
+	jobData, _ := json.Marshal(map[string]interface{}{
+		"deploymentId": deployID,
+		"projectId": projectID,
+		"projectSlug": projectSlug,
+		"compose": body.Compose,
+		"type": "compose",
+	})
+
+	if rdb != nil {
+		jobID := fmt.Sprintf("%d", time.Now().UnixNano())
+		rdb.LPush(context.Background(), "bull:deploy-queue:wait", jobID)
+		rdb.HSet(context.Background(), "bull:deploy-queue:"+jobID, "data", string(jobData))
+	}
+
+	jsonResponse(w, map[string]interface{}{
+		"deploymentId": deployID, "status": "queued", "message": "Compose deploy enfileirado",
+	}, http.StatusAccepted)
+}
 
