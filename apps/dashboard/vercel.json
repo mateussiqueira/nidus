@@ -5,23 +5,8 @@
       "destination": "https://api.nidus.app/api/"
     },
     {
-      "source": "/install.sh",
-      "destination": "/install.sh"
-    },
-    {
-      "source": "/blog/(.*)",
-      "destination": "https://nidus.app/blog/"
-    },
-    {
-      "source": "/community",
-      "destination": "https://nidus.app/community"
-    }
-  ],
-  "redirects": [
-    {
-      "source": "/docs",
-      "destination": "https://docs-swart-five-66.vercel.app",
-      "permanent": false
+      "source": "/docs/(.*)",
+      "destination": "/docs/.html"
     }
   ]
 }
