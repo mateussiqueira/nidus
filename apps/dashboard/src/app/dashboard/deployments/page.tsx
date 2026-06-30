@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Rocket, ArrowLeft } from "lucide-react"
-import Link from "next/link"
+import { Rocket } from "lucide-react"
 import { api } from "@/lib/api"
+import DeploymentHistoryChart from "@/components/DeploymentHistoryChart"
 
 type Deployment = {
   id: string
@@ -39,16 +39,18 @@ export default function DeploymentsPage() {
         </div>
       </div>
 
-      {loading && <p className="text-sm text-zinc-500">Carregando...</p>}
+      <DeploymentHistoryChart />
+
+      {loading && <p className="text-sm text-zinc-500 mt-4">Carregando...</p>}
 
       {!loading && deployments.length === 0 && (
-        <div className="card text-center py-12">
+        <div className="card text-center py-12 mt-4">
           <Rocket size={32} className="text-zinc-600 mx-auto mb-3" />
           <p className="text-sm text-zinc-400">Nenhum deployment ainda.</p>
         </div>
       )}
 
-      <div className="space-y-2">
+      <div className="space-y-2 mt-4">
         {deployments.map((dep) => (
           <div key={dep.id} className="card flex items-center justify-between">
             <div className="flex items-center gap-3">

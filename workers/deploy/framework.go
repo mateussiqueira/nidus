@@ -61,7 +61,7 @@ func detectFramework(repoDir string) string {
 			for _, f := range []struct{ dep, fw string }{
 				{"next", "nextjs"}, {"nuxt", "nuxt"}, {"vite", "vite"},
 				{"@angular/core", "angular"}, {"svelte", "svelte"},
-				{"astro", "astro"}, {"react", "vite"}, {"vue", "vite"},
+				{"astro", "astro"}, {"react", "vite"}, {"vue", "vite"}, {"express", "express"},
 			} {
 				if _, ok := all[f.dep]; ok {
 					return f.fw
@@ -196,7 +196,7 @@ EXPOSE 80`,
 // getExposedPort returns the internal port used by the framework's runtime.
 func getExposedPort(framework string) int {
 	switch framework {
-	case "nextjs", "nuxt":
+	case "nextjs", "nuxt", "express", "nodejs":
 		return 3000
 	case "vaden", "dart":
 		return 8080

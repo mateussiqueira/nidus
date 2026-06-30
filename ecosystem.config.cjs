@@ -11,6 +11,7 @@ module.exports = {
         API_PORT: "3001",
         NODE_ENV: "production",
         JWT_SECRET: "nidus_prod_jwt_secret_2026",
+        DASHBOARD_TOKEN: "nimbus-ssr-secret-2026",
         CORS_ORIGINS: "http://2.24.204.31:3000,http://localhost:3000",
         NIDUS_HOST: "2.24.204.31",
         NIDUS_DEPLOYS_DIR: "/root/nidus/deploys",
@@ -48,6 +49,8 @@ module.exports = {
       env: {
         PORT: "3000",
         NEXT_PUBLIC_API_URL: "http://2.24.204.31:3001",
+        DASHBOARD_TOKEN: "nimbus-ssr-secret-2026",
+        DASHBOARD_TOKEN: "nimbus-ssr-secret-2026",
       },
     },
     {

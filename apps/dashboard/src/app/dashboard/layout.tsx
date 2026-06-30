@@ -33,9 +33,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   const links = [
-    { href: "/dashboard", label: "Projetos", icon: LayoutDashboard },
-    { href: "/deployments", label: "Deployments", icon: Rocket },
+    { href: "/dashboard/projects", label: "Projetos", icon: LayoutDashboard },
+    { href: "/dashboard/deployments", label: "Deployments", icon: Rocket },
     { href: "/dashboard/databases", label: "Bancos de Dados", icon: Database },
+    { href: "/dashboard/settings", label: "Configuracoes", icon: Settings },
     { href: "/dashboard/monitoring", label: "Monitoramento", icon: Activity },
     { href: "/dashboard/deployments/logs", label: "Logs de Deploy", icon: FileText },
   ]

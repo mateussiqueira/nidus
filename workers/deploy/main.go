@@ -353,7 +353,7 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 	var runArgs []string
 	runArgs = append(runArgs, "-d",
 		"--name", job.ContainerName,
-		"-p", fmt.Sprintf("127.0.0.1:%d:%d", job.Port, exposedPort),
+		"-p", fmt.Sprintf("0.0.0.0:%d:%d", job.Port, exposedPort),
 		"--restart", "unless-stopped")
 
 	// Add environment variables
@@ -373,21 +373,34 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 		return
 	}
 
-	// ── Container health check ──
+	// ── Container health check (HTTP) ──
 	logFn("🏥 Verificando saúde do container...")
 	healthOK := false
-	for i := 0; i < 10; i++ {
+	healthURL := fmt.Sprintf("http://127.0.0.1:%d/health", job.Port)
+	for i := 0; i < 15; i++ {
 		time.Sleep(2 * time.Second)
+		// First check if container is running
 		inspectOutput, _ := runCmd(ctx, "docker", "inspect", "--format", "{{.State.Running}}", job.ContainerName)
-		if strings.TrimSpace(inspectOutput) == "true" {
+		if strings.TrimSpace(inspectOutput) != "true" {
+			logFn(fmt.Sprintf("⏳ Aguardando container iniciar... (%d/15)", i+1))
+			continue
+		}
+		// Then check HTTP health endpoint
+		resp, err := http.Get(healthURL)
+		if err == nil && resp.StatusCode >= 200 && resp.StatusCode < 400 {
+			resp.Body.Close()
 			healthOK = true
+			logFn(fmt.Sprintf("🏥 Health check OK: %s → %d", healthURL, resp.StatusCode))
 			break
 		}
-		logFn(fmt.Sprintf("⏳ Aguardando container... (%d/10)", i+1))
+		if resp != nil {
+			resp.Body.Close()
+		}
+		logFn(fmt.Sprintf("⏳ Aguardando app responder... (%d/15)", i+1))
 	}
 
 	if !healthOK {
-		logFn("❌ Container não está rodando após 20 segundos")
+		logFn("❌ Container não respondeu após 30 segundos")
 		// Get container logs for debugging
 		containerLogs, _ := runCmd(ctx, "docker", "logs", "--tail", "50", job.ContainerName)
 		if containerLogs != "" {

@@ -166,6 +166,25 @@ func main() {
 	// Projects — catch-all for /api/projects/*
 	mux.HandleFunc("/api/projects/", withAuth(handleProjectRoutes))
 	mux.HandleFunc("POST /api/projects", withAuth(handleCreateProject))
+	mux.HandleFunc("PUT /api/projects", func(w http.ResponseWriter, r *http.Request) {
+		jsonError(w, "Method not allowed", http.StatusMethodNotAllowed)
+	})
+	mux.HandleFunc("PUT /api/projects/", func(w http.ResponseWriter, r *http.Request) {
+		jsonError(w, "Method not allowed", http.StatusMethodNotAllowed)
+	})
+	mux.HandleFunc("PATCH /api/projects", func(w http.ResponseWriter, r *http.Request) {
+		jsonError(w, "Method not allowed. Use PATCH /api/projects/{id}", http.StatusMethodNotAllowed)
+	})
+	mux.HandleFunc("PATCH /api/projects/", func(w http.ResponseWriter, r *http.Request) {
+		jsonError(w, "Method not allowed. Use PATCH /api/projects/{id}", http.StatusMethodNotAllowed)
+	})
+	mux.HandleFunc("DELETE /api/projects", func(w http.ResponseWriter, r *http.Request) {
+		jsonError(w, "Method not allowed. Use DELETE /api/projects/{id}", http.StatusMethodNotAllowed)
+	})
+	mux.HandleFunc("DELETE /api/projects/", func(w http.ResponseWriter, r *http.Request) {
+		jsonError(w, "Method not allowed. Use DELETE /api/projects/{id}", http.StatusMethodNotAllowed)
+	})
+
 	mux.HandleFunc("GET /api/projects", withAuth(handleListProjects))
 
 	// Databases — catch-all for /api/databases/*
@@ -175,9 +194,9 @@ func main() {
 
 	// Mail
 	mux.HandleFunc("POST /api/mail/send", withAuth(handleSendMail))
-	mux.HandleFunc("GET /api/mail/templates", withAuth(handleListTemplates))
-	mux.HandleFunc("POST /api/mail/templates", withAuth(handleCreateTemplate))
-	mux.HandleFunc("/api/mail/templates/", withAuth(handleTemplateRoutes))
+	// DISABLED: mux.HandleFunc("GET /api/mail/templates", withAuth(handleListTemplates))
+	// DISABLED: mux.HandleFunc("POST /api/mail/templates", withAuth(handleCreateTemplate))
+	// DISABLED: mux.HandleFunc("/api/mail/templates/", withAuth(handleTemplateRoutes))
 	mux.HandleFunc("GET /api/mail/logs", withAuth(handleMailLogs))
 
 	// Webhook
@@ -239,11 +258,21 @@ func main() {
 // ─── Middleware ──────────────────────────────────────────────────────────────
 
 func corsMiddleware(next http.Handler) http.Handler {
-	origins := getEnv("CORS_ORIGINS", "http://localhost:3000")
+	allowedOrigins := strings.Split(getEnv("CORS_ORIGINS", "http://localhost:3000"), ",")
+	allowedMap := make(map[string]bool)
+	for _, o := range allowedOrigins {
+		allowedMap[strings.TrimSpace(o)] = true
+	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", origins)
+		origin := r.Header.Get("Origin")
+		if allowedMap[origin] {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+		} else {
+			w.Header().Set("Access-Control-Allow-Origin", strings.TrimSpace(allowedOrigins[0]))
+		}
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, x-request-id")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Max-Age", "86400")
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusNoContent)
@@ -309,6 +338,14 @@ func (w *statusWriter) WriteHeader(code int) {
 
 func withAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Dashboard SSR bypass: internal token
+		dashToken := getEnv("DASHBOARD_TOKEN", "")
+		if dashToken != "" && r.Header.Get("X-Dashboard-Token") == dashToken {
+			ctx := context.WithValue(r.Context(), "userID", "d780231d-3f40-47bb-8bf7-a2b762998325")
+			next(w, r.WithContext(ctx))
+			return
+		}
+
 		tokenStr := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 		if tokenStr == "" {
 			jsonError(w, "Token ausente", http.StatusUnauthorized)
@@ -410,6 +447,10 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		jsonError(w, "Body invalido", http.StatusBadRequest)
+		return
+	}
+	if body.Email == "" || body.Password == "" {
+		jsonError(w, "Email e password sao obrigatorios", http.StatusBadRequest)
 		return
 	}
 
@@ -674,6 +715,25 @@ func handleCreateProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	re := regexp.MustCompile("<[^>]*>")
+	body.Name = re.ReplaceAllString(body.Name, "")
+	body.Name = strings.TrimSpace(body.Name)
+	if len(body.Name) > 100 {
+		body.Name = body.Name[:100]
+	}
+
+	// Auto-assign template repo if none provided
+	if body.RepoURL == "" {
+		tmpl := "static"
+		if body.Framework == "express" || body.Framework == "nodejs" {
+			tmpl = "express"
+		}
+		body.RepoURL = "/root/nidus-repos/template-" + tmpl + ".git"
+		if body.Framework == "" {
+			body.Framework = tmpl
+		}
+	}
+
 	slug := body.Slug
 	if slug == "" {
 		slug = generateSlug(body.Name)
@@ -692,7 +752,11 @@ func handleCreateProject(w http.ResponseWriter, r *http.Request) {
 		id, body.Name, slug, userID, body.Framework, body.RepoURL, now,
 	).Scan(&id, &body.Name, &slug, &framework, &status, &domain, &repoURL, &envVars, &createdAt, &port)
 	if err != nil {
-		jsonError(w, "Erro ao criar projeto", http.StatusInternalServerError)
+		if strings.Contains(err.Error(), "duplicate key") || strings.Contains(err.Error(), "23505") {
+			jsonError(w, "Slug ja existe. Escolha outro nome.", http.StatusConflict)
+		} else {
+			jsonError(w, "Erro ao criar projeto", http.StatusInternalServerError)
+		}
 		return
 	}
 
@@ -712,6 +776,14 @@ func handleCreateProject(w http.ResponseWriter, r *http.Request) {
 func handleProjectRoutes(w http.ResponseWriter, r *http.Request) {
 	path := strings.TrimPrefix(r.URL.Path, "/api/projects/")
 	parts := strings.Split(path, "/")
+
+	// Validate UUID format for project ID
+	if len(parts) > 0 && parts[0] != "" {
+		if _, err := uuid.Parse(parts[0]); err != nil {
+			jsonError(w, "ID de projeto invalido", http.StatusBadRequest)
+			return
+		}
+	}
 
 	// GET /api/projects/:id
 	if len(parts) == 1 || (len(parts) == 2 && parts[1] == "") {
@@ -782,13 +854,14 @@ func handleGetProject(w http.ResponseWriter, r *http.Request, id string) {
 
 	var name, slug, pStatus, branch string
 	var framework, domain, repoURL, envVars sql.NullString
+	var port int
 	var createdAt time.Time
 	err := db.QueryRowContext(r.Context(),
-		`SELECT name, slug, framework, status, domain, repo_url, env_vars, branch, created_at
+		`SELECT name, slug, framework, status, domain, repo_url, env_vars, branch, port, created_at
 		 FROM projects WHERE id = $1 AND user_id = $2`, id, userID,
-	).Scan(&name, &slug, &framework, &pStatus, &domain, &repoURL, &envVars, &branch, &createdAt)
+	).Scan(&name, &slug, &framework, &pStatus, &domain, &repoURL, &envVars, &branch, &port, &createdAt)
 	if err == sql.ErrNoRows {
-		jsonResponse(w, nil)
+		jsonError(w, "Projeto nao encontrado", http.StatusNotFound)
 		return
 	}
 	if err != nil {
@@ -806,6 +879,7 @@ func handleGetProject(w http.ResponseWriter, r *http.Request, id string) {
 		"repoUrl":   nullString(repoURL),
 		"envVars":   nullString(envVars),
 		"branch":    branch,
+		"port":      port,
 		"createdAt": createdAt.Format(time.RFC3339),
 	})
 }
@@ -1019,7 +1093,7 @@ func handleGetDeployment(w http.ResponseWriter, r *http.Request, projectID, depl
 		 FROM deployments WHERE id = $1 AND project_id = $2`, deploymentID, projectID,
 	).Scan(&status, &url, &branch, &deployType, &createdAt, &finishedAt)
 	if err == sql.ErrNoRows {
-		jsonResponse(w, nil)
+		jsonError(w, "Projeto nao encontrado", http.StatusNotFound)
 		return
 	}
 	if err != nil {
@@ -1249,6 +1323,12 @@ func handleDeploy(w http.ResponseWriter, r *http.Request, projectID string) {
 
 	deployID := uuid.New().String()
 
+	// Validate repo URL
+	if !repoURL.Valid || repoURL.String == "" {
+		jsonError(w, "Configure o repositorio Git antes de fazer deploy", http.StatusBadRequest)
+		return
+	}
+
 	// Create deployment record
 	_, err = db.ExecContext(r.Context(),
 		`INSERT INTO deployments (id, project_id, branch, type, status)
@@ -1445,7 +1525,7 @@ func handleGetDatabase(w http.ResponseWriter, r *http.Request, id string) {
 		 WHERE d.id = $1 AND p.user_id = $2`, id, userID,
 	).Scan(&name, &url, &projectID, &createdAt)
 	if err == sql.ErrNoRows {
-		jsonResponse(w, nil)
+		jsonError(w, "Projeto nao encontrado", http.StatusNotFound)
 		return
 	}
 	if err != nil {
@@ -2003,7 +2083,23 @@ func handlePrometheus(w http.ResponseWriter, r *http.Request) {
 	runtime.ReadMemStats(&m)
 
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	fmt.Fprintf(w, `# HELP nidus_uptime_seconds Uptime in seconds
+	fmt.Fprintf(w, `# HELP go_info Go runtime info
+# TYPE go_info gauge
+go_info{version="%s"} 1
+
+# HELP go_goroutines Number of goroutines
+# TYPE go_goroutines gauge
+go_goroutines %d
+
+# HELP go_memstats_alloc_bytes Allocated memory bytes
+# TYPE go_memstats_alloc_bytes gauge
+go_memstats_alloc_bytes %d
+
+# HELP go_memstats_sys_bytes System memory bytes
+# TYPE go_memstats_sys_bytes gauge
+go_memstats_sys_bytes %d
+
+# HELP nidus_uptime_seconds Uptime in seconds
 # TYPE nidus_uptime_seconds gauge
 nidus_uptime_seconds %.2f
 
@@ -2018,7 +2114,8 @@ nidus_memory_heap_used_bytes %d
 # HELP nidus_memory_rss_bytes Resident set size
 # TYPE nidus_memory_rss_bytes gauge
 nidus_memory_rss_bytes %d
-`, time.Since(startTime).Seconds(), db.Stats().OpenConnections, m.HeapInuse, m.Sys)
+`, runtime.Version(), runtime.NumGoroutine(), m.Alloc, m.Sys,
+		time.Since(startTime).Seconds(), db.Stats().OpenConnections, m.HeapInuse, m.Sys)
 }
 
 var startTime = time.Now()
