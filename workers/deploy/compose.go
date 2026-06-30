@@ -10,7 +10,7 @@ import (
 )
 
 func (dp *DeployProcessor) deployCompose(deploymentID, projectID, projectSlug, composeYAML string, logFn func(string)) error {
-	composeDir := filepath.Join("/tmp", "nidus-compose", projectSlug)
+	composeDir := filepath.Join("/tmp", "stackrun-compose", projectSlug)
 	os.MkdirAll(composeDir, 0755)
 	defer os.RemoveAll(composeDir)
 
@@ -20,7 +20,7 @@ func (dp *DeployProcessor) deployCompose(deploymentID, projectID, projectSlug, c
 	}
 
 	// Set project name to isolate services per deployment
-	projectName := fmt.Sprintf("nidus-%s", projectSlug)
+	projectName := fmt.Sprintf("stackrun-%s", projectSlug)
 	projectName = strings.ReplaceAll(projectName, "-", "")
 
 	logFn(fmt.Sprintf("📦 Reading compose services from %s...", composeFile))

@@ -1,9 +1,9 @@
 import Link from 'next/link'
 
 const docs = [
-  { title: 'Home', href: '/en', description: 'Nidus overview' },
-  { title: 'Quick Start', href: '/en/docs/quickstart', description: 'Install and run Nidus in minutes' },
-  { title: 'Architecture', href: '/en/docs/architecture', description: 'Understand how Nidus works' },
+  { title: 'Home', href: '/en', description: 'StackRun overview' },
+  { title: 'Quick Start', href: '/en/docs/quickstart', description: 'Install and run StackRun in minutes' },
+  { title: 'Architecture', href: '/en/docs/architecture', description: 'Understand how StackRun works' },
   { title: 'Deployment', href: '/en/docs/deployment', description: 'Deploy your applications' },
   { title: 'Configuration', href: '/en/docs/configuration', description: 'Environment variables and settings' },
   { title: 'CLI', href: '/en/docs/cli', description: 'Use the command line' },
@@ -25,7 +25,7 @@ export default function ENHome() {
       </nav>
       
       <div className="container mx-auto px-4 py-16">
-        <h1 className="text-4xl font-bold mb-4">Nidus</h1>
+        <h1 className="text-4xl font-bold mb-4">StackRun</h1>
         <p className="text-xl text-gray-400 mb-8">
           Self-hosted deploy platform. Think Vercel that runs on your own machine.
         </p>

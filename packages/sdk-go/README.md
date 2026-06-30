@@ -1,11 +1,11 @@
-# Nidus Go SDK
+# StackRun Go SDK
 
-Go client for the [Nidus](https://nidus.app) PaaS API.
+Go client for the [StackRun](https://stackrun.vercel.app) PaaS API.
 
 ## Installation
 
 ```bash
-go get github.com/mateussiqueira/nidus/packages/sdk-go
+go get github.com/mateussiqueira/stackrun/packages/sdk-go
 ```
 
 ## Usage
@@ -17,12 +17,12 @@ import (
     "fmt"
     "log"
 
-    "github.com/mateussiqueira/nidus/packages/sdk-go/nidus"
+    "github.com/mateussiqueira/stackrun/packages/sdk-go/nidus"
 )
 
 func main() {
-    client := nidus.NewClient("https://api.nidus.app")
-    client.SetToken("nidus_xxx")
+    client := stackrun.NewClient("https://api.stackrun.vercel.app")
+    client.SetToken("stackrun_xxx")
 
     projects, err := client.Projects.List()
     if err != nil {

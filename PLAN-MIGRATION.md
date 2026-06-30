@@ -1,8 +1,8 @@
-# Plano de Migração: Nidus PaaS → Go + Rust Híbrido
+# Plano de Migração: StackRun PaaS → Go + Rust Híbrido
 
 ## Objetivo
 
-Migrar o Nidus PaaS de Node.js/TypeScript para **Go + Rust** para suportar **1000+ deploys/dia** com performance extrema e economia de recursos.
+Migrar o StackRun PaaS de Node.js/TypeScript para **Go + Rust** para suportar **1000+ deploys/dia** com performance extrema e economia de recursos.
 
 ## Arquitetura Alvo
 
@@ -250,15 +250,15 @@ tracing-subscriber = "0.3"
 ```
 ┌─────────────────────────────────────────────────┐
 │  Binários                                        │
-│  ├── nidus-api        (Go, ~15MB, porta 3001)   │
-│  ├── nidus-worker     (Go, ~15MB, Redis worker) │
-│  ├── nidus-proxy      (Rust, ~5MB, porta 80/443)│
-│  └── nidus-dashboard  (Next.js, porta 3000)     │
+│  ├── stackrun-api        (Go, ~15MB, porta 3001)   │
+│  ├── stackrun-worker     (Go, ~15MB, Redis worker) │
+│  ├── stackrun-proxy      (Rust, ~5MB, porta 80/443)│
+│  └── stackrun-dashboard  (Next.js, porta 3000)     │
 │                                                  │
 │  Containers                                      │
-│  ├── nidus-postgres   (PostgreSQL 16)            │
-│  ├── nidus-redis      (Redis 7)                  │
-│  └── nidus-minio      (MinIO, opcional)          │
+│  ├── stackrun-postgres   (PostgreSQL 16)            │
+│  ├── stackrun-redis      (Redis 7)                  │
+│  └── stackrun-minio      (MinIO, opcional)          │
 └─────────────────────────────────────────────────┘
 ```
 

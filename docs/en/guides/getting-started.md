@@ -9,7 +9,7 @@
 ## Installation
 
 ```bash
-git clone https://github.com/mateussiqueira/nidus.git
+git clone https://github.com/mateussiqueira/stackrun.git
 cd nidus
 npm install
 ```
@@ -25,7 +25,7 @@ Edit `.env`:
 ```bash
 DATABASE_URL=postgresql://user:pass@localhost:5432/nidus
 REDIS_URL=redis://localhost:6379
-NIDUS_HOST=localhost
+STACKRUN_HOST=localhost
 JWT_SECRET=change-this
 ```
 
@@ -60,9 +60,9 @@ npm run dev
 
 ```bash
 # Via CLI
-npx nidus login
+npx stackrun login
 cd my-project
-npx nidus deploy
+npx stackrun deploy
 
 # Via GitHub
 Configure webhook pointing to http://your-ip:3001/api/webhook

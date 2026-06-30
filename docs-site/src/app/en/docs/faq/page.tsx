@@ -9,13 +9,13 @@ export default function FAQEN() {
         <h1 className="text-4xl font-bold mb-8">FAQ</h1>
         
         <section className="mb-12">
-          <h2 className="text-2xl font-semibold mb-4">What is Nidus?</h2>
-          <p className="text-[#a1a1aa]">Nidus is a self-hosted deploy platform, similar to Vercel but runs on your own server.</p>
+          <h2 className="text-2xl font-semibold mb-4">What is StackRun?</h2>
+          <p className="text-[#a1a1aa]">StackRun is a self-hosted deploy platform, similar to Vercel but runs on your own server.</p>
         </section>
 
         <section className="mb-12">
-          <h2 className="text-2xl font-semibold mb-4">Is Nidus free?</h2>
-          <p className="text-[#a1a1aa]">Yes! Nidus is open-source under the MIT license. You only pay for the server where it runs.</p>
+          <h2 className="text-2xl font-semibold mb-4">Is StackRun free?</h2>
+          <p className="text-[#a1a1aa]">Yes! StackRun is open-source under the MIT license. You only pay for the server where it runs.</p>
         </section>
 
         <section className="mb-12">
@@ -36,7 +36,7 @@ export default function FAQEN() {
           <p className="text-[#a1a1aa]">Three ways:</p>
           <ol className="list-decimal list-inside text-[#a1a1aa] space-y-2 mt-2">
             <li><strong>GitHub</strong> — Set up a webhook and push</li>
-            <li><strong>CLI</strong> — Use <code>nidus deploy</code></li>
+            <li><strong>CLI</strong> — Use <code>stackrun deploy</code></li>
             <li><strong>API</strong> — Call the REST endpoint</li>
           </ol>
         </section>

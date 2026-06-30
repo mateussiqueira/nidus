@@ -41,7 +41,7 @@ async fn main() {
     tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "nidus_proxy=info,tower_http=info".into()),
+                .unwrap_or_else(|_| "stackrun_proxy=info,tower_http=info".into()),
         )
         .init();
 
@@ -88,7 +88,7 @@ async fn main() {
         .with_state(state);
 
     let addr: SocketAddr = format!("0.0.0.0:{}", listen_addr).parse().unwrap();
-    info!("Nidus Proxy starting on {}", addr);
+    info!("StackRun Proxy starting on {}", addr);
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app.into_make_service_with_connect_info::<SocketAddr>())
@@ -99,7 +99,7 @@ async fn main() {
 async fn health() -> impl IntoResponse {
     axum::Json(serde_json::json!({
         "status": "ok",
-        "name": "nidus-proxy",
+        "name": "stackrun-proxy",
         "version": "0.2.0",
         "timestamp": chrono::Utc::now().to_rfc3339(),
     }))

@@ -25,8 +25,8 @@ import (
 // ── Config ────────────────────────────────────────────────────────────
 
 var (
-	deploysDir = env("NIDUS_DEPLOYS_DIR", "/tmp/nidus-deploys")
-	host       = env("NIDUS_HOST", "localhost")
+	deploysDir = env("STACKRUN_DEPLOYS_DIR", "/tmp/stackrun-deploys")
+	host       = env("STACKRUN_HOST", "localhost")
 	redisURL   = env("REDIS_URL", "redis://localhost:6379")
 	dbURL      = env("DATABASE_URL", "postgresql://broto:broto@localhost:5432/nidus")
 	workerPort = env("WORKER_PORT", "8081")
@@ -138,7 +138,7 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 	start := time.Now()
 	deployActive.Inc()
 	defer deployActive.Dec()
-	exec.Command("docker", "network", "create", "nidus").Run() // ignore error if exists
+	exec.Command("docker", "network", "create", "stackrun").Run() // ignore error if exists
 
 	var logs []string
 	logFn := func(msg string) {
@@ -167,7 +167,7 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 			logFn(fmt.Sprintf("❌ Compose deploy failed: %v", err))
 			updateDB("failed", "")
 		} else {
-			updateDB("success", "http://"+job.ProjectSlug+".nidus.app")
+			updateDB("success", "http://"+job.ProjectSlug+".stackrun.vercel.app")
 		}
 		return
 	}
@@ -260,13 +260,13 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 
 	// ── Check for custom Dockerfile ──
 	customDockerfile := filepath.Join(repoDir, "Dockerfile")
-	customNidusDockerfile := filepath.Join(repoDir, "Dockerfile.nidus")
+	customStackRunDockerfile := filepath.Join(repoDir, "Dockerfile.stackrun")
 	useCustomDockerfile := false
 	if _, err := os.Stat(customDockerfile); err == nil {
 		logFn("📄 Using custom Dockerfile")
 		useCustomDockerfile = true
-	} else if _, err := os.Stat(customNidusDockerfile); err == nil {
-		logFn("📄 Using custom Dockerfile.nidus")
+	} else if _, err := os.Stat(customStackRunDockerfile); err == nil {
+		logFn("📄 Using custom Dockerfile.stackrun")
 		useCustomDockerfile = true
 	}
 
@@ -281,11 +281,11 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 		if _, err := os.Stat(customDockerfile); err == nil {
 			buildArgs = append(buildArgs, "-f", customDockerfile)
 		} else {
-			buildArgs = append(buildArgs, "-f", customNidusDockerfile)
+			buildArgs = append(buildArgs, "-f", customStackRunDockerfile)
 		}
 	} else {
 		dockerfile := generateDockerfile(framework)
-		dockerfilePath := filepath.Join(repoDir, "Dockerfile.nidus")
+		dockerfilePath := filepath.Join(repoDir, "Dockerfile.stackrun")
 		os.WriteFile(dockerfilePath, []byte(dockerfile), 0644)
 		defer os.Remove(dockerfilePath)
 		buildArgs = append(buildArgs, "-f", dockerfilePath)
@@ -368,7 +368,7 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 		"--name", job.ContainerName,
 		"-p", fmt.Sprintf("0.0.0.0:%d:%d", job.Port, exposedPort),
 		"--restart", "unless-stopped",
-		"--network", "nidus")
+		"--network", "stackrun")
 
 	// Add environment variables
 	for key, value := range envVars {
@@ -381,7 +381,7 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 	for volRows.Next() {
 		var name, mountPath string
 		volRows.Scan(&name, &mountPath)
-		volName := fmt.Sprintf("nidus-%s-%s", job.ProjectSlug, name)
+		volName := fmt.Sprintf("stackrun-%s-%s", job.ProjectSlug, name)
 		runArgs = append(runArgs, "-v", volName+":"+mountPath)
 	}
 	volRows.Close()
@@ -465,7 +465,7 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 	//   1. Build new image (docker build)
 	//   2. Start green container on port+1 (docker run -p PORT+1:3000)
 	//   3. Health check green (10 attempts, 2s interval)
-	//   4. If healthy: update nidus-proxy route → green port
+	//   4. If healthy: update stackrun-proxy route → green port
 	//   5. Send SIGTERM to blue, wait 30s
 	//   6. Stop blue, rename green → blue
 	//
@@ -475,7 +475,7 @@ func (dp *DeployProcessor) Process(ctx context.Context, jobJSON string) {
 	//   3. Step up: 25% → 50% → 75% → 100%
 	//   4. IF errors > 1%: auto-rollback
 	//
-	// Invoke: /root/nidus/scripts/zero-downtime-deploy.sh <slug> <image>
+	// Invoke: /root/stackrun/scripts/zero-downtime-deploy.sh <slug> <image>
 
 func runCmd(ctx context.Context, name string, args ...string) (string, error) {
 	cmd := exec.CommandContext(ctx, name, args...)
@@ -532,7 +532,7 @@ func startHealthServer(ctx context.Context, rdb *redis.Client, db *pgxpool.Pool)
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.Println("═══════════════════════════════════════════")
-	log.Println("  Nidus Deploy Worker (Go)")
+	log.Println("  StackRun Deploy Worker (Go)")
 	numWorkers := min(runtime.NumCPU(), 16)
 	log.Printf("  Workers: %d", numWorkers)
 	log.Println("═══════════════════════════════════════════")

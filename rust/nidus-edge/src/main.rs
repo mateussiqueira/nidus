@@ -30,10 +30,10 @@ struct EdgeState {
 #[tokio::main]
 async fn main() -> Result<()> {
     tracing_subscriber::fmt()
-        .with_env_filter(tracing_subscriber::EnvFilter::new("nidus_edge=info,wasmtime=warn"))
+        .with_env_filter(tracing_subscriber::EnvFilter::new("stackrun_edge=info,wasmtime=warn"))
         .init();
 
-    info!("Nidus Edge Runtime v0.1.0");
+    info!("StackRun Edge Runtime v0.1.0");
     info!("   Runtime: wasmtime");
     info!("   Max fuel/request: {}M instructions", MAX_FUEL / 1_000_000);
     info!("   Module cache: {} entries", MODULE_CACHE_SIZE);
@@ -47,7 +47,7 @@ async fn main() -> Result<()> {
     let engine = Engine::new(&config)?;
 
     let state = EdgeState {
-        wasm_dir: PathBuf::from(std::env::var("WASM_DIR").unwrap_or_else(|_| "/var/lib/nidus/wasm".into())),
+        wasm_dir: PathBuf::from(std::env::var("WASM_DIR").unwrap_or_else(|_| "/var/lib/stackrun/wasm".into())),
         instance_cache: Arc::new(RwLock::new(lru::LruCache::new(MODULE_CACHE_SIZE.try_into().unwrap()))),
         engine,
     };

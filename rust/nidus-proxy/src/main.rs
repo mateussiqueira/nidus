@@ -12,8 +12,8 @@ use tokio::net::TcpListener;
 use tokio::sync::RwLock;
 use tokio_postgres::{Client, NoTls};
 use tracing::{info, warn, error};
-use nidus_mesh::project_service_client::ProjectServiceClient;
-use nidus_mesh::ResolveSlugRequest;
+use stackrun_mesh::project_service_client::ProjectServiceClient;
+use stackrun_mesh::ResolveSlugRequest;
 
 struct ProxyState {
     db: Client,
@@ -24,10 +24,10 @@ struct ProxyState {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt()
-        .with_env_filter("nidus_proxy=info")
+        .with_env_filter("stackrun_proxy=info")
         .init();
 
-    info!("🦀 Nidus Proxy v0.2.0 starting...");
+    info!("🦀 StackRun Proxy v0.2.0 starting...");
 
     let db_url = std::env::var("DATABASE_URL")
         .unwrap_or_else(|_| "host=localhost user=nidus password=nidus_dev_2026 dbname=nidus".into());
@@ -111,7 +111,7 @@ async fn handle(state: Arc<ProxyState>, req: Request<Incoming>) -> Result<Respon
     }
 
     if path == "/metrics" {
-        let body = format!("# HELP nidus_proxy_cache_routes Total cached routes\n# TYPE nidus_proxy_cache_routes gauge\nnidus_proxy_cache_routes {}\n",
+        let body = format!("# HELP stackrun_proxy_cache_routes Total cached routes\n# TYPE stackrun_proxy_cache_routes gauge\nstackrun_proxy_cache_routes {}\n",
             state.cache.read().await.len());
         return Ok(Response::new(Full::new(Bytes::from(body))));
     }

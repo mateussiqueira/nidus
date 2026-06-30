@@ -61,7 +61,7 @@ export default function NewProjectPage() {
         <div>
           <label className="mb-1 block text-sm font-medium text-zinc-400">Slug</label>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-zinc-500">nidus.app/</span>
+            <span className="text-sm text-zinc-500">stackrun.vercel.app/</span>
             <input className="input" value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="meu-app" required />
           </div>
         </div>

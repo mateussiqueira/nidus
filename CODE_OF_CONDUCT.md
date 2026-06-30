@@ -34,7 +34,7 @@ Este Código de Conduta se aplica a todos os espaços da comunidade, e também s
 
 ## Aplicação
 
-Casos de comportamento abusivo, de assédio ou de outro comportamento inaceitável podem ser reportados aos líderes da comunidade via email em **conduct@nidus.dev**.
+Casos de comportamento abusivo, de assédio ou de outro comportamento inaceitável podem ser reportados aos líderes da comunidade via email em **conduct@stackrun.dev**.
 
 Todas as reclamações serão revisadas e investigadas de forma rápida e justa.
 

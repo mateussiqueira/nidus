@@ -35,8 +35,8 @@ type Config struct {
 // LoadConfig reads configuration from environment variables with sensible defaults.
 func LoadConfig() *Config {
 	return &Config{
-		DeploysDir:          envOr("NIDUS_DEPLOYS_DIR", "/tmp/nidus-deploys"),
-		Host:                envOr("NIDUS_HOST", "localhost"),
+		DeploysDir:          envOr("STACKRUN_DEPLOYS_DIR", "/tmp/stackrun-deploys"),
+		Host:                envOr("STACKRUN_HOST", "localhost"),
 		APIURL:              envOr("API_URL", "http://localhost:3001"),
 		DatabaseURL:         envOr("DATABASE_URL", "postgresql://broto:broto@localhost:5432/nidus"),
 		RedisURL:            envOr("REDIS_URL", "redis://localhost:6379"),

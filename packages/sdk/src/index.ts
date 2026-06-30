@@ -1,6 +1,6 @@
-export { NidusClient } from "./client.js";
+export { StackRunClient } from "./client.js";
 export type {
-  NidusClientOptions,
+  StackRunClientOptions,
   Project,
   Deployment,
   Domain,

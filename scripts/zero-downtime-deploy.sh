@@ -1,5 +1,5 @@
 #!/bin/bash
-# Nidus Zero-Downtime Deploy — Blue/Green Strategy
+# StackRun Zero-Downtime Deploy — Blue/Green Strategy
 set -e
 
 PROJECT="${1:?Usage: $0 <project-slug> <new-image>}"
@@ -8,7 +8,7 @@ HEALTH_URL="${3:-/health}"
 HEALTH_RETRIES="${4:-10}"
 HEALTH_INTERVAL="${5:-2}"
 DRAIN_SECONDS="${6:-30}"
-BLUE_PORT=$(docker port "nidus-${PROJECT}" 2>/dev/null | head -1 | cut -d: -f2)
+BLUE_PORT=$(docker port "stackrun-${PROJECT}" 2>/dev/null | head -1 | cut -d: -f2)
 GREEN_PORT=$((BLUE_PORT + 1))
 NETWORK="${7:-nidus}"
 
@@ -23,10 +23,10 @@ echo "════════════════════════�
 echo ""
 echo "[1/5] Starting green container..."
 docker run -d --rm \
-    --name "nidus-${PROJECT}-green" \
+    --name "stackrun-${PROJECT}-green" \
     --network "$NETWORK" \
-    --label "nidus.project=$PROJECT" \
-    --label "nidus.color=green" \
+    --label "stackrun.project=$PROJECT" \
+    --label "stackrun.color=green" \
     -p "$GREEN_PORT:3000" \
     "$NEW_IMAGE"
 
@@ -39,7 +39,7 @@ for i in $(seq 1 $HEALTH_RETRIES); do
     fi
     if [ $i -eq $HEALTH_RETRIES ]; then
         echo "  ✗ Health check failed after $HEALTH_RETRIES attempts"
-        docker stop "nidus-${PROJECT}-green"
+        docker stop "stackrun-${PROJECT}-green"
         exit 1
     fi
     sleep $HEALTH_INTERVAL
@@ -47,8 +47,8 @@ done
 
 # 3. Switch traffic via proxy port update
 echo "[3/5] Switching traffic..."
-if [ -S /tmp/nidus-proxy.sock ]; then
-    echo "db.nidus_proxy.update_port('$PROJECT', $GREEN_PORT)" | nc -U /tmp/nidus-proxy.sock
+if [ -S /tmp/stackrun-proxy.sock ]; then
+    echo "db.stackrun_proxy.update_port('$PROJECT', $GREEN_PORT)" | nc -U /tmp/stackrun-proxy.sock
 fi
 echo "  ✓ Traffic → port $GREEN_PORT"
 
@@ -58,8 +58,8 @@ sleep $DRAIN_SECONDS
 
 # 5. Stop blue
 echo "[5/5] Stopping blue container..."
-docker stop "nidus-${PROJECT}" 2>/dev/null || true
-docker rename "nidus-${PROJECT}-green" "nidus-${PROJECT}"
+docker stop "stackrun-${PROJECT}" 2>/dev/null || true
+docker rename "stackrun-${PROJECT}-green" "stackrun-${PROJECT}"
 
 echo ""
 echo "═══════════════════════════════════"

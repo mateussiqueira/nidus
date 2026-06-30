@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs"
 import { homedir } from "os"
 import { join } from "path"
 
-const CONFIG_PATH = join(homedir(), ".nidus", "config.json")
+const CONFIG_PATH = join(homedir(), ".stackrun", "config.json")
 
 function loadConfig() {
   try {
@@ -13,12 +13,12 @@ function loadConfig() {
 }
 
 function saveConfig(config) {
-  const dir = join(homedir(), ".nidus")
+  const dir = join(homedir(), ".stackrun")
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
   writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2))
 }
 
-const API = process.env.NIDUS_API_URL || "http://localhost:3001"
+const API = process.env.STACKRUN_API_URL || "http://localhost:3001"
 
 async function api(path, options = {}) {
   const config = loadConfig()

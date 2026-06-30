@@ -14,7 +14,7 @@
     ],
     "component": {
       "type": "application",
-      "bom-ref": "path+file:///root/nidus/rust/nidus-edge#0.1.0",
+      "bom-ref": "path+file:///root/stackrun/rust/nidus-edge#0.1.0",
       "name": "nidus-edge",
       "version": "0.1.0",
       "scope": "required",
@@ -22,7 +22,7 @@
       "components": [
         {
           "type": "application",
-          "bom-ref": "path+file:///root/nidus/rust/nidus-edge#0.1.0 bin-target-0",
+          "bom-ref": "path+file:///root/stackrun/rust/nidus-edge#0.1.0 bin-target-0",
           "name": "nidus-edge",
           "version": "0.1.0",
           "purl": "pkg:cargo/nidus-edge@0.1.0?download_url=file://.#src/main.rs"
@@ -7559,7 +7559,7 @@
   ],
   "dependencies": [
     {
-      "ref": "path+file:///root/nidus/rust/nidus-edge#0.1.0",
+      "ref": "path+file:///root/stackrun/rust/nidus-edge#0.1.0",
       "dependsOn": [
         "registry+https://github.com/rust-lang/crates.io-index#anyhow@1.0.103",
         "registry+https://github.com/rust-lang/crates.io-index#bytes@1.12.0",

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Nimbus — Self-Hosted PaaS',
     description: 'Deploy like Vercel. Run on your own server.',
-    url: 'https://nimbus200.vercel.app',
+    url: 'https://stackrun.vercel.app',
     images: ['/logo.png'],
   },
 }

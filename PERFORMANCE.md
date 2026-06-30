@@ -1,8 +1,8 @@
-# Nidus Performance Architecture
+# StackRun Performance Architecture
 
 ## Overview
 
-Nidus uses a hybrid architecture for maximum performance:
+StackRun uses a hybrid architecture for maximum performance:
 
 - **API Layer**: NestJS (TypeScript) - fast development, good ecosystem
 - **Deploy Worker**: Go - maximum performance for Docker/git operations
@@ -23,12 +23,12 @@ The deploy worker is written in Go for maximum performance:
 Build:
 ```bash
 cd workers/deploy
-go build -o ../../bin/nidus-deploy-worker .
+go build -o ../../bin/stackrun-deploy-worker .
 ```
 
 Run:
 ```bash
-./bin/nidus-deploy-worker
+./bin/stackrun-deploy-worker
 ```
 
 ### 2. Cache Layer (`apps/control-plane/src/cache/`)

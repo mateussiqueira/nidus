@@ -11,7 +11,7 @@ export default function CLIPT() {
         <section className="mb-12">
           <h2 className="text-2xl font-semibold mb-4">Instalação</h2>
           <pre className="bg-[#111113] p-4 rounded-lg mb-6 overflow-x-auto">
-            <code>npm install -g nidus</code>
+            <code>npm install -g stackrun</code>
           </pre>
         </section>
 
@@ -20,13 +20,13 @@ export default function CLIPT() {
           
           <h3 className="text-xl font-medium mb-3">Login</h3>
           <pre className="bg-[#111113] p-4 rounded-lg mb-6 overflow-x-auto">
-            <code>nidus login --url http://seu-servidor:3001</code>
+            <code>stackrun login --url http://seu-servidor:3001</code>
           </pre>
 
           <h3 className="text-xl font-medium mb-3">Deploy</h3>
           <pre className="bg-[#111113] p-4 rounded-lg mb-6 overflow-x-auto">
 {`cd meu-projeto
-nidus deploy`}
+stackrun deploy`}
           </pre>
 
           <h3 className="text-xl font-medium mb-3">Status</h3>
@@ -36,9 +36,9 @@ nidus deploy`}
 
           <h3 className="text-xl font-medium mb-3">Projects</h3>
           <pre className="bg-[#111113] p-4 rounded-lg mb-6 overflow-x-auto">
-{`nidus projects list
-nidus projects create --name "Meu App"
-nidus projects delete --id abc123`}
+{`stackrun projects list
+stackrun projects create --name "Meu App"
+stackrun projects delete --id abc123`}
           </pre>
         </section>
       </div>

@@ -3,8 +3,8 @@
 ## Como funciona
 
 1. Você faz push pro GitHub
-2. O GitHub envia um webhook pro Nidus
-3. O Nidus clona o repo
+2. O GitHub envia um webhook pro StackRun
+3. O StackRun clona o repo
 4. Detecta o framework (Next.js, Nuxt, Vite, etc.)
 5. Builda a imagem Docker
 6. Roda o container
@@ -33,6 +33,6 @@ No GitHub, vá em Settings → Webhooks → Add webhook:
 Cada branch gera uma URL única:
 
 ```
-main → meu-app.nidus.localhost
-feature-x → feature-x-meu-app.nidus.localhost
+main → meu-app.stackrun.localhost
+feature-x → feature-x-meu-app.stackrun.localhost
 ```

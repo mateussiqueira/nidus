@@ -1,7 +1,7 @@
 version: '3.8'
 
 # ============================================
-# NIDUS - Production Docker Compose
+# STACKRUN - Production Docker Compose
 # ============================================
 
 services:
@@ -10,7 +10,7 @@ services:
   # ============================================
   caddy:
     image: caddy:2-alpine
-    container_name: nidus-caddy
+    container_name: stackrun-caddy
     restart: unless-stopped
     ports:
       - "80:80"
@@ -22,7 +22,7 @@ services:
       - caddy_config:/config
       - ./logs/caddy:/var/log/caddy
     networks:
-      - nidus-network
+      - stackrun-network
     depends_on:
       - api
       - dashboard
@@ -49,10 +49,10 @@ services:
   # ============================================
   postgres:
     image: postgres:16-alpine
-    container_name: nidus-postgres
+    container_name: stackrun-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: nidus_production
+      POSTGRES_DB: stackrun_production
       POSTGRES_USER: ${POSTGRES_USER:-nidus}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
@@ -60,7 +60,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
-      - nidus-network
+      - stackrun-network
     security_opt:
       - no-new-privileges:true
     cap_drop:
@@ -71,7 +71,7 @@ services:
       - SETGID
       - SETUID
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nidus} -d nidus_production"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nidus} -d stackrun_production"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -86,7 +86,7 @@ services:
   # ============================================
   redis:
     image: redis:7-alpine
-    container_name: nidus-redis
+    container_name: stackrun-redis
     restart: unless-stopped
     command: >
       redis-server
@@ -105,7 +105,7 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - nidus-network
+      - stackrun-network
     security_opt:
       - no-new-privileges:true
     cap_drop:
@@ -132,20 +132,20 @@ services:
       context: ./apps/api
       dockerfile: Dockerfile
       target: production
-    container_name: nidus-api
+    container_name: stackrun-api
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://${POSTGRES_USER:-nidus}:${POSTGRES_PASSWORD}@postgres:5432/nidus_production?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER:-nidus}:${POSTGRES_PASSWORD}@postgres:5432/stackrun_production?schema=public
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
-      CORS_ORIGINS: ${CORS_ORIGINS:-https://nidus.com,https://www.nidus.com}
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://stackrun.vercel.app,https://www.stackrun.vercel.app}
       LOG_LEVEL: ${LOG_LEVEL:-info}
     volumes:
       - ./logs/api:/app/logs
     networks:
-      - nidus-network
+      - stackrun-network
     depends_on:
       postgres:
         condition: service_healthy
@@ -175,10 +175,10 @@ services:
       context: ./workers/deploy
       dockerfile: Dockerfile
       target: production
-    container_name: nidus-worker
+    container_name: stackrun-worker
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-nidus}:${POSTGRES_PASSWORD}@postgres:5432/nidus_production?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER:-nidus}:${POSTGRES_PASSWORD}@postgres:5432/stackrun_production?schema=public
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       DOCKER_HOST: unix:///var/run/docker.sock
       WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-10}
@@ -188,7 +188,7 @@ services:
       - deploy_data:/app/data
       - ./logs/worker:/app/logs
     networks:
-      - nidus-network
+      - stackrun-network
     depends_on:
       postgres:
         condition: service_healthy
@@ -220,7 +220,7 @@ services:
       context: ./apps/proxy
       dockerfile: Dockerfile
       target: production
-    container_name: nidus-proxy
+    container_name: stackrun-proxy
     restart: unless-stopped
     ports:
       - "3080:3080"
@@ -229,7 +229,7 @@ services:
       RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-100}
       LOG_LEVEL: ${LOG_LEVEL:-info}
     networks:
-      - nidus-network
+      - stackrun-network
     depends_on:
       redis:
         condition: service_healthy
@@ -257,18 +257,18 @@ services:
       context: ./apps/dashboard
       dockerfile: Dockerfile
       target: production
-    container_name: nidus-dashboard
+    container_name: stackrun-dashboard
     restart: unless-stopped
     environment:
       NODE_ENV: production
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-https://nidus.com}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-https://stackrun.vercel.app}
       API_URL: http://api:3001
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
     volumes:
       - ./logs/dashboard:/app/logs
     networks:
-      - nidus-network
+      - stackrun-network
     depends_on:
       api:
         condition: service_healthy
@@ -292,7 +292,7 @@ services:
 # Networks
 # ============================================
 networks:
-  nidus-network:
+  stackrun-network:
     driver: bridge
     internal: true
     ipam:
@@ -308,19 +308,19 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /opt/nidus/data/postgres
+      device: /opt/stackrun/data/postgres
   redis_data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /opt/nidus/data/redis
+      device: /opt/stackrun/data/redis
   deploy_data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /opt/nidus/data/deploys
+      device: /opt/stackrun/data/deploys
   caddy_data:
     driver: local
   caddy_config:

@@ -14,7 +14,7 @@
     ],
     "component": {
       "type": "application",
-      "bom-ref": "path+file:///root/nidus/rust/nidus-cli#0.2.0",
+      "bom-ref": "path+file:///root/stackrun/rust/nidus-cli#0.2.0",
       "name": "nidus-cli",
       "version": "0.2.0",
       "scope": "required",
@@ -22,8 +22,8 @@
       "components": [
         {
           "type": "application",
-          "bom-ref": "path+file:///root/nidus/rust/nidus-cli#0.2.0 bin-target-0",
-          "name": "nidus",
+          "bom-ref": "path+file:///root/stackrun/rust/nidus-cli#0.2.0 bin-target-0",
+          "name": "stackrun",
           "version": "0.2.0",
           "purl": "pkg:cargo/nidus-cli@0.2.0?download_url=file://.#src/main.rs"
         }
@@ -5436,7 +5436,7 @@
   ],
   "dependencies": [
     {
-      "ref": "path+file:///root/nidus/rust/nidus-cli#0.2.0",
+      "ref": "path+file:///root/stackrun/rust/nidus-cli#0.2.0",
       "dependsOn": [
         "registry+https://github.com/rust-lang/crates.io-index#clap@4.6.1",
         "registry+https://github.com/rust-lang/crates.io-index#colored@2.2.0",

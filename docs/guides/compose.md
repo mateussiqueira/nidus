@@ -1,6 +1,6 @@
 # Docker Compose
 
-Deploy stacks multi-container no Nidus.
+Deploy stacks multi-container no StackRun.
 
 ## Como usar
 
@@ -51,7 +51,7 @@ networks:
 
 Volumes garantem que dados sobrevivam a redeploys e reinicializações.
 
-Declare volumes nomeados no compose e o Nidus gerencia o ciclo de vida automaticamente.
+Declare volumes nomeados no compose e o StackRun gerencia o ciclo de vida automaticamente.
 Bancos de dados, uploads e arquivos de configuração devem sempre usar volumes.
 
 ## Rede interna
@@ -59,5 +59,5 @@ Bancos de dados, uploads e arquivos de configuração devem sempre usar volumes.
 A rede `nidus` permite comunicação entre containers do mesmo projeto e também
 entre projetos diferentes que estejam na mesma rede.
 
-Sempre declare `networks: nidus: external: true` para que o Nidus conecte
+Sempre declare `network.*stackrun: external: true` para que o StackRun conecte
 os containers à rede interna automaticamente.

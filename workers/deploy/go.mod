@@ -1,4 +1,4 @@
-module github.com/mateussiqueira/nidus/workers/deploy
+module github.com/mateussiqueira/stackrun/workers/deploy
 
 go 1.25.0
 

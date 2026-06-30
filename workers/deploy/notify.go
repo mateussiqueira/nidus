@@ -36,7 +36,7 @@ func loadEmailConfig() EmailConfig {
 	if cfg.ResendAPIKey != "" && cfg.FromEmail != "" {
 		cfg.Enabled = true
 		if cfg.FromName == "" {
-			cfg.FromName = "Nidus"
+			cfg.FromName = "StackRun"
 		}
 	}
 	return cfg
@@ -82,7 +82,7 @@ func (cfg EmailConfig) sendDeployNotification(toEmail, projectName, status, depl
 </table>
 </td></tr>
 <tr><td style="padding:16px 24px;border-top:1px solid #27272a;text-align:center;font-size:12px;color:#52525b">
-Nidus — Sua PaaS pessoal
+StackRun — Sua PaaS pessoal
 </td></tr>
 </table>
 </td></tr></table>

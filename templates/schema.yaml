@@ -1,4 +1,4 @@
-# Nidus Template Schema v1.0
+# StackRun Template Schema v1.0
 name: string           # template name
 version: "1.0"
 description: string    # short description

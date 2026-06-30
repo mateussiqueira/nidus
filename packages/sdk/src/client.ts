@@ -1,4 +1,4 @@
-export interface NidusClientOptions {
+export interface StackRunClientOptions {
   apiUrl?: string;
   token?: string;
 }
@@ -39,12 +39,12 @@ export interface AuthResponse {
   user: Record<string, unknown>;
 }
 
-export class NidusClient {
+export class StackRunClient {
   #apiUrl: string;
   #token: string | null;
 
-  constructor(options: NidusClientOptions = {}) {
-    this.#apiUrl = options.apiUrl ?? "https://api.nidus.app";
+  constructor(options: StackRunClientOptions = {}) {
+    this.#apiUrl = options.apiUrl ?? "https://api.stackrun.vercel.app";
     this.#token = options.token ?? null;
   }
 
@@ -70,7 +70,7 @@ export class NidusClient {
     if (!response.ok) {
       const errorBody = await response.text();
       throw new Error(
-        `Nidus API error ${response.status}: ${errorBody || response.statusText}`
+        `StackRun API error ${response.status}: ${errorBody || response.statusText}`
       );
     }
 

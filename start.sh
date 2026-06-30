@@ -3,7 +3,7 @@ set -e
 
 MODE=${1:-local}
 
-echo "=== Nidus Platform ==="
+echo "=== StackRun Platform ==="
 echo "Modo: $MODE"
 echo ""
 
@@ -18,7 +18,7 @@ case "$MODE" in
     echo "  Postgres: localhost:5432"
     echo "  Redis:   localhost:6379"
     echo ""
-    echo "Login: local@nidus.dev / local123"
+    echo "Login: local@stackrun.dev / local123"
     echo ""
     echo "Status:"
     docker compose ps
@@ -34,7 +34,7 @@ case "$MODE" in
     fi
 
     # Verificar Redis
-    if ! redis-cli -a nidus-redis-pass ping 2>/dev/null | grep -q PONG; then
+    if ! redis-cli -a stackrun-redis-pass ping 2>/dev/null | grep -q PONG; then
       echo "❌ Redis não está rodando. Inicie com: brew services start redis"
       exit 1
     fi
@@ -53,16 +53,16 @@ case "$MODE" in
 
     cd apps/api
     DATABASE_URL="postgresql://broto@localhost:5432/nidus" \
-    REDIS_URL="redis://:nidus-redis-pass@localhost:6379" \
-    JWT_SECRET="local_nidus_jwt_secret_change_me" \
-    ./nidus-api &
+    REDIS_URL="redis://:stackrun-redis-pass@localhost:6379" \
+    JWT_SECRET="local_stackrun_jwt_secret_change_me" \
+    ./stackrun-api &
     API_PID=$!
     cd ../..
 
     cd workers/deploy
     DATABASE_URL="postgresql://broto@localhost:5432/nidus" \
-    REDIS_URL="redis://:nidus-redis-pass@localhost:6379" \
-    ./nidus-deploy-worker &
+    REDIS_URL="redis://:stackrun-redis-pass@localhost:6379" \
+    ./stackrun-deploy-worker &
     WORKER_PID=$!
     cd ../..
 
@@ -71,7 +71,7 @@ case "$MODE" in
     echo "  API:     http://localhost:3001 (PID: $API_PID)"
     echo "  Worker:  rodando (PID: $WORKER_PID)"
     echo ""
-    echo "Login: local@nidus.dev / local123"
+    echo "Login: local@stackrun.dev / local123"
     echo ""
     echo "Pressione Ctrl+C para parar"
     wait

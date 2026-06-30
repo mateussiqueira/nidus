@@ -2,10 +2,10 @@ use crate::project_service_server::{ProjectService, ProjectServiceServer};
 use crate::{Project, GetProjectRequest, ListProjectsRequest, ListProjectsResponse, ResolveSlugRequest, ResolveSlugResponse};
 use tonic::{Request, Response, Status};
 
-pub struct NidusProjectService;
+pub struct StackRunProjectService;
 
 #[tonic::async_trait]
-impl ProjectService for NidusProjectService {
+impl ProjectService for StackRunProjectService {
     async fn get_project(&self, req: Request<GetProjectRequest>) -> Result<Response<Project>, Status> {
         Ok(Response::new(Project {
             id: req.into_inner().id,
@@ -30,6 +30,6 @@ impl ProjectService for NidusProjectService {
     }
 }
 
-pub fn create_project_server() -> ProjectServiceServer<NidusProjectService> {
-    ProjectServiceServer::new(NidusProjectService)
+pub fn create_project_server() -> ProjectServiceServer<StackRunProjectService> {
+    ProjectServiceServer::new(StackRunProjectService)
 }

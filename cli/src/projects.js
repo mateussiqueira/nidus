@@ -4,7 +4,7 @@ import { api } from "./config.js"
 export async function list() {
   const projects = await api("/api/projects")
   if (projects.length === 0) {
-    console.log(chalk.yellow("  Nenhum projeto ainda. Use " + chalk.bold("nidus create <nome>")))
+    console.log(chalk.yellow("  Nenhum projeto ainda. Use " + chalk.bold("stackrun create <nome>")))
     return
   }
   console.log(chalk.cyan("\n  Projetos:\n"))

@@ -6,10 +6,10 @@ use serde::{Deserialize, Serialize};
 use spinoff::{Spinner, spinners, Color};
 use std::time::Duration;
 
-const API_DEFAULT: &str = "https://api.nidus.app";
+const API_DEFAULT: &str = "https://api.stackrun.vercel.app";
 
 #[derive(Parser)]
-#[command(name = "nidus", version = "0.2.0", about = "🦀 Nidus PaaS CLI", long_about = None)]
+#[command(name = "nidus", version = "0.2.0", about = "🦀 StackRun PaaS CLI", long_about = None)]
 struct Cli {
     #[arg(short, long, default_value = API_DEFAULT)]
     api: String,
@@ -19,7 +19,7 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Login to Nidus
+    /// Login to StackRun
     Login { email: String, password: String },
     /// Deploy current directory
     Deploy {
@@ -127,7 +127,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             if resp.status().is_success() {
                 pb.finish_with_message(format!("{} Deployed!", "✓".green()));
-                println!("   {} https://{}.nidus.app", "🔗".bright_cyan(), target.slug);
+                println!("   {} https://{}.stackrun.vercel.app", "🔗".bright_cyan(), target.slug);
             } else {
                 pb.finish_with_message(format!("{} Deploy failed", "✗".red()));
             }

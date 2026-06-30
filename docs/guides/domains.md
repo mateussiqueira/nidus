@@ -15,7 +15,7 @@ Após a verificação, seu projeto passa a responder no domínio customizado.
 Todo projeto ganha automaticamente um subdomínio no formato:
 
 ```
-slug-do-projeto.nidus.app
+slug-do-projeto.stackrun.vercel.app
 ```
 
 Esse subdomínio fica disponível imediatamente após o deploy, sem nenhuma configuração.

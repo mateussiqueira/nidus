@@ -1,7 +1,7 @@
 #!/bin/bash
 # Build minimal rootfs for Firecracker microVMs (<50MB Alpine)
 set -e
-OUTPUT="${1:-/var/lib/nidus/rootfs/rootfs.ext4}"
+OUTPUT="${1:-/var/lib/stackrun/rootfs/rootfs.ext4}"
 SIZE_MB="${2:-100}"
 mkdir -p "$(dirname "$OUTPUT")"
 echo "Building rootfs: $OUTPUT (${SIZE_MB}MB)..."

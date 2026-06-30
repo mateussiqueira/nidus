@@ -46,7 +46,7 @@ impl ContainerRouter {
             return None;
         }
 
-        let container_name = format!("nidus-{}", slug);
+        let container_name = format!("stackrun-{}", slug);
 
         // Get container IP from Docker network
         let output = Command::new("docker")
@@ -116,8 +116,8 @@ impl ContainerRouter {
             let parts: Vec<&str> = line.split('\t').collect();
             if parts.len() >= 2 {
                 let name = parts[0].to_string();
-                if name.starts_with("nidus-") {
-                    let slug = name.strip_prefix("nidus-").unwrap_or("");
+                if name.starts_with("stackrun-") {
+                    let slug = name.strip_prefix("stackrun-").unwrap_or("");
 
                     // Get container IP
                     if let Ok(ip_output) = Command::new("docker")

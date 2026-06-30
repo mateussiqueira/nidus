@@ -1,4 +1,4 @@
-# Nidus Deploy Worker v2 - Performance Optimizations
+# StackRun Deploy Worker v2 - Performance Optimizations
 
 ## 🚀 What's New
 
@@ -58,10 +58,10 @@ cpus: "1.0"
 - **Better health check endpoint** with active job count
 - **Per-metric tracking**: Git, Build, Container startup times
 - **Prometheus metrics**:
-  - `nidus_build_cache_hits_total`
-  - `nidus_build_cache_misses_total`
-  - `nidus_git_duration_seconds`
-  - `nidus_build_queue_size`
+  - `stackrun_build_cache_hits_total`
+  - `stackrun_build_cache_misses_total`
+  - `stackrun_git_duration_seconds`
+  - `stackrun_build_queue_size`
 
 #### 6. **Improved Container Startup**
 - **Faster health checks**: 15 retries with 1s intervals (was 10 with 2s)
@@ -171,7 +171,7 @@ mv workers/deploy/main_v2.go workers/deploy/main.go
 cd workers/deploy && go mod tidy
 
 # Build and test
-go build -o nidus-deploy-worker
+go build -o stackrun-deploy-worker
 
 # Docker build
 docker build -t nidus:deploy-worker-v2 .
@@ -233,7 +233,7 @@ REDIS_URL=redis://redis:6379
 ### Watch build progress in real-time
 ```bash
 # Terminal 1: Metrics
-watch -n1 'curl -s http://localhost:8081/metrics | grep nidus_build'
+watch -n1 'curl -s http://localhost:8081/metrics | grep stackrun_build'
 
 # Terminal 2: Health
 watch -n1 'curl -s http://localhost:8081/health | jq .'
@@ -245,17 +245,17 @@ docker stats deploy-worker
 ### Prometheus queries (if integrated)
 ```promql
 # Current queue depth
-rate(nidus_build_queue_size[5m])
+rate(stackrun_build_queue_size[5m])
 
 # Build cache hit ratio
-rate(nidus_build_cache_hits_total[5m]) / 
-(rate(nidus_build_cache_hits_total[5m]) + rate(nidus_build_cache_misses_total[5m]))
+rate(stackrun_build_cache_hits_total[5m]) / 
+(rate(stackrun_build_cache_hits_total[5m]) + rate(stackrun_build_cache_misses_total[5m]))
 
 # Average deploy duration (last hour)
-avg_over_time(nidus_deploy_duration_seconds[1h])
+avg_over_time(stackrun_deploy_duration_seconds[1h])
 
 # P95 deploy duration
-histogram_quantile(0.95, rate(nidus_deploy_duration_seconds_bucket[5m]))
+histogram_quantile(0.95, rate(stackrun_deploy_duration_seconds_bucket[5m]))
 ```
 
 ## 🐛 Troubleshooting

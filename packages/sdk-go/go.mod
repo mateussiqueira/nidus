@@ -1,3 +1,3 @@
-module github.com/mateussiqueira/nidus/packages/sdk-go
+module github.com/mateussiqueira/stackrun/packages/sdk-go
 
 go 1.24.4

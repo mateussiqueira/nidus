@@ -3,7 +3,7 @@
 ## Instalação
 
 ```bash
-npm install -g nidus
+npm install -g stackrun
 ```
 
 ## Comandos
@@ -11,27 +11,27 @@ npm install -g nidus
 ### Login
 
 ```bash
-nidus login <email> <password>
+stackrun login <email> <password>
 ```
 
 ### Deploy
 
 ```bash
 cd meu-projeto
-nidus deploy
+stackrun deploy
 ```
 
 Opções:
 
 ```bash
-nidus deploy --branch main
-nidus deploy --branch feature-x
+stackrun deploy --branch main
+stackrun deploy --branch feature-x
 ```
 
 ### Listar projetos
 
 ```bash
-nidus projects
+stackrun projects
 ```
 
 ### Status
@@ -44,14 +44,14 @@ nidus status
 
 ```bash
 # 1. Login
-nidus login admin@nidus.local senha123
+stackrun login admin@stackrun.local senha123
 
 # 2. Criar projeto (ou conectar via GitHub)
-nidus projects create --name meu-app
+stackrun projects create --name meu-app
 
 # 3. Deploy
 cd meu-app
-nidus deploy
+stackrun deploy
 
 # 4. Verificar
 nidus status

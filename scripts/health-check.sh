@@ -1,14 +1,14 @@
 #!/bin/bash
-# Nidus Container Health Check — Auto-restart dead containers
-# Run via cron every 5 minutes: */5 * * * * /root/nidus/scripts/health-check.sh
+# StackRun Container Health Check — Auto-restart dead containers
+# Run via cron every 5 minutes: */5 * * * * /root/stackrun/scripts/health-check.sh
 
 set -euo pipefail
-LOG="/var/log/nidus-health.log"
+LOG="/var/log/stackrun-health.log"
 
 log() { echo "[$(date +%H:%M:%S)] $*" >> "$LOG"; }
 
-# Check all nidus containers
-docker ps -a --format '{{.Names}} {{.Status}}' --filter name=nidus- | while read -r name status; do
+# Check all stackrun containers
+docker ps -a --format '{{.Names}} {{.Status}}' --filter name=stackrun- | while read -r name status; do
     if echo "$status" | grep -qi "unhealthy\|dead\|restarting"; then
         log "WARN: Container $name unhealthy ($status), restarting..."
         docker restart "$name" 2>/dev/null && log "OK: $name restarted" || log "ERR: Failed to restart $name"

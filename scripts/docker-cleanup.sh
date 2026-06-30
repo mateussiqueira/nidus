@@ -1,9 +1,9 @@
 #!/bin/bash
-# Nidus Docker Cleanup — Remove unused images, stopped containers, build cache
-# Run daily: 0 4 * * * /root/nidus/scripts/docker-cleanup.sh >> /var/log/nidus-cleanup.log 2>&1
+# StackRun Docker Cleanup — Remove unused images, stopped containers, build cache
+# Run daily: 0 4 * * * /root/stackrun/scripts/docker-cleanup.sh >> /var/log/stackrun-cleanup.log 2>&1
 
 set -euo pipefail
-LOG="/var/log/nidus-cleanup.log"
+LOG="/var/log/stackrun-cleanup.log"
 
 log() { echo "[$(date +%H:%M:%S)] $*"; }
 

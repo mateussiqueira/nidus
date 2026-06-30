@@ -52,7 +52,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="w-7 h-7 rounded-md bg-accent flex items-center justify-center">
             <span className="text-xs font-bold text-black">C</span>
           </div>
-          <span className="font-semibold text-sm">Nidus</span>
+          <span className="font-semibold text-sm">StackRun</span>
         </div>
 
         <nav className="flex-1 p-3 space-y-1">

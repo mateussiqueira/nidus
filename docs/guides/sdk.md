@@ -1,19 +1,19 @@
 # SDKs
 
-Nidus tem SDKs oficiais para JavaScript, Python e Go.
+StackRun tem SDKs oficiais para JavaScript, Python e Go.
 
 ## JavaScript
 
 ```bash
-npm install @nidus/sdk
+npm install @stackrun.sdk
 ```
 
 ```js
-import { Nidus } from '@nidus/sdk'
+import { StackRun } from '@stackrun.sdk'
 
-const nidus = new Nidus({ token: process.env.NIDUS_TOKEN })
+const nidus = new StackRun({ token: process.env.STACKRUN_TOKEN })
 
-const projects = await nidus.projects.list()
+const projects = await stackrun.projects.list()
 const deploy = await nidus.deploy.create({
   projectId: 'my-app',
   compose: dockerComposeYaml
@@ -25,15 +25,15 @@ console.log(deploy.url)
 ## Python
 
 ```bash
-pip install nidus-sdk
+pip install stackrun-sdk
 ```
 
 ```python
-from nidus import Nidus
+from nidus import StackRun
 
-nidus = Nidus(token="seu-token")
+nidus = StackRun(token="seu-token")
 
-projects = nidus.projects.list()
+projects = stackrun.projects.list()
 deploy = nidus.deploy.create(
     project_id="my-app",
     compose=docker_compose_yaml
@@ -45,13 +45,13 @@ print(deploy.url)
 ## Go
 
 ```bash
-go get github.com/mateussiqueira/nidus/packages/sdk-go
+go get github.com/mateussiqueira/stackrun/packages/sdk-go
 ```
 
 ```go
-import "github.com/mateussiqueira/nidus/packages/sdk-go"
+import "github.com/mateussiqueira/stackrun/packages/sdk-go"
 
-client := nidus.NewClient("seu-token")
+client := stackrun.NewClient("seu-token")
 
 projects, _ := client.Projects.List()
 deploy, _ := client.Deploy.Create(&nidus.DeployInput{

@@ -1,4 +1,4 @@
-# Nidus — Edge Computing & Observabilidade: Pesquisa Técnica Profunda
+# StackRun — Edge Computing & Observabilidade: Pesquisa Técnica Profunda
 
 ## Parte 1: Edge Runtime — Arquitetura WASM
 
@@ -36,7 +36,7 @@
 - Limite: 1MB de código, 128MB de memória
 - Cold start: <50ms (V8 instantiation)
 
-#### Fermyon Spin (WASM puro — Referência para Nidus)
+#### Fermyon Spin (WASM puro — Referência para StackRun)
 ```
 ┌─────────────────────────────────────────┐
 │              Spin Runtime                │
@@ -61,15 +61,15 @@
 - Linguagens: Rust, Go, JS, Python, C, Zig
 - **Vantagem**: Sem garbage collector. Determinístico.
 
-### Arquitetura Nidus Edge
+### Arquitetura StackRun Edge
 
 ```
 ┌──────────────────────────────────────────────────┐
-│                 nidus-edge (Rust)                 │
+│                 stackrun-edge (Rust)                 │
 ├──────────────────────────────────────────────────┤
 │  Request Router                                  │
 │  ┌────────────────────────────────────────────┐  │
-│  │ Host: fn.project.nidus.app → EdgeFunction  │  │
+│  │ Host: fn.project.stackrun.vercel.app → EdgeFunction  │  │
 │  │ Path: /api/users → EdgeFunction            │  │
 │  │ Fallback → Container (Docker)              │  │
 │  └────────────────────────────────────────────┘  │
@@ -94,14 +94,14 @@
 │  │ wasi:keyvalue → Redis/PostgreSQL via host  │  │
 │  │ wasi:logging   → Structured logging        │  │
 │  │ wasi:clocks    → Monotonic time            │  │
-│  │ custom:nidus   → Nidus API calls           │  │
+│  │ custom:stackrun   → StackRun API calls           │  │
 │  └────────────────────────────────────────────┘  │
 └──────────────────────────────────────────────────┘
 ```
 
 ### Comparativo Técnico
 
-| Métrica | Docker Container | V8 Isolate (Vercel) | WASM (Nidus) |
+| Métrica | Docker Container | V8 Isolate (Vercel) | WASM (StackRun) |
 |---------|-----------------|---------------------|--------------|
 | Cold start | 500ms-30s | 50ms | **<1ms** |
 | Memória base | 20-200MB | 5MB | **2MB** |
@@ -151,7 +151,7 @@
 │                 Visualização                     │
 │  ┌───────────────────────────────────────────┐  │
 │  │ Grafana Dashboards                        │  │
-│  │ ├─ Nidus Overview (health, deploys, API)  │  │
+│  │ ├─ StackRun Overview (health, deploys, API)  │  │
 │  │ ├─ Project Detail (per-project metrics)   │  │
 │  │ ├─ Edge Functions (cold starts, latency)  │  │
 │  │ └─ Business (MRR, users, deploys/dia)     │  │
@@ -202,4 +202,4 @@ Plus:
 | Datadog | $500+ | Enterprise |
 | New Relic | $300+ | Enterprise |
 
-**Vantagem Nidus**: Observabilidade enterprise-level por $0.
+**Vantagem StackRun**: Observabilidade enterprise-level por $0.

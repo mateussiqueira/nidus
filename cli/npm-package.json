@@ -1,10 +1,10 @@
 {
-  "name": "nidus",
+  "name": "stackrun",
   "version": "1.0.0",
   "description": "Self-hosted deploy platform",
   "main": "dist/index.js",
   "bin": {
-    "nidus": "dist/index.js"
+    "stackrun": "dist/index.js"
   },
   "scripts": {
     "build": "node build.js",

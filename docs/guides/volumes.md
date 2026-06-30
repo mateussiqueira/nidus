@@ -7,7 +7,7 @@ Dados que sobrevivem a redeploys e reinicializações de container.
 ### Pela API
 
 ```bash
-curl -X POST https://nidus.app/api/volumes \
+curl -X POST https://stackrun.vercel.app/api/volumes \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"name": "meu-volume", "size": 10}'
@@ -33,5 +33,5 @@ volumes:
     external: true
 ```
 
-Declare o volume como `external: true` para usar um volume criado pelo Nidus.
+Declare o volume como `external: true` para usar um volume criado pelo StackRun.
 O dado persiste mesmo se o container for removido ou recriado.

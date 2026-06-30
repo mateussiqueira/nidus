@@ -38,10 +38,10 @@ func Configure(c Config) {
 		cfg.Provider = "sendmail"
 	}
 	if cfg.FromName == "" {
-		cfg.FromName = "Nidus"
+		cfg.FromName = "StackRun"
 	}
 	if cfg.FromEmail == "" {
-		cfg.FromEmail = "noreply@nidus.app"
+		cfg.FromEmail = "noreply@stackrun.vercel.app"
 	}
 }
 

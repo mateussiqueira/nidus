@@ -22,7 +22,7 @@ type Client struct {
 
 func NewClient(apiURL string) *Client {
 	if apiURL == "" {
-		apiURL = "https://api.nidus.app"
+		apiURL = "https://api.stackrun.vercel.app"
 	}
 	c := &Client{
 		apiURL:     apiURL,

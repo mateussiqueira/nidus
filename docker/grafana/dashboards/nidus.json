@@ -1,7 +1,7 @@
 {
-  "title": "Nidus Platform",
+  "title": "StackRun Platform",
   "tags": [
-    "nidus"
+    "stackrun"
   ],
   "schemaVersion": 39,
   "version": 1,
@@ -18,7 +18,7 @@
       },
       "targets": [
         {
-          "expr": "rate(nidus_requests_total[5m])",
+          "expr": "rate(stackrun_requests_total[5m])",
           "legendFormat": "requests/s"
         }
       ],

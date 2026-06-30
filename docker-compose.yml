@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: nidus-postgres
+    container_name: stackrun-postgres
     environment:
       POSTGRES_USER: broto
       POSTGRES_PASSWORD: broto
@@ -20,14 +20,14 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: nidus-redis
-    command: redis-server --requirepass nidus-redis-pass
+    container_name: stackrun-redis
+    command: redis-server --requirepass stackrun-redis-pass
     ports:
       - "16379:6379"
     volumes:
       - redisdata:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "nidus-redis-pass", "ping"]
+      test: ["CMD", "redis-cli", "-a", "stackrun-redis-pass", "ping"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -37,11 +37,11 @@ services:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
-    container_name: nidus-api
+    container_name: stackrun-api
     environment:
       DATABASE_URL: "postgresql://broto:broto@postgres:5432/nidus"
-      REDIS_URL: "redis://:nidus-redis-pass@redis:6379"
-      JWT_SECRET: "local_nidus_jwt_secret_change_me"
+      REDIS_URL: "redis://:stackrun-redis-pass@redis:6379"
+      JWT_SECRET: "local_stackrun_jwt_secret_change_me"
       API_PORT: "3001"
       CORS_ORIGINS: "http://localhost:3000"
     ports:
@@ -57,16 +57,16 @@ services:
     build:
       context: .
       dockerfile: workers/deploy/Dockerfile
-    container_name: nidus-worker
+    container_name: stackrun-worker
     environment:
       DATABASE_URL: "postgresql://broto:broto@postgres:5432/nidus"
-      REDIS_URL: "redis://:nidus-redis-pass@redis:6379"
-      NIDUS_HOST: "localhost"
-      NIDUS_DEPLOYS_DIR: "/tmp/nidus-deploys"
+      REDIS_URL: "redis://:stackrun-redis-pass@redis:6379"
+      STACKRUN_HOST: "localhost"
+      STACKRUN_DEPLOYS_DIR: "/tmp/stackrun-deploys"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - deploy-data:/tmp/nidus-deploys
-      - /tmp/nidus-test-repo:/tmp/nidus-test-repo:ro
+      - deploy-data:/tmp/stackrun-deploys
+      - /tmp/stackrun-test-repo:/tmp/stackrun-test-repo:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -78,7 +78,7 @@ services:
     build:
       context: .
       dockerfile: apps/proxy/Dockerfile
-    container_name: nidus-proxy
+    container_name: stackrun-proxy
     environment:
       PROXY_PORT: "3080"
     ports:

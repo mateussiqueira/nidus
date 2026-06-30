@@ -1,5 +1,5 @@
 # ============================================
-# NIDUS LITE — Versão otimizada para 512MB RAM
+# STACKRUN LITE — Versão otimizada para 512MB RAM
 # ============================================
 # Uso: docker compose -f docker-compose.lite.yml up -d
 #
@@ -22,7 +22,7 @@ services:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
-    container_name: nidus-api-lite
+    container_name: stackrun-api-lite
     environment:
       DATABASE_URL: "file:/data/nidus.db"
       JWT_SECRET: "change-me-in-production"
@@ -57,15 +57,15 @@ services:
     build:
       context: .
       dockerfile: workers/deploy/Dockerfile
-    container_name: nidus-worker-lite
+    container_name: stackrun-worker-lite
     environment:
       DATABASE_URL: "file:/data/nidus.db"
-      NIDUS_HOST: "localhost"
-      NIDUS_DEPLOYS_DIR: "/tmp/nidus-deploys"
+      STACKRUN_HOST: "localhost"
+      STACKRUN_DEPLOYS_DIR: "/tmp/stackrun-deploys"
       LOG_LEVEL: "warn"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - deploy-data:/tmp/nidus-deploys
+      - deploy-data:/tmp/stackrun-deploys
       - api-data:/data
     deploy:
       resources:

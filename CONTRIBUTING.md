@@ -31,7 +31,7 @@ Obrigado por interesse em contribuir com o Nimbus! Este documento explica como c
 ## Estrutura do Projeto
 
 ```
-nidus/
+stackrun/
 ├── apps/control-plane/    # API NestJS (TypeScript)
 ├── apps/dashboard/        # Frontend Next.js
 ├── apps/api/              # API alternativa (Go)

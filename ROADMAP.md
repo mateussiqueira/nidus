@@ -1,9 +1,9 @@
 ═══════════════════════════════════════════════════════════════════════
-              NIDUS — ROADMAP 12 MESES (Jul 2026 – Jun 2027)
+              STACKRUN — ROADMAP 12 MESES (Jul 2026 – Jun 2027)
                  Da seedbox ao PaaS competitivo
 ═══════════════════════════════════════════════════════════════════════
 
-OBJETIVO: Transformar o Nidus de um "funciona mas é bruto" em um PaaS
+OBJETIVO: Transformar o StackRun de um "funciona mas é bruto" em um PaaS
 que compete em UX com Railway, em leveza com Fly.io, e em custo com
 "VPS de R$30 + software grátis".
 
@@ -12,25 +12,25 @@ MÊS 1-2: FUNDAÇÃO SÓLIDA (Jul-Ago 2026)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Meta: Experiência de primeiro deploy em < 60 segundos.
-       Nidus instalável e funcional sem conhecimento prévio.
+       StackRun instalável e funcional sem conhecimento prévio.
 
 SEMANA 1-2: ONBOARDING MÁGICO
   ☐ Script install.sh 1-liner:
-       curl -sSL https://nidus.app/install.sh | bash
+       curl -sSL https://stackrun.vercel.app/install.sh | bash
        → Detecta OS, instala Docker/Go/Redis se ausente
-       → Sobe Nidus com docker-compose em 1 comando
+       → Sobe StackRun com docker-compose em 1 comando
        → Gera senha admin e imprime URL de acesso
 
   ☐ CLI tool (`nidus`):
-       nidus deploy          → deploy do diretório atual
-       nidus logs            → streaming de logs
-       nidus projects        → lista projetos
-       nidus env set KEY VAL → configura env vars
+       stackrun deploy          → deploy do diretório atual
+       stackrun logs            → streaming de logs
+       stackrun projects        → lista projetos
+       stackrun env set KEY VAL → configura env vars
        nidus db create       → provisiona banco
 
   ☐ Template "Hello World" automático:
        Ao criar projeto sem repo, oferecer:
-       - Next.js starter (com Dockerfile.nidus)
+       - Next.js starter (com Dockerfile.stackrun)
        - Express API starter
        - Vaden/Dart starter
        - Static HTML starter
@@ -65,7 +65,7 @@ Meta: Paridade de features com Railway/Render.
 
 SEMANA 5-6: DNS & SSL AUTOMÁTICO
   ☐ Domínios automáticos no deploy:
-       → projeto.nidus.app (wildcard DNS)
+       → projeto.stackrun.vercel.app (wildcard DNS)
        → SSL via Caddy auto Let's Encrypt
        → Custom domains com TLS automático
 
@@ -100,7 +100,7 @@ SEMANA 7-8: BANCOS DE DADOS GERENCIADOS
 MÊS 5-6: ECOSSISTEMA DE COLABORAÇÃO (Nov-Dez 2026)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Meta: Times podem usar Nidus em produção.
+Meta: Times podem usar StackRun em produção.
 
 SEMANA 9-10: GIT INTEGRATION PROFUNDA
   ☐ GitHub OAuth:
@@ -115,7 +115,7 @@ SEMANA 9-10: GIT INTEGRATION PROFUNDA
        → Comentário no PR com URL do preview
 
   ☐ Preview deployments:
-       → URL única por PR: pr-42.projeto.nidus.app
+       → URL única por PR: pr-42.projeto.stackrun.vercel.app
        → Isolamento: cada preview em container separado
        → Auto-cleanup ao fechar PR
        → Badge de status no README
@@ -141,7 +141,7 @@ SEMANA 11-12: RBAC & SEGURANÇA
 MÊS 7-8: PLATAFORMA AVANÇADA (Jan-Fev 2027)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Meta: Nidus como plataforma, não só ferramenta.
+Meta: StackRun como plataforma, não só ferramenta.
 
 SEMANA 13-14: API PÚBLICA & WEBHOOKS
   ☐ API REST documentada (OpenAPI/Swagger):
@@ -155,7 +155,7 @@ SEMANA 13-14: API PÚBLICA & WEBHOOKS
        → Payload configurável
 
   ☐ GitHub Actions oficial:
-       → nidus-deploy-action
+       → stackrun-deploy-action
        → Configuração zero (detecta projeto)
 
 SEMANA 15-16: DOCKER COMPOSE & MULTI-SERVICE
@@ -178,7 +178,7 @@ SEMANA 15-16: DOCKER COMPOSE & MULTI-SERVICE
 MÊS 9-10: ECOSSISTEMA & MERCADO (Mar-Abr 2027)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Meta: Nidus é conhecido e adotado por devs LATAM/BR.
+Meta: StackRun é conhecido e adotado por devs LATAM/BR.
 
 SEMANA 17-18: MARKETPLACE DE TEMPLATES
   ☐ Galeria de templates 1-click:
@@ -191,7 +191,7 @@ SEMANA 17-18: MARKETPLACE DE TEMPLATES
 
   ☐ Template YAML schema:
        → name, description, icon, tags
-       → docker-compose.yml ou Dockerfile.nidus
+       → docker-compose.yml ou Dockerfile.stackrun
        → env vars padrão, ports, volumes
        → Validação automática no submit
 
@@ -203,7 +203,7 @@ SEMANA 19-20: LANDING PAGE & DOCS
        → Depoimentos/cases
 
   ☐ Documentação completa:
-       → docs.nidus.app (Docusaurus/Starlight)
+       → docs.stackrun.vercel.app (Docusaurus/Starlight)
        → Getting started em 5 minutos
        → Guias por framework
        → API reference
@@ -211,7 +211,7 @@ SEMANA 19-20: LANDING PAGE & DOCS
        → Vídeos tutoriais (YouTube)
 
   ☐ Blog técnico:
-       → "Por que migrei do Vercel pro Nidus"
+       → "Por que migrei do Vercel pro StackRun"
        → "Deploy de apps Dart/Vaden em produção"
        → "Hospedando 20 projetos por R$30/mês"
 
@@ -219,11 +219,11 @@ SEMANA 19-20: LANDING PAGE & DOCS
 MÊS 11-12: ESCALA & MONETIZAÇÃO (Mai-Jun 2027)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Meta: Nidus é sustentável financeiramente.
+Meta: StackRun é sustentável financeiramente.
 
-SEMANA 21-22: NIDUS CLOUD (HOSTED)
+SEMANA 21-22: STACKRUN CLOUD (HOSTED)
   ☐ Versão gerenciada (SaaS):
-       → nidus.app — plataforma hospedada
+       → stackrun.vercel.app — plataforma hospedada
        → Planos: Free (1 projeto), Pro (R$49/mês), Team (R$99/mês)
        → Infra na Hostinger/Hetzner BR
        → Boleto/PIX para pagamento
@@ -248,7 +248,7 @@ SEMANA 23-24: ENTERPRISE & COMUNIDADE
        → Contribuidores no GitHub (50+)
 
   ☐ Programa de parceiros:
-       → Agências certificadas Nidus
+       → Agências certificadas StackRun
        → Comissão por indicação
        → Templates oficiais de parceiros
 
@@ -269,13 +269,13 @@ MÊS 6:
 
 MÊS 9:
   ☐ 500 instalações ativas
-  ☐ Nidus Cloud beta com 20 clientes
+  ☐ StackRun Cloud beta com 20 clientes
   ☐ 5 templates da comunidade
   ☐ 1 talk em conferência (TDC, RubyConf, etc)
 
 MÊS 12:
   ☐ 1000+ instalações
-  ☐ Nidus Cloud com 100 clientes pagantes
+  ☐ StackRun Cloud com 100 clientes pagantes
   ☐ Receita: R$5.000-10.000/mês
   ☐ Time de 2-3 pessoas
   ☐ Presença em 3+ conferências LATAM

@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  title: 'Nidus',
+  title: 'StackRun',
   description: 'Self-hosted PaaS deploy platform',
   ignoreDeadLinks: true,
   
@@ -95,7 +95,7 @@ export default defineConfig({
   
   themeConfig: {
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/mateussiqueira/nidus' }
+      { icon: 'github', link: 'https://github.com/mateussiqueira/stackrun' }
     ]
   }
 })

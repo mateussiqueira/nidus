@@ -1,7 +1,7 @@
 ---
 layout: home
 hero:
-  name: Nidus
+  name: StackRun
   text: PaaS self-hosted
   tagline: Deploy de apps web via Docker. Pense num Vercel que roda na sua máquina.
   actions:
@@ -10,12 +10,12 @@ hero:
       link: /guides/getting-started
     - theme: alt
       text: GitHub
-      link: https://github.com/mateussiqueira/nidus
+      link: https://github.com/mateussiqueira/stackrun
 features:
   - title: Deploy via Git
     details: Conecta o GitHub, faz push, e ele builda + roda o container automaticamente.
   - title: CLI
-    details: npx nidus deploy. Simples assim.
+    details: npx stackrun deploy. Simples assim.
   - title: Go Worker
     details: Deploy worker em Go. 10-50x mais rápido que Node.js.
   - title: Docker
@@ -30,16 +30,16 @@ features:
     details: Adicione seu próprio domínio com HTTPS automático via Caddy.
 ---
 
-# Nidus
+# StackRun
 
-Nidus é um PaaS open-source inspirado em Vercel, Railway e Coolify.
+StackRun é um PaaS open-source inspirado em Vercel, Railway e Coolify.
 
 A diferença? Ele roda na sua máquina. Ou no seu servidor. Sem depender de serviço externo.
 
 ## Como funciona
 
 ```
-Seu código → Git push → Nidus detecta → Build Docker → Roda container → URL pronta
+Seu código → Git push → StackRun detecta → Build Docker → Roda container → URL pronta
 ```
 
 Em 30 segundos, seu app está no ar.

@@ -1,10 +1,10 @@
 [package]
-name = "nidus-cli"
+name = "stackrun-cli"
 version = "0.2.0"
 edition = "2021"
 
 [[bin]]
-name = "nidus"
+name = "stackrun"
 path = "src/main.rs"
 
 [dependencies]

@@ -1,4 +1,4 @@
-# Nidus Security Hardening
+# StackRun Security Hardening
 
 ## Secrets Management
 - [x] No secrets in source code (verified by gitleaks)
@@ -25,7 +25,7 @@
 
 ## Network Security
 - [x] Caddy TLS termination
-- [x] Internal Docker network (nidus)
+- [x] Internal Docker network.*stackrun)
 - [ ] mTLS between services (tonic + rustls)
 - [ ] Rate limiting (implemented)
 - [ ] WAF (Cloudflare or self-hosted)

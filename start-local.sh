@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Nidus Local Server Startup Script
+# StackRun Local Server Startup Script
 # This script starts both the API (control-plane) and Dashboard
 
 set -e
@@ -8,7 +8,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-echo "🚀 Starting Nidus Local Server..."
+echo "🚀 Starting StackRun Local Server..."
 echo ""
 
 # Check if Docker is running
@@ -50,13 +50,13 @@ cd ../..
 
 echo ""
 echo "═══════════════════════════════════════════════════"
-echo "  Nidus Local Server is running!"
+echo "  StackRun Local Server is running!"
 echo "═══════════════════════════════════════════════════"
 echo ""
 echo "  Dashboard:  http://localhost:${PORT:-3000}"
 echo "  API:        http://localhost:${API_PORT:-3001}"
 echo ""
-echo "  Login:      local@nidus.dev / local123"
+echo "  Login:      local@stackrun.dev / local123"
 echo ""
 echo "  Press Ctrl+C to stop all services"
 echo "═══════════════════════════════════════════════════"

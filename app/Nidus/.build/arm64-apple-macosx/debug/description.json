@@ -17,59 +17,59 @@
 
   ],
   "swiftCommands" : {
-    "C.Nidus-arm64-apple-macosx26.0-debug.module" : {
+    "C.StackRun-arm64-apple-macosx26.0-debug.module" : {
       "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
-      "fileList" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/sources",
-      "importPath" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Modules",
+      "fileList" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/sources",
+      "importPath" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/Modules",
       "inputs" : [
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/ContentView.swift"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/ContentView.swift"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Models/ChatService.swift"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/Models/ChatService.swift"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Models/Models.swift"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/Models/Models.swift"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/NidusApp.swift"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/StackRunApp.swift"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Views/Chat/ChatView.swift"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/Views/Chat/ChatView.swift"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Views/LoginView.swift"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/Views/LoginView.swift"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Views/ProjectDetailView.swift"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/Views/ProjectDetailView.swift"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/sources"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/sources"
         }
       ],
       "isLibrary" : false,
-      "moduleName" : "Nidus",
-      "moduleOutputPath" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Modules/Nidus.swiftmodule",
+      "moduleName" : "StackRun",
+      "moduleOutputPath" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/Modules/StackRun.swiftmodule",
       "objects" : [
-        "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ContentView.swift.o",
-        "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ChatService.swift.o",
-        "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/Models.swift.o",
-        "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/NidusApp.swift.o",
-        "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ChatView.swift.o",
-        "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/LoginView.swift.o",
-        "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ProjectDetailView.swift.o"
+        "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/ContentView.swift.o",
+        "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/ChatService.swift.o",
+        "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/Models.swift.o",
+        "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/StackRunApp.swift.o",
+        "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/ChatView.swift.o",
+        "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/LoginView.swift.o",
+        "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/ProjectDetailView.swift.o"
       ],
       "otherArguments" : [
         "-target",
@@ -78,7 +78,7 @@
         "-enable-batch-mode",
         "-serialize-diagnostics",
         "-index-store-path",
-        "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/index/store",
+        "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/index/store",
         "-Onone",
         "-enable-testing",
         "-j11",
@@ -86,12 +86,12 @@
         "-DDEBUG",
         "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
         "-module-cache-path",
-        "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/ModuleCache",
+        "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/ModuleCache",
         "-parseable-output",
         "-Xfrontend",
         "-entry-point-function-name",
         "-Xfrontend",
-        "Nidus_main",
+        "StackRun_main",
         "-swift-version",
         "5",
         "-plugin-path",
@@ -126,52 +126,52 @@
         "-package-name",
         "nidus"
       ],
-      "outputFileMapPath" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/output-file-map.json",
+      "outputFileMapPath" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/output-file-map.json",
       "outputs" : [
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ContentView.swift.o"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/ContentView.swift.o"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ChatService.swift.o"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/ChatService.swift.o"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/Models.swift.o"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/Models.swift.o"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/NidusApp.swift.o"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/StackRunApp.swift.o"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ChatView.swift.o"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/ChatView.swift.o"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/LoginView.swift.o"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/LoginView.swift.o"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ProjectDetailView.swift.o"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/ProjectDetailView.swift.o"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Modules/Nidus.swiftmodule"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/Modules/StackRun.swiftmodule"
         }
       ],
       "prepareForIndexing" : false,
       "sources" : [
-        "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/ContentView.swift",
-        "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Models/ChatService.swift",
-        "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Models/Models.swift",
-        "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/NidusApp.swift",
-        "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Views/Chat/ChatView.swift",
-        "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Views/LoginView.swift",
-        "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Views/ProjectDetailView.swift"
+        "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/ContentView.swift",
+        "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/Models/ChatService.swift",
+        "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/Models/Models.swift",
+        "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/StackRunApp.swift",
+        "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/Views/Chat/ChatView.swift",
+        "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/Views/LoginView.swift",
+        "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/Views/ProjectDetailView.swift"
       ],
-      "tempsPath" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build",
+      "tempsPath" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build",
       "wholeModuleOptimization" : false
     }
   },
@@ -179,29 +179,29 @@
 
   },
   "swiftTargetScanArgs" : {
-    "Nidus" : [
+    "StackRun" : [
       "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
       "-module-name",
-      "Nidus",
+      "StackRun",
       "-package-name",
       "nidus",
       "-c",
-      "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/ContentView.swift",
-      "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Models/ChatService.swift",
-      "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Models/Models.swift",
-      "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/NidusApp.swift",
-      "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Views/Chat/ChatView.swift",
-      "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Views/LoginView.swift",
-      "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Views/ProjectDetailView.swift",
+      "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/ContentView.swift",
+      "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/Models/ChatService.swift",
+      "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/Models/Models.swift",
+      "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/StackRunApp.swift",
+      "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/Views/Chat/ChatView.swift",
+      "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/Views/LoginView.swift",
+      "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/Views/ProjectDetailView.swift",
       "-I",
-      "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Modules",
+      "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/Modules",
       "-target",
       "arm64-apple-macosx14.0",
       "-incremental",
       "-enable-batch-mode",
       "-serialize-diagnostics",
       "-index-store-path",
-      "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/index/store",
+      "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/index/store",
       "-Onone",
       "-enable-testing",
       "-j11",
@@ -209,12 +209,12 @@
       "-DDEBUG",
       "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
       "-module-cache-path",
-      "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/ModuleCache",
+      "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/ModuleCache",
       "-parseable-output",
       "-Xfrontend",
       "-entry-point-function-name",
       "-Xfrontend",
-      "Nidus_main",
+      "StackRun_main",
       "-swift-version",
       "5",
       "-plugin-path",
@@ -253,7 +253,7 @@
     ]
   },
   "targetDependencyMap" : {
-    "Nidus" : [
+    "StackRun" : [
 
     ]
   },
@@ -269,7 +269,7 @@
     }
   },
   "writeCommands" : {
-    "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus-entitlement.plist" : {
+    "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun-entitlement.plist" : {
       "alwaysOutOfDate" : false,
       "inputs" : [
         {
@@ -281,9 +281,9 @@
           "name" : "<com.apple.security.get-task-allow>"
         }
       ],
-      "outputFilePath" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus-entitlement.plist"
+      "outputFilePath" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun-entitlement.plist"
     },
-    "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/sources" : {
+    "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/sources" : {
       "alwaysOutOfDate" : false,
       "inputs" : [
         {
@@ -292,36 +292,36 @@
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/ContentView.swift"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/ContentView.swift"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Models/ChatService.swift"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/Models/ChatService.swift"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Models/Models.swift"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/Models/Models.swift"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/NidusApp.swift"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/StackRunApp.swift"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Views/Chat/ChatView.swift"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/Views/Chat/ChatView.swift"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Views/LoginView.swift"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/Views/LoginView.swift"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/Sources/Nidus/Views/ProjectDetailView.swift"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/Sources/StackRun/Views/ProjectDetailView.swift"
         }
       ],
-      "outputFilePath" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/sources"
+      "outputFilePath" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/sources"
     },
-    "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.product/Objects.LinkFileList" : {
+    "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.product/Objects.LinkFileList" : {
       "alwaysOutOfDate" : false,
       "inputs" : [
         {
@@ -330,36 +330,36 @@
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ChatService.swift.o"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/ChatService.swift.o"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ChatView.swift.o"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/ChatView.swift.o"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ContentView.swift.o"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/ContentView.swift.o"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/LoginView.swift.o"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/LoginView.swift.o"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/Models.swift.o"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/Models.swift.o"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/NidusApp.swift.o"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/StackRunApp.swift.o"
         },
         {
           "kind" : "file",
-          "name" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.build/ProjectDetailView.swift.o"
+          "name" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.build/ProjectDetailView.swift.o"
         }
       ],
-      "outputFilePath" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/Nidus.product/Objects.LinkFileList"
+      "outputFilePath" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/StackRun.product/Objects.LinkFileList"
     },
-    "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt" : {
+    "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt" : {
       "alwaysOutOfDate" : true,
       "inputs" : [
         {
@@ -371,7 +371,7 @@
           "name" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
         }
       ],
-      "outputFilePath" : "/Volumes/BACKUP/projects/nidus/app/Nidus/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+      "outputFilePath" : "/Volumes/BACKUP/projects/stackrun.vercel.app/StackRun/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
     }
   }
 }

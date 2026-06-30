@@ -1,14 +1,14 @@
 openapi: "3.0.3"
 info:
-  title: Nidus API
+  title: StackRun API
   version: 0.2.0
   description: "Self-hosted PaaS — deploy full-stack apps with Docker, compose, and Git"
   contact:
-    name: Nidus
-    url: https://nidus.app
+    name: StackRun
+    url: https://stackrun.vercel.app
 
 servers:
-  - url: https://api.nidus.app
+  - url: https://api.stackrun.vercel.app
     description: Production
 
 components:
@@ -20,7 +20,7 @@ components:
     apiToken:
       type: http
       scheme: bearer
-      description: "API token (nidus_...)"
+      description: "API token (stackrun_...)"
 
 paths:
   /health:

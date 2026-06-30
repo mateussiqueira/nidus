@@ -12,7 +12,7 @@ http://localhost:3001
 # Login
 POST /api/auth/login
 {
-  "email": "admin@nidus.local",
+  "email": "admin@stackrun.local",
   "password": "senha123"
 }
 

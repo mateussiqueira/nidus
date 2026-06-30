@@ -6,7 +6,7 @@
 |----------|-----------|---------|
 | `DATABASE_URL` | URL do PostgreSQL | `postgresql://user:pass@localhost:5432/nidus` |
 | `JWT_SECRET` | Segredo para JWT | `mude-isto-por-algo-seguro` |
-| `NIDUS_HOST` | Host do servidor | `localhost` ou `2.24.204.31` |
+| `STACKRUN_HOST` | Host do servidor | `localhost` ou `2.24.204.31` |
 
 ## Opcionais
 
@@ -15,7 +15,7 @@
 | `REDIS_URL` | URL do Redis | `redis://localhost:6379` |
 | `CORS_ORIGINS` | Origens permitidas | `http://localhost:3000` |
 | `API_PORT` | Porta da API | `3001` |
-| `NIDUS_DEPLOYS_DIR` | Diretório de deploys | `/tmp/nidus-deploys` |
+| `STACKRUN_DEPLOYS_DIR` | Diretório de deploys | `/tmp/stackrun-deploys` |
 
 ## Exemplo `.env`
 
@@ -27,7 +27,7 @@ DATABASE_URL=postgresql://nidus:nidus@localhost:5433/nidus
 REDIS_URL=redis://localhost:6379
 
 # Server
-NIDUS_HOST=localhost
+STACKRUN_HOST=localhost
 API_PORT=3001
 CORS_ORIGINS=http://localhost:3000
 
@@ -35,5 +35,5 @@ CORS_ORIGINS=http://localhost:3000
 JWT_SECRET=seu-segredo-aqui
 
 # Deploy
-NIDUS_DEPLOYS_DIR=/tmp/nidus-deploys
+STACKRUN_DEPLOYS_DIR=/tmp/stackrun-deploys
 ```

@@ -10,7 +10,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/nidus-dev/nidus-api/mail"
+	"github.com/stackrun-dev/stackrun-api/mail"
 	"io"
 	"log"
 	"math"
@@ -126,8 +126,8 @@ func main() {
 	mail.Init(db)
 	mail.Configure(mail.Config{
 		Provider:  "sendmail",
-		FromName:  "Nidus",
-		FromEmail: "noreply@nidus.app",
+		FromName:  "StackRun",
+		FromEmail: "noreply@stackrun.vercel.app",
 	})
 
 	// Initialize database schema if needed
@@ -150,7 +150,7 @@ func main() {
 		log.Println("Redis not configured, running without cache/queue")
 	}
 
-	jwtSecret = []byte(getEnv("JWT_SECRET", "local_nidus_jwt_secret_change_me"))
+	jwtSecret = []byte(getEnv("JWT_SECRET", "local_stackrun_jwt_secret_change_me"))
 
 	mux := http.NewServeMux()
 
@@ -256,7 +256,7 @@ func main() {
 	handler := corsMiddleware(requestIDMiddleware(loggingMiddleware(mux)))
 
 	port := getEnv("API_PORT", "3001")
-	log.Printf("Nidus API v%s starting on :%s (Go %s, %d goroutines)", Version, port, runtime.Version(), runtime.NumCPU())
+	log.Printf("StackRun API v%s starting on :%s (Go %s, %d goroutines)", Version, port, runtime.Version(), runtime.NumCPU())
 
 	server := &http.Server{
 		Addr:         ":" + port,
@@ -411,7 +411,7 @@ func handleHealth(w http.ResponseWriter, r *http.Request) {
 	}
 	jsonResponse(w, map[string]interface{}{
 		"status":       status,
-		"name":         "nidus-control-plane",
+		"name":         "stackrun-control-plane",
 		"version":      Version,
 		"timestamp":    time.Now().UTC().Format(time.RFC3339),
 		"dbConnected":  dbConnected,
@@ -546,7 +546,7 @@ func handleGitHubLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	redirectURI := os.Getenv("GITHUB_REDIRECT_URI")
 	if redirectURI == "" {
-		redirectURI = "https://api.nidus.app/api/auth/github/callback"
+		redirectURI = "https://api.stackrun.vercel.app/api/auth/github/callback"
 	}
 
 	url := fmt.Sprintf("https://github.com/login/oauth/authorize?client_id=%s&redirect_uri=%s&scope=user:email&state=%s",
@@ -577,7 +577,7 @@ func handleGitHubCallback(w http.ResponseWriter, r *http.Request) {
 	// Exchange code for access token
 	redirectURI := os.Getenv("GITHUB_REDIRECT_URI")
 	if redirectURI == "" {
-		redirectURI = "https://api.nidus.app/api/auth/github/callback"
+		redirectURI = "https://api.stackrun.vercel.app/api/auth/github/callback"
 	}
 
 	tokenURL := fmt.Sprintf("https://github.com/login/oauth/access_token?client_id=%s&client_secret=%s&code=%s&redirect_uri=%s",
@@ -681,7 +681,7 @@ func handleGitHubCallback(w http.ResponseWriter, r *http.Request) {
 	token := generateToken(userID, userEmail)
 	frontendURL := os.Getenv("FRONTEND_URL")
 	if frontendURL == "" {
-		frontendURL = "https://app.nidus.app"
+		frontendURL = "https://app.stackrun.vercel.app"
 	}
 	http.Redirect(w, r, fmt.Sprintf("%s/login?token=%s", frontendURL, token), http.StatusFound)
 }
@@ -756,7 +756,7 @@ func handleCreateProject(w http.ResponseWriter, r *http.Request) {
 		if body.Framework == "express" || body.Framework == "nodejs" {
 			tmpl = "express"
 		}
-		body.RepoURL = "/root/nidus-repos/template-" + tmpl + ".git"
+		body.RepoURL = "/root/stackrun-repos/template-" + tmpl + ".git"
 		if body.Framework == "" {
 			body.Framework = tmpl
 		}
@@ -1005,7 +1005,7 @@ func handleDeleteProject(w http.ResponseWriter, r *http.Request, id string) {
 	// Stop and remove Docker container
 	var slug string
 	db.QueryRowContext(r.Context(), "SELECT slug FROM projects WHERE id = $1", id).Scan(&slug)
-	exec.Command("docker", "rm", "-f", "nidus-"+slug).Run()
+	exec.Command("docker", "rm", "-f", "stackrun-"+slug).Run()
 
 	// Delete related records
 	db.ExecContext(r.Context(), "DELETE FROM domains WHERE project_id = $1", id)
@@ -1368,13 +1368,13 @@ func handleDeploy(w http.ResponseWriter, r *http.Request, projectID string) {
 
 	// If Redis is available, enqueue BullMQ job
 	if rdb != nil {
-		imageTag := fmt.Sprintf("nidus-%s:%s", slug.String, branch)
+		imageTag := fmt.Sprintf("stackrun-%s:%s", slug.String, branch)
 		if branch == "main" {
-			imageTag = fmt.Sprintf("nidus-%s:latest", slug.String)
+			imageTag = fmt.Sprintf("stackrun-%s:latest", slug.String)
 		}
-		containerName := fmt.Sprintf("nidus-%s", slug.String)
+		containerName := fmt.Sprintf("stackrun-%s", slug.String)
 		if branch != "main" {
-			containerName = fmt.Sprintf("nidus-%s-preview-%s", slug.String, sanitizeBranch(branch))
+			containerName = fmt.Sprintf("stackrun-%s-preview-%s", slug.String, sanitizeBranch(branch))
 		}
 
 		jobData, _ := json.Marshal(map[string]interface{}{
@@ -1443,9 +1443,9 @@ func handleProjectMetrics(w http.ResponseWriter, r *http.Request, projectID stri
 	}
 
 	branch := r.URL.Query().Get("branch")
-	containerName := "nidus-" + slug
+	containerName := "stackrun-" + slug
 	if branch != "" && branch != "main" {
-		containerName = "nidus-" + slug + "-preview-" + sanitizeBranch(branch)
+		containerName = "stackrun-" + slug + "-preview-" + sanitizeBranch(branch)
 	}
 
 	// Docker inspect
@@ -1601,7 +1601,7 @@ func handleCreateDatabase(w http.ResponseWriter, r *http.Request) {
 		}
 		return '_'
 	}, strings.ToLower(body.Name))
-	dbName = "nidus_" + dbName
+	dbName = "stackrun_" + dbName
 	password := generatePassword(16)
 
 	// Create database using system PostgreSQL
@@ -1676,7 +1676,7 @@ func handleDeleteDatabase(w http.ResponseWriter, r *http.Request, id string) {
 		return
 	}
 
-	dbName := "nidus_" + name
+	dbName := "stackrun_" + name
 	dropdbPath := "/opt/homebrew/bin/dropdb"
 
 	exec.Command(dropdbPath, "-U", "broto", "--if-exists", dbName).Run()
@@ -1790,11 +1790,11 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 			deployID, id, branch, deployType)
 
 		safeBranch := sanitizeBranch(branch)
-		imageTag := fmt.Sprintf("nidus-%s:%s", slug, safeBranch)
-		containerName := fmt.Sprintf("nidus-%s", slug)
+		imageTag := fmt.Sprintf("stackrun-%s:%s", slug, safeBranch)
+		containerName := fmt.Sprintf("stackrun-%s", slug)
 		if branch != defaultBranch {
-			imageTag = fmt.Sprintf("nidus-%s:preview-%s", slug, safeBranch)
-			containerName = fmt.Sprintf("nidus-%s-preview-%s", slug, safeBranch)
+			imageTag = fmt.Sprintf("stackrun-%s:preview-%s", slug, safeBranch)
+			containerName = fmt.Sprintf("stackrun-%s-preview-%s", slug, safeBranch)
 		}
 
 		jobData, _ := json.Marshal(map[string]interface{}{
@@ -1848,10 +1848,10 @@ func handleProjectMetricsHistory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	containerName := "nidus-" + slug
+	containerName := "stackrun-" + slug
 	branch := r.URL.Query().Get("branch")
 	if branch != "" && branch != "main" {
-		containerName = "nidus-" + slug + "-preview-" + sanitizeBranch(branch)
+		containerName = "stackrun-" + slug + "-preview-" + sanitizeBranch(branch)
 	}
 
 	range_ := r.URL.Query().Get("range")
@@ -2127,21 +2127,21 @@ go_memstats_alloc_bytes %d
 # TYPE go_memstats_sys_bytes gauge
 go_memstats_sys_bytes %d
 
-# HELP nidus_uptime_seconds Uptime in seconds
-# TYPE nidus_uptime_seconds gauge
-nidus_uptime_seconds %.2f
+# HELP stackrun_uptime_seconds Uptime in seconds
+# TYPE stackrun_uptime_seconds gauge
+stackrun_uptime_seconds %.2f
 
-# HELP nidus_db_open_connections Database open connections
-# TYPE nidus_db_open_connections gauge
-nidus_db_open_connections %d
+# HELP stackrun_db_open_connections Database open connections
+# TYPE stackrun_db_open_connections gauge
+stackrun_db_open_connections %d
 
-# HELP nidus_memory_heap_used_bytes Heap memory used
-# TYPE nidus_memory_heap_used_bytes gauge
-nidus_memory_heap_used_bytes %d
+# HELP stackrun_memory_heap_used_bytes Heap memory used
+# TYPE stackrun_memory_heap_used_bytes gauge
+stackrun_memory_heap_used_bytes %d
 
-# HELP nidus_memory_rss_bytes Resident set size
-# TYPE nidus_memory_rss_bytes gauge
-nidus_memory_rss_bytes %d
+# HELP stackrun_memory_rss_bytes Resident set size
+# TYPE stackrun_memory_rss_bytes gauge
+stackrun_memory_rss_bytes %d
 `, runtime.Version(), runtime.NumGoroutine(), m.Alloc, m.Sys,
 		time.Since(startTime).Seconds(), db.Stats().OpenConnections, m.HeapInuse, m.Sys)
 }
@@ -2444,8 +2444,8 @@ func handleVerifyDomain(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Verify domain via DNS TXT record
-	nidusIP := getEnv("NIDUS_SERVER_IP", "2.24.204.31")
-	txtValue := fmt.Sprintf("nidus-verify=%s", projectSlug)
+	nidusIP := getEnv("STACKRUN_SERVER_IP", "2.24.204.31")
+	txtValue := fmt.Sprintf("stackrun-verify=%s", projectSlug)
 	verified := verifyDNSTXT(domain, txtValue)
 
 	if verified {
@@ -2471,7 +2471,7 @@ func handleVerifyDomain(w http.ResponseWriter, r *http.Request) {
 func verifyDNSTXT(domain, expected string) bool {
 	// Attempt DNS TXT lookup for verification
 	// Fallback: if lookup fails, we still allow manual verification
-	cmd := exec.Command("dig", "+short", "TXT", "_nidus-verify."+domain)
+	cmd := exec.Command("dig", "+short", "TXT", "_stackrun-verify."+domain)
 	out, err := cmd.Output()
 	if err != nil {
 		log.Printf("[domain] DNS lookup failed for %s: %v", domain, err)
@@ -2586,7 +2586,7 @@ func handleRollback(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	host := getEnv("NIDUS_HOST", "localhost")
+	host := getEnv("STACKRUN_HOST", "localhost")
 	newURL := fmt.Sprintf("http://%s:%s", host, port)
 	if depURL.Valid {
 		newURL = depURL.String

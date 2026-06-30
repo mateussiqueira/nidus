@@ -1,7 +1,7 @@
 services:
   prometheus:
     image: prom/prometheus:latest
-    container_name: nidus-prometheus
+    container_name: stackrun-prometheus
     restart: unless-stopped
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
@@ -15,7 +15,7 @@ services:
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
-    container_name: nidus-cadvisor
+    container_name: stackrun-cadvisor
     restart: unless-stopped
     privileged: true
     devices:
@@ -29,7 +29,7 @@ services:
 
   node-exporter:
     image: prom/node-exporter:latest
-    container_name: nidus-node-exporter
+    container_name: stackrun-node-exporter
     restart: unless-stopped
     volumes:
       - /proc:/host/proc:ro
@@ -44,13 +44,13 @@ services:
 
   grafana:
     image: grafana/grafana:latest
-    container_name: nidus-grafana
+    container_name: stackrun-grafana
     restart: unless-stopped
     environment:
       - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=nidus_grafana_2026
+      - GF_SECURITY_ADMIN_PASSWORD=stackrun_grafana_2026
       - GF_INSTALL_PLUGINS=
-      - GF_SERVER_ROOT_URL=https://metrics.nidus.app
+      - GF_SERVER_ROOT_URL=https://metrics.stackrun.vercel.app
       - GF_AUTH_ANONYMOUS_ENABLED=false
     volumes:
       - grafana_data:/var/lib/grafana

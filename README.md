@@ -1,7 +1,7 @@
 # Nimbus
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.2.0-orange.svg)](https://github.com/mateussiqueira/nidus/releases)
+[![Version](https://img.shields.io/badge/version-0.2.0-orange.svg)](https://github.com/mateussiqueira/stackrun/releases)
 
 > Self-hosted PaaS. Deploy apps, databases, and domains from a single control plane. Vercel-like experience on your own infra.
 
@@ -9,7 +9,7 @@
 
 Nimbus is a self-hosted platform for deploying applications. Connect your Git repo, push, and it builds + runs your app in isolated Docker containers — with managed databases, custom domains, real-time metrics, and transactional email. All on your server, no vendor lock-in.
 
-**Try it:** [nimbus200.vercel.app](https://nimbus200.vercel.app)
+**Try it:** [stackrun.vercel.app](https://stackrun.vercel.app)
 
 ## Features
 
@@ -23,7 +23,7 @@ Nimbus is a self-hosted platform for deploying applications. Connect your Git re
 | **Metrics** | Per-project CPU/Memory history | ✅ |
 | **Rollback** | Instant rollback to any deployment | ✅ |
 | **Previews** | Branch-based preview deployments | ✅ |
-| **CLI** | `nidus deploy` from terminal | ✅ |
+| **CLI** | `stackrun deploy` from terminal | ✅ |
 
 ## Stack
 
@@ -37,7 +37,7 @@ Nimbus is a self-hosted platform for deploying applications. Connect your Git re
 | **Cache/Queue** | Redis 7 | Job queue + rate limiting | — |
 | **Proxy** | Caddy | HTTPS, routing, security headers | — |
 | **Monitoring** | Prometheus + Grafana + cAdvisor | Metrics, dashboards, alerts | — |
-| **Mail** | Nidus Mail (sendmail/SMTP) | Transactional email | — |
+| **Mail** | StackRun Mail (sendmail/SMTP) | Transactional email | — |
 
 ## Quick Start
 
@@ -54,7 +54,7 @@ Nimbus is a self-hosted platform for deploying applications. Connect your Git re
 ### Full Stack
 
 ```bash
-git clone https://github.com/mateussiqueira/nidus.git
+git clone https://github.com/mateussiqueira/stackrun.git
 cd nidus
 cp .env.example .env
 docker compose up -d
@@ -63,7 +63,7 @@ docker compose up -d
 ### Lite Mode (512MB)
 
 ```bash
-git clone https://github.com/mateussiqueira/nidus.git
+git clone https://github.com/mateussiqueira/stackrun.git
 cd nidus
 docker compose -f docker-compose.lite.yml up -d
 ```
@@ -74,11 +74,11 @@ Lite mode uses SQLite instead of PostgreSQL and excludes Dashboard/Redis/Proxy.
 
 - **Dashboard:** [http://localhost:3000](http://localhost:3000)
 - **API:** [http://localhost:3001](http://localhost:3001)
-- **Grafana:** [http://localhost:3004](http://localhost:3004) (admin / nidus_grafana_2026)
+- **Grafana:** [http://localhost:3004](http://localhost:3004) (admin / stackrun_grafana_2026)
 
 ### Default Credentials
 
-- Email: `demo@nidus.dev`
+- Email: `demo@stackrun.dev`
 - Password: `demo123456`
 
 ## Deploy Your App
@@ -86,10 +86,10 @@ Lite mode uses SQLite instead of PostgreSQL and excludes Dashboard/Redis/Proxy.
 ### Via CLI
 
 ```bash
-npm install -g nidus-cli
-nidus login
+npm install -g stackrun-cli
+stackrun login
 cd my-project
-nidus deploy
+stackrun deploy
 ```
 
 ### Via API
@@ -110,7 +110,7 @@ curl -X POST http://localhost:3001/api/projects/$PROJECT_ID/deploy \
 
 Point your GitHub/GitLab webhook to `http://your-server:3001/api/webhook/github`.
 
-## Nidus Mail
+## StackRun Mail
 
 Send transactional emails from your apps without external dependencies.
 
@@ -132,10 +132,10 @@ curl http://localhost:3001/api/mail/templates \
 
 ### MCP Server
 
-Connect AI agents to Nidus Mail:
+Connect AI agents to StackRun Mail:
 
 ```bash
-NIDUS_API_URL=http://localhost:3001 NIDUS_API_TOKEN=$TOKEN node mcp/mail/server.js
+STACKRUN_API_URL=http://localhost:3001 STACKRUN_API_TOKEN=$TOKEN node mcp/mail/server.js
 ```
 
 ## Managed Databases
@@ -155,15 +155,15 @@ curl -X POST http://localhost:3001/api/databases \
 - **API metrics:** `GET /api/metrics` — request stats, memory, uptime
 - **Project metrics history:** `GET /api/projects/{id}/metrics/history` — CPU/Memory time-series
 - **Grafana dashboards:** `http://localhost:3004` — 5 panels with per-container filtering
-- **Prometheus targets:** cadvisor, nidus-api, node-exporter
+- **Prometheus targets:** cadvisor, stackrun-api, node-exporter
 
 ## Structure
 
 ```
-nidus/
+stackrun/
 ├── apps/
 │   ├── api/              # Go API (mail, metrics, auth, projects)
-│   │   └── mail/         # Nidus Mail package
+│   │   └── mail/         # StackRun Mail package
 │   ├── dashboard/        # Next.js admin + charts
 │   │   └── components/   # MetricsChart, etc.
 │   └── landing-page/     # Static landing page
@@ -176,7 +176,7 @@ nidus/
 │   ├── shared/           # Shared TypeScript types
 │   └── runtime/          # Deploy runtime engine
 ├── docker/
-│   ├── nidus-monitoring.yml  # Prometheus + Grafana + cAdvisor
+│   ├── stackrun-monitoring.yml  # Prometheus + Grafana + cAdvisor
 │   ├── prometheus.yml        # Metrics scraping config
 │   └── grafana/              # Dashboard provisioning
 ├── docs-site/            # Documentation (Next.js, en/pt)
@@ -189,7 +189,7 @@ nidus/
 DATABASE_URL=postgresql://user:pass@localhost:5432/nidus
 REDIS_URL=redis://localhost:6379
 JWT_SECRET=your-secret-key
-# Optional: SMTP for Nidus Mail
+# Optional: SMTP for StackRun Mail
 SMTP_HOST=smtp.sendgrid.net
 SMTP_PORT=587
 SMTP_USER=apikey
@@ -205,12 +205,12 @@ SMTP_PASS=your-api-key
 
 ## Documentation
 
-- [Quickstart](https://nimbus200.vercel.app/en/docs/quickstart)
-- [Architecture](https://nimbus200.vercel.app/en/docs/architecture)
-- [Deployment](https://nimbus200.vercel.app/en/docs/deployment)
-- [API Reference](https://nimbus200.vercel.app/en/docs/api)
-- [CLI Guide](https://nimbus200.vercel.app/en/docs/cli)
-- [FAQ](https://nimbus200.vercel.app/en/docs/faq)
+- [Quickstart](https://stackrun.vercel.app/en/docs/quickstart)
+- [Architecture](https://stackrun.vercel.app/en/docs/architecture)
+- [Deployment](https://stackrun.vercel.app/en/docs/deployment)
+- [API Reference](https://stackrun.vercel.app/en/docs/api)
+- [CLI Guide](https://stackrun.vercel.app/en/docs/cli)
+- [FAQ](https://stackrun.vercel.app/en/docs/faq)
 
 ## Contributing
 

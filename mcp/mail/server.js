@@ -1,13 +1,13 @@
 #!/usr/bin/env node
-// Nidus Mail MCP Server v0.1.0
+// StackRun Mail MCP Server v0.1.0
 // Provides email sending tools to opencode and other MCP clients
 
 const https = require('https');
 const http = require('http');
 const readline = require('readline');
 
-const API_BASE = process.env.NIDUS_API_URL || 'http://localhost:3001';
-const API_TOKEN = process.env.NIDUS_API_TOKEN || '';
+const API_BASE = process.env.STACKRUN_API_URL || 'http://localhost:3001';
+const API_TOKEN = process.env.STACKRUN_API_TOKEN || '';
 
 async function apiRequest(method, path, body) {
   const url = new URL(API_BASE + path);
@@ -48,7 +48,7 @@ async function apiRequest(method, path, body) {
 const TOOLS = [
   {
     name: 'mail_send',
-    description: 'Send an email using Nidus Mail. Supports templates with variable substitution.',
+    description: 'Send an email using StackRun Mail. Supports templates with variable substitution.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -65,7 +65,7 @@ const TOOLS = [
   },
   {
     name: 'mail_templates',
-    description: 'List all available Nidus email templates.',
+    description: 'List all available StackRun email templates.',
     inputSchema: { type: 'object', properties: {} },
   },
   {
@@ -159,7 +159,7 @@ rl.on('line', async (line) => {
         result: {
           protocolVersion: '2024-11-05',
           capabilities: { tools: {} },
-          serverInfo: { name: 'nidus-mail', version: '0.1.0' },
+          serverInfo: { name: 'stackrun-mail', version: '0.1.0' },
         },
       });
       break;

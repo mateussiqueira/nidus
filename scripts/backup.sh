@@ -1,10 +1,10 @@
 #!/bin/bash
-# Nidus Backup Script — PostgreSQL daily dump
+# StackRun Backup Script — PostgreSQL daily dump
 # Usage: ./scripts/backup.sh [output-dir]
 
 set -euo pipefail
 
-BACKUP_DIR="${1:-/root/nidus/backups}"
+BACKUP_DIR="${1:-/root/stackrun/backups}"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 RETENTION_DAYS=7
 
@@ -12,9 +12,9 @@ DB_HOST="${PGHOST:-localhost}"
 DB_PORT="${PGPORT:-5432}"
 DB_NAME="${PGDATABASE:-nidus}"
 DB_USER="${PGUSER:-nidus}"
-DB_PASS="${PGPASSWORD:-nidus_prod_123}"
-BACKUP_FILE="${BACKUP_DIR}/nidus_${TIMESTAMP}.sql.gz"
-LATEST_LINK="${BACKUP_DIR}/nidus_latest.sql.gz"
+DB_PASS="${PGPASSWORD:-stackrun_prod_123}"
+BACKUP_FILE="${BACKUP_DIR}/stackrun_${TIMESTAMP}.sql.gz"
+LATEST_LINK="${BACKUP_DIR}/stackrun_latest.sql.gz"
 
 mkdir -p "$BACKUP_DIR"
 
@@ -41,7 +41,7 @@ BACKUP_SIZE=$(du -h "$BACKUP_FILE" | cut -f1)
 echo "[$(date +%H:%M:%S)] Backup complete: $BACKUP_SIZE"
 
 # Rotate old backups (keep RETENTION_DAYS)
-find "$BACKUP_DIR" -name "nidus_*.sql.gz" -type f -mtime +$RETENTION_DAYS -delete
+find "$BACKUP_DIR" -name "stackrun_*.sql.gz" -type f -mtime +$RETENTION_DAYS -delete
 echo "[$(date +%H:%M:%S)] Cleaned backups older than ${RETENTION_DAYS}d"
 
 # Verify backup

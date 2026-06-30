@@ -1,4 +1,4 @@
-# Nidus v2.0 — Arquitetura Rust + Go (Roadmap 12 meses)
+# StackRun v2.0 — Arquitetura Rust + Go (Roadmap 12 meses)
 
 ## Research: O que os melhores do mundo fazem
 
@@ -43,41 +43,41 @@
 - **Realtime (Rust)**: WebSocket server em Rust. 1M conexões simultâneas.
 - **Lições**: Cada linguagem no seu melhor. Go pra APIs, Rust pra path crítico.
 
-## Arquitetura Nidus v2.0
+## Arquitetura StackRun v2.0
 
 ### Rust (core crítico de performance)
-1. **nidus-proxy** — Reverse proxy (substitui Caddy/NGINX)
+1. **stackrun-proxy** — Reverse proxy (substitui Caddy/NGINX)
    - Tech: hyper + tokio + rustls
    - Memória: ~15MB vs ~100MB (Caddy)
    - Throughput: 50K req/s vs 5K
    - Features: SNI routing, TLS 1.3, HTTP/3, rate limiting nativo
 
-2. **nidus-builder** — Build system (substitui exec.Command docker)
+2. **stackrun-builder** — Build system (substitui exec.Command docker)
    - Tech: buildkit-rs + tokio
    - Build cache inteligente com S3
    - Builds paralelos com resource limits
    - Métricas de build em tempo real
 
-3. **nidus-edge** — Edge functions runtime
+3. **stackrun-edge** — Edge functions runtime
    - Tech: wasmtime (WASM) ou v8 isolates
    - Cold start <5ms
    - Zero-downtime deploys
    - Multi-tenant isolation
 
-4. **nidus-metrics** — Coletor de métricas
+4. **stackrun-metrics** — Coletor de métricas
    - Tech: tikv + prometheus
    - Stream processing em tempo real
    - Armazenamento colunar eficiente
 
 ### Go (orquestração e API)
-1. **nidus-api** — API REST (refatorar, já existe)
-2. **nidus-orchestrator** — Gerenciador de containers
-3. **nidus-auth** — Autenticação/OAuth
-4. **nidus-scheduler** — Cron jobs + health checks
+1. **stackrun-api** — API REST (refatorar, já existe)
+2. **stackrun-orchestrator** — Gerenciador de containers
+3. **stackrun-auth** — Autenticação/OAuth
+4. **stackrun-scheduler** — Cron jobs + health checks
 
 ### Frontend
-1. **nidus-dashboard** — Next.js (já existe)
-2. **nidus-cli** — Rust CLI (tui-rs + indicatif)
+1. **stackrun-dashboard** — Next.js (já existe)
+2. **stackrun-cli** — Rust CLI (tui-rs + indicatif)
    - Progressive bar estilo Railway
    - Logs com syntax highlighting
    - Tamanho: 5MB vs 80MB (Node)
@@ -96,13 +96,13 @@
 
 ### CLI v2.0 (Rust)
 ```
-$ nidus deploy
+$ stackrun deploy
  ⠋ Building...          [2.3s]
  ⠙ Pushing image...      [1.1s]  
  ⠹ Starting container...  [0.8s]
- ✅ Deployed in 4.2s → https://app.nidus.app
+ ✅ Deployed in 4.2s → https://app.stackrun.vercel.app
 
-$ nidus logs --follow
+$ stackrun logs --follow
  2026-06-30 15:30:01 GET / 200 2ms
  2026-06-30 15:30:05 POST /api 201 15ms
 ```
@@ -117,19 +117,19 @@ $ nidus logs --follow
 
 ### Fase 1: Fundação Rust (Mês 1-3)
 - [ ] Setup workspace Rust (Cargo workspace)
-- [ ] nidus-proxy: reverse proxy com TLS + SNI routing
-- [ ] nidus-cli: CLI em Rust com TUI
+- [ ] stackrun-proxy: reverse proxy com TLS + SNI routing
+- [ ] stackrun-cli: CLI em Rust com TUI
 - [ ] Testes de carga: 10K req/s no proxy
 
 ### Fase 2: Core em Rust (Mês 4-6)
-- [ ] nidus-builder: Build system com cache S3
-- [ ] nidus-metrics: Coletor de métricas em tempo real
+- [ ] stackrun-builder: Build system com cache S3
+- [ ] stackrun-metrics: Coletor de métricas em tempo real
 - [ ] Migração do health checker para Rust
 - [ ] Testes: 100 projetos simultâneos
 
 ### Fase 3: Edge (Mês 7-9)
-- [ ] nidus-edge: WASM runtime para funções
-- [ ] nidus-scheduler: Cron jobs + filas
+- [ ] stackrun-edge: WASM runtime para funções
+- [ ] stackrun-scheduler: Cron jobs + filas
 - [ ] Integração completa Rust↔Go via gRPC
 - [ ] Benchmark: 1M req/s no proxy
 
@@ -143,7 +143,7 @@ $ nidus logs --follow
 
 ```
 ┌─────────────────────────────────────────────┐
-│                 nidus.app                    │
+│                 stackrun.vercel.app                    │
 ├─────────────────────────────────────────────┤
 │  Rust Proxy (hyper)    ← TLS, HTTP/3, WSS   │
 ├─────────────────────────────────────────────┤

@@ -1,4 +1,4 @@
-module github.com/nidus-dev/nidus-api
+module github.com/stackrun-dev/stackrun-api
 
 go 1.25
 

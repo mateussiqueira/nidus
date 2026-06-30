@@ -3,7 +3,7 @@ set -e
 API_URL="${API_URL:-http://localhost:3001}"
 RED="\\033[0;31m"; GREEN="\\033[0;32m"; YELLOW="\\033[1;33m"; NC="\\033[0m"
 echo "========================================="
-echo "  Nidus Performance Benchmark Suite"
+echo "  StackRun Performance Benchmark Suite"
 echo "========================================="
 echo ""
 
@@ -22,7 +22,7 @@ echo "  Metrics endpoint: ${GREEN}${METRICS_TIME}ms${NC}"
 
 echo ""
 echo -e "${YELLOW}[2/6] Deploy Queue Speed${NC}"
-TOKEN=$(curl -sf -X POST $API_URL/api/auth/login -H Content-Type:application/json -d "{\"email\":\"demo@nidus.dev\",\"password\":\"demo123456\"}" | python3 -c "import sys,json;print(json.load(sys.stdin).get(\"token\",\"\"))" 2>/dev/null)
+TOKEN=$(curl -sf -X POST $API_URL/api/auth/login -H Content-Type:application/json -d "{\"email\":\"demo@stackrun.dev\",\"password\":\"demo123456\"}" | python3 -c "import sys,json;print(json.load(sys.stdin).get(\"token\",\"\"))" 2>/dev/null)
 
 # Create test project
 PROJ=$(curl -sf $API_URL/api/projects -H "Authorization: Bearer $TOKEN" | python3 -c "import sys,json;d=json.load(sys.stdin);print(d[0][\"id\"] if d else \"\")" 2>/dev/null)
@@ -53,7 +53,7 @@ for a in apps:
     n=a.get(\"name\",\"\")
     m=a.get(\"monit\",{})
     print(f\"  {n}: {m.get(\"memory\",0)/1024/1024:.0f}MB\")
-" 2>/dev/null || pm2 status 2>/dev/null | grep nidus
+" 2>/dev/null || pm2 status 2>/dev/null | grep stackrun
 
 echo ""
 echo -e "${YELLOW}[6/6] Disk${NC}"

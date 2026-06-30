@@ -27,10 +27,10 @@ struct BuildProgress {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt()
-        .with_env_filter("nidus_builder=info")
+        .with_env_filter("stackrun_builder=info")
         .init();
 
-    info!("🦀 Nidus Builder v0.1.0 starting...");
+    info!("🦀 StackRun Builder v0.1.0 starting...");
 
     let docker = Docker::connect_with_local_defaults()?;
     let version = docker.version().await?;
@@ -42,7 +42,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let _build_options = BuildImageOptions {
         dockerfile: "Dockerfile".to_string(),
-        t: "nidus-builder-test:latest".to_string(),
+        t: "stackrun-builder-test:latest".to_string(),
         pull: true,
         rm: true,
         ..Default::default()

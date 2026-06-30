@@ -36,10 +36,10 @@ export default function DeploymentPT() {
         <section className="mb-12">
           <h2 className="text-2xl font-semibold mb-4">Via CLI</h2>
           <pre className="bg-[#111113] p-4 rounded-lg mb-6 overflow-x-auto">
-{`npm install -g nidus
-nidus login --url http://seu-servidor:3001
+{`npm install -g stackrun
+stackrun login --url http://seu-servidor:3001
 cd meu-projeto
-nidus deploy`}
+stackrun deploy`}
           </pre>
         </section>
 

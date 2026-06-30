@@ -4,9 +4,9 @@ import{_ as a,o as i,c as n,a0 as e}from"./chunks/framework.jwovEGr5.js";const c
 <span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    ports</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
 <span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">&quot;5433:5432&quot;</span></span>
 <span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    environment</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
-<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      POSTGRES_USER</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">nidus</span></span>
-<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      POSTGRES_PASSWORD</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">nidus</span></span>
-<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      POSTGRES_DB</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">nidus</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      POSTGRES_USER</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">stackrun</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      POSTGRES_PASSWORD</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">stackrun</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      POSTGRES_DB</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">stackrun</span></span>
 <span class="line"></span>
 <span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">  redis</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
 <span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    image</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">redis:7-alpine</span></span>

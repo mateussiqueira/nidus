@@ -46,7 +46,7 @@ export default function QuickstartPT() {
           
           <h3 className="text-xl font-medium mb-3">1. Clone o repositório</h3>
           <pre className="bg-[#111113] p-4 rounded-lg mb-6 overflow-x-auto">
-            <code>git clone https://github.com/mateussiqueira/nidus.git{'\n'}cd nidus</code>
+            <code>git clone https://github.com/mateussiqueira/stackrun.git{'\n'}cd nidus</code>
           </pre>
 
           <h3 className="text-xl font-medium mb-3">2. Configure as variáveis de ambiente</h3>
@@ -77,7 +77,7 @@ export default function QuickstartPT() {
         <section className="mb-12">
           <h2 className="text-2xl font-semibold mb-4">Login Padrão</h2>
           <ul className="list-disc list-inside text-[#a1a1aa] space-y-2">
-            <li>Email: <code>demo@nidus.dev</code></li>
+            <li>Email: <code>demo@stackrun.dev</code></li>
             <li>Senha: <code>demo123</code></li>
           </ul>
         </section>

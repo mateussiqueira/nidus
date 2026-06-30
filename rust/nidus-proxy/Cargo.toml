@@ -1,5 +1,5 @@
 [package]
-name = "nidus-proxy"
+name = "stackrun-proxy"
 version = "0.2.0"
 edition = "2021"
 
@@ -18,7 +18,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tokio-rustls = "0.26"
 rustls = "0.23"
 rustls-pemfile = "2"
-nidus-mesh = { path = "../nidus-mesh" }
+stackrun-mesh = { path = "../stackrun-mesh" }
 tonic = "0.11"
 
 [dev-dependencies]

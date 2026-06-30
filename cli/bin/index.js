@@ -11,13 +11,13 @@ import { dbList, dbCreate } from "../src/db.js"
 const program = new Command()
 
 program
-  .name("nidus")
-  .description("Nidus CLI — deploy como a Vercel, melhor que a Vercel")
+  .name("stackrun")
+  .description("StackRun CLI — deploy como a Vercel, melhor que a Vercel")
   .version("0.1.0")
 
 program
   .command("login")
-  .description("Autenticar na Nidus (interativo)")
+  .description("Autenticar na StackRun (interativo)")
   .action(login)
 
 program
@@ -64,14 +64,14 @@ program
         break
       case "set":
         if (!key || !value) {
-          console.log("  Uso: nidus env set <projeto> <key> <value>")
+          console.log("  Uso: stackrun env set <projeto> <key> <value>")
           return
         }
         envSet(project, key, value)
         break
       case "delete":
         if (!key) {
-          console.log("  Uso: nidus env delete <projeto> <key>")
+          console.log("  Uso: stackrun env delete <projeto> <key>")
           return
         }
         envDelete(project, key)
@@ -95,7 +95,7 @@ program
         break
       case "create":
         if (!name) {
-          console.log("  Uso: nidus db create <nome> [-t postgres|mysql|redis] [-p projeto]")
+          console.log("  Uso: stackrun db create <nome> [-t postgres|mysql|redis] [-p projeto]")
           return
         }
         dbCreate(name, opts)

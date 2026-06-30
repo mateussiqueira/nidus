@@ -1,9 +1,9 @@
 import Link from 'next/link'
 
 const docs = [
-  { title: 'Início', href: '/pt', description: 'Visão geral do Nidus' },
-  { title: 'Primeiros Passos', href: '/pt/docs/quickstart', description: 'Instale e rode o Nidus em minutos' },
-  { title: 'Arquitetura', href: '/pt/docs/architecture', description: 'Entenda como o Nidus funciona' },
+  { title: 'Início', href: '/pt', description: 'Visão geral do StackRun' },
+  { title: 'Primeiros Passos', href: '/pt/docs/quickstart', description: 'Instale e rode o StackRun em minutos' },
+  { title: 'Arquitetura', href: '/pt/docs/architecture', description: 'Entenda como o StackRun funciona' },
   { title: 'Deploy', href: '/pt/docs/deployment', description: 'Faça deploy de suas aplicações' },
   { title: 'Configuração', href: '/pt/docs/configuration', description: 'Variáveis de ambiente e settings' },
   { title: 'CLI', href: '/pt/docs/cli', description: 'Use a linha de comando' },
@@ -25,7 +25,7 @@ export default function PTHome() {
       </nav>
       
       <div className="container mx-auto px-4 py-16">
-        <h1 className="text-4xl font-bold mb-4">Nidus</h1>
+        <h1 className="text-4xl font-bold mb-4">StackRun</h1>
         <p className="text-xl text-gray-400 mb-8">
           Plataforma de deploy self-hosted. Think Vercel that runs on your own machine.
         </p>

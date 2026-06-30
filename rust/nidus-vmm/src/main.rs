@@ -42,12 +42,12 @@ impl MicroVm {
         MicroVm {
             id: id.to_string(),
             pid: None,
-            socket_path: PathBuf::from(format!("/tmp/nidus-vm-{}.sock", id)),
+            socket_path: PathBuf::from(format!("/tmp/stackrun-vm-{}.sock", id)),
             config: VmConfig {
                 vcpu_count: vcpus,
                 mem_size_mib: memory_mb,
-                kernel_path: PathBuf::from("/var/lib/nidus/vmlinux.bin"),
-                rootfs_path: PathBuf::from("/var/lib/nidus/rootfs.ext4"),
+                kernel_path: PathBuf::from("/var/lib/stackrun/vmlinux.bin"),
+                rootfs_path: PathBuf::from("/var/lib/stackrun/rootfs.ext4"),
                 boot_args: "console=ttyS0 reboot=k panic=1 pci=off".into(),
                 network_interfaces: vec![],
             },
@@ -95,14 +95,14 @@ impl MicroVm {
 #[tokio::main]
 async fn main() -> Result<()> {
     tracing_subscriber::fmt()
-        .with_env_filter("nidus_vmm=info")
+        .with_env_filter("stackrun_vmm=info")
         .init();
 
-    info!("🦀 Nidus VMM v0.1.0 — Firecracker microVM Manager");
+    info!("🦀 StackRun VMM v0.1.0 — Firecracker microVM Manager");
     info!("");
     info!("Architecture:");
     info!("  ┌─────────────┐");
-    info!("  │  nidus-vmm  │  Rust orchestrator");
+    info!("  │  stackrun-vmm  │  Rust orchestrator");
     info!("  │  ┌─────────┐ │");
     info!("  │  │ VM Pool │ │  Pre-warmed microVMs");
     info!("  │  └─────────┘ │");
@@ -140,12 +140,12 @@ async fn main() -> Result<()> {
     let mut vms = Vec::new();
     for i in 0..pool_size {
         let mut vm = MicroVm::new(
-            &format!("nidus-pool-{}", i),
+            &format!("stackrun-pool-{}", i),
             1,
             128,
         );
-        vm.config.kernel_path = PathBuf::from("/var/lib/nidus/kernel/vmlinux-5.10");
-        vm.config.rootfs_path = PathBuf::from("/var/lib/nidus/rootfs/rootfs.ext4");
+        vm.config.kernel_path = PathBuf::from("/var/lib/stackrun/kernel/vmlinux-5.10");
+        vm.config.rootfs_path = PathBuf::from("/var/lib/stackrun/rootfs/rootfs.ext4");
         vms.push(vm);
     }
 
@@ -155,7 +155,7 @@ async fn main() -> Result<()> {
     info!("  1. Download Firecracker: github.com/firecracker-microvm/firecracker");
     info!("  2. Build rootfs: build_rootfs.sh (alpine-based, <50MB)");
     info!("  3. Build kernel: build_kernel.sh (Linux 5.10, <20MB)");
-    info!("  4. Start pool: nidus-vmm --pool-size 10");
+    info!("  4. Start pool: stackrun-vmm --pool-size 10");
     info!("  5. Deploy to microVM: POST /api/projects/{{id}}/deploy?vm=true");
 
     tokio::signal::ctrl_c().await?;

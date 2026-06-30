@@ -9,13 +9,13 @@ export default function FAQPT() {
         <h1 className="text-4xl font-bold mb-8">FAQ</h1>
         
         <section className="mb-12">
-          <h2 className="text-2xl font-semibold mb-4">O que é o Nidus?</h2>
-          <p className="text-[#a1a1aa]">Nidus é uma plataforma de deploy self-hosted, similar ao Vercel mas roda no seu próprio servidor.</p>
+          <h2 className="text-2xl font-semibold mb-4">O que é o StackRun?</h2>
+          <p className="text-[#a1a1aa]">StackRun é uma plataforma de deploy self-hosted, similar ao Vercel mas roda no seu próprio servidor.</p>
         </section>
 
         <section className="mb-12">
-          <h2 className="text-2xl font-semibold mb-4">O Nidus é gratuito?</h2>
-          <p className="text-[#a1a1aa]">Sim! Nidus é open-source sob a licença MIT. Você paga apenas pelo servidor onde roda.</p>
+          <h2 className="text-2xl font-semibold mb-4">O StackRun é gratuito?</h2>
+          <p className="text-[#a1a1aa]">Sim! StackRun é open-source sob a licença MIT. Você paga apenas pelo servidor onde roda.</p>
         </section>
 
         <section className="mb-12">
@@ -36,7 +36,7 @@ export default function FAQPT() {
           <p className="text-[#a1a1aa]">Três formas:</p>
           <ol className="list-decimal list-inside text-[#a1a1aa] space-y-2 mt-2">
             <li><strong>GitHub</strong> — Configure um webhook e faça push</li>
-            <li><strong>CLI</strong> — Use <code>nidus deploy</code></li>
+            <li><strong>CLI</strong> — Use <code>stackrun deploy</code></li>
             <li><strong>API</strong> — Chame o endpoint REST</li>
           </ol>
         </section>

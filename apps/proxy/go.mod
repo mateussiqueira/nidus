@@ -1,4 +1,4 @@
-module nidus-proxy
+module stackrun-proxy
 
 go 1.24.4
 

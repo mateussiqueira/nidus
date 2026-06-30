@@ -12,7 +12,7 @@
 
 **NÃO** abra issues públicas para vulnerabilidades de segurança.
 
-Envie um email para: **security@nidus.dev**
+Envie um email para: **security@stackrun.dev**
 
 Inclua na mensagem:
 - Descrição da vulnerabilidade

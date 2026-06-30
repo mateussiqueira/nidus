@@ -1,84 +1,84 @@
-# Nidus SDK
+# StackRun SDK
 
-Python SDK for the Nidus PaaS API.
+Python SDK for the StackRun PaaS API.
 
 ## Installation
 
 ```bash
-pip install nidus-sdk
+pip install stackrun-sdk
 ```
 
 ## Usage
 
 ```python
-from nidus import NidusClient
+from nidus import StackRunClient
 
-nidus = NidusClient(token="nidus_xxx")
-projects = nidus.projects.list()
+nidus = StackRunClient(token="stackrun_xxx")
+projects = stackrun.projects.list()
 
 # Deploy a project
-nidus.projects.deploy(projects[0]["id"])
+stackrun.projects.deploy(projects[0]["id"])
 
 # Create a volume
-nidus.projects.volume_create(projects[0]["id"], "data", "/app/data")
+stackrun.projects.volume_create(projects[0]["id"], "data", "/app/data")
 ```
 
 ### Authentication
 
 ```python
-nidus = NidusClient()
-nidus.auth.login("user@example.com", "password")
+nidus = StackRunClient()
+stackrun.auth.login("user@example.com", "password")
 ```
 
 Or pass a token directly:
 
 ```python
-nidus = NidusClient(token="nidus_xxx")
+nidus = StackRunClient(token="stackrun_xxx")
 ```
 
 ### Projects
 
 ```python
 # List all projects
-nidus.projects.list()
+stackrun.projects.list()
 
 # Get a single project
-nidus.projects.get("project-id")
+stackrun.projects.get("project-id")
 
 # Create a project
-nidus.projects.create({"name": "my-app", "type": "nodejs"})
+stackrun.projects.create({"name": "my-app", "type": "nodejs"})
 
 # Deploy a project
-nidus.projects.deploy("project-id")
-nidus.projects.deploy("project-id", branch="staging")
+stackrun.projects.deploy("project-id")
+stackrun.projects.deploy("project-id", branch="staging")
 
 # Environment variables
-nidus.projects.envs("project-id")
-nidus.projects.env_set("project-id", "DATABASE_URL", "postgres://...")
+stackrun.projects.envs("project-id")
+stackrun.projects.env_set("project-id", "DATABASE_URL", "postgres://...")
 
 # Volumes
-nidus.projects.volumes("project-id")
-nidus.projects.volume_create("project-id", "data", "/app/data")
+stackrun.projects.volumes("project-id")
+stackrun.projects.volume_create("project-id", "data", "/app/data")
 ```
 
 ### Deployments
 
 ```python
-nidus.deployments.list("project-id")
-nidus.deployments.logs("project-id", "deployment-id")
+stackrun.deployments.list("project-id")
+stackrun.deployments.logs("project-id", "deployment-id")
 ```
 
 ### Domains
 
 ```python
-nidus.domains.list("project-id")
-nidus.domains.add("project-id", "myapp.example.com")
-nidus.domains.delete("project-id", "domain-id")
+stackrun.domains.list("project-id")
+stackrun.domains.add("project-id", "myapp.example.com")
+stackrun.domains.delete("project-id", "domain-id")
 ```
 
 ### Databases
 
 ```python
-nidus.databases.list()
-nidus.databases.create("my-db", "project-id")
+stackrun.databases.list()
+stackrun.databases.create("my-db", "project-id")
 ```

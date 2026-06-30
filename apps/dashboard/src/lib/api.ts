@@ -2,15 +2,15 @@ const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"
 
 function getToken(): string | null {
   if (typeof window === "undefined") return null
-  return localStorage.getItem("nidus_token")
+  return localStorage.getItem("stackrun_token")
 }
 
 export function setToken(token: string) {
-  localStorage.setItem("nidus_token", token)
+  localStorage.setItem("stackrun_token", token)
 }
 
 export function clearToken() {
-  localStorage.removeItem("nidus_token")
+  localStorage.removeItem("stackrun_token")
 }
 
 export function isAuthenticated(): boolean {

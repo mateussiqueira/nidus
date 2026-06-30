@@ -1,7 +1,7 @@
 {
-  "name": "@nidus/sdk",
+  "name": "@stackrun/sdk",
   "version": "0.1.0",
-  "description": "JavaScript/TypeScript SDK for the Nidus PaaS API",
+  "description": "JavaScript/TypeScript SDK for the StackRun PaaS API",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -18,6 +18,6 @@
     "build": "tsc && node scripts/build-cjs.mjs",
     "prepublishOnly": "npm run build"
   },
-  "keywords": ["nidus", "paas", "api", "sdk"],
+  "keywords": ["stackrun", "paas", "api", "sdk"],
   "license": "MIT"
 }

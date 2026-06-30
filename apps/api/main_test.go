@@ -14,11 +14,11 @@ import (
 func setupTestDB(t *testing.T) func() {
 	t.Helper()
 	os.Setenv("DATABASE_URL", "sqlite://:memory:")
-	os.Setenv("JWT_SECRET", "test_secret_nidus_2026")
+	os.Setenv("JWT_SECRET", "test_secret_stackrun_2026")
 	os.Setenv("REDIS_URL", "")
 
 	loadEnv()
-	jwtSecret = []byte("test_secret_nidus_2026")
+	jwtSecret = []byte("test_secret_stackrun_2026")
 
 	var err error
 	db, err = sql.Open("sqlite3", ":memory:?_journal_mode=WAL&_busy_timeout=5000")
@@ -98,8 +98,8 @@ func TestHealthEndpoint(t *testing.T) {
 	if result["status"] != "ok" {
 		t.Errorf("Expected status ok, got %v", result["status"])
 	}
-	if result["name"] != "nidus-control-plane" {
-		t.Errorf("Expected nidus-control-plane, got %v", result["name"])
+	if result["name"] != "stackrun-control-plane" {
+		t.Errorf("Expected stackrun-control-plane, got %v", result["name"])
 	}
 	if v, ok := result["version"]; !ok || v == "" {
 		t.Error("Version should not be empty")
@@ -112,7 +112,7 @@ func TestAuthFlow(t *testing.T) {
 	router := setupTestRouter()
 
 	// Register
-	regBody := map[string]string{"email": "test@nidus.dev", "name": "Test User", "password": "test123456"}
+	regBody := map[string]string{"email": "test@stackrun.dev", "name": "Test User", "password": "test123456"}
 	req := httptest.NewRequest("POST", "/api/auth/register", jsonBody(regBody))
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -127,15 +127,15 @@ func TestAuthFlow(t *testing.T) {
 		t.Fatal("Register: token not returned")
 	}
 	if user, ok := result["user"].(map[string]interface{}); ok {
-		if user["email"] != "test@nidus.dev" {
-			t.Errorf("Register: expected test@nidus.dev, got %v", user["email"])
+		if user["email"] != "test@stackrun.dev" {
+			t.Errorf("Register: expected test@stackrun.dev, got %v", user["email"])
 		}
 	} else {
 		t.Fatal("Register: user not returned")
 	}
 
 	// Login
-	loginBody := map[string]string{"email": "test@nidus.dev", "password": "test123456"}
+	loginBody := map[string]string{"email": "test@stackrun.dev", "password": "test123456"}
 	req = httptest.NewRequest("POST", "/api/auth/login", jsonBody(loginBody))
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -161,8 +161,8 @@ func TestAuthFlow(t *testing.T) {
 	}
 
 	meResult := parseJSON(t, w.Body)
-	if meResult["email"] != "test@nidus.dev" {
-		t.Errorf("Me: expected test@nidus.dev, got %v", meResult["email"])
+	if meResult["email"] != "test@stackrun.dev" {
+		t.Errorf("Me: expected test@stackrun.dev, got %v", meResult["email"])
 	}
 
 	// Me without token
@@ -182,7 +182,7 @@ func TestAuthFlow(t *testing.T) {
 	}
 
 	// Invalid login
-	badLogin := map[string]string{"email": "test@nidus.dev", "password": "wrongpass"}
+	badLogin := map[string]string{"email": "test@stackrun.dev", "password": "wrongpass"}
 	req = httptest.NewRequest("POST", "/api/auth/login", jsonBody(badLogin))
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -197,7 +197,7 @@ func TestProjectsCRUD(t *testing.T) {
 	router := setupTestRouter()
 
 	// Register and get token
-	regBody := map[string]string{"email": "proj@nidus.dev", "name": "Proj User", "password": "test123456"}
+	regBody := map[string]string{"email": "proj@stackrun.dev", "name": "Proj User", "password": "test123456"}
 	req := httptest.NewRequest("POST", "/api/auth/register", jsonBody(regBody))
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -275,7 +275,7 @@ func TestDeployments(t *testing.T) {
 	router := setupTestRouter()
 
 	// Register and create project
-	regBody := map[string]string{"email": "dep@nidus.dev", "name": "Dep User", "password": "test123456"}
+	regBody := map[string]string{"email": "dep@stackrun.dev", "name": "Dep User", "password": "test123456"}
 	req := httptest.NewRequest("POST", "/api/auth/register", jsonBody(regBody))
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -320,7 +320,7 @@ func TestDomains(t *testing.T) {
 	router := setupTestRouter()
 
 	// Register and create project
-	regBody := map[string]string{"email": "dom@nidus.dev", "name": "Dom User", "password": "test123456"}
+	regBody := map[string]string{"email": "dom@stackrun.dev", "name": "Dom User", "password": "test123456"}
 	req := httptest.NewRequest("POST", "/api/auth/register", jsonBody(regBody))
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -337,7 +337,7 @@ func TestDomains(t *testing.T) {
 	projectID := proj["id"].(string)
 
 	// Add domain
-	domBody := map[string]string{"domain": "myapp.nidus.dev"}
+	domBody := map[string]string{"domain": "myapp.stackrun.dev"}
 	req = httptest.NewRequest("POST", "/api/projects/"+projectID+"/domains", jsonBody(domBody))
 	req.Header.Set("Authorization", authHeader)
 	w = httptest.NewRecorder()
@@ -347,8 +347,8 @@ func TestDomains(t *testing.T) {
 	}
 	domResult := parseJSON(t, w.Body)
 	domainID := domResult["id"].(string)
-	if domResult["domain"] != "myapp.nidus.dev" {
-		t.Errorf("Expected myapp.nidus.dev, got %v", domResult["domain"])
+	if domResult["domain"] != "myapp.stackrun.dev" {
+		t.Errorf("Expected myapp.stackrun.dev, got %v", domResult["domain"])
 	}
 
 	// List domains
@@ -398,7 +398,7 @@ func TestDatabases(t *testing.T) {
 	defer cleanup()
 	router := setupTestRouter()
 
-	regBody := map[string]string{"email": "db@nidus.dev", "name": "DB User", "password": "test123456"}
+	regBody := map[string]string{"email": "db@stackrun.dev", "name": "DB User", "password": "test123456"}
 	req := httptest.NewRequest("POST", "/api/auth/register", jsonBody(regBody))
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -484,8 +484,8 @@ func TestMetrics(t *testing.T) {
 	if w.Code != http.StatusOK {
 		t.Errorf("Prometheus: expected 200, got %d", w.Code)
 	}
-	if !strings.Contains(w.Body.String(), "nidus_uptime_seconds") {
-		t.Error("Prometheus: expected nidus_uptime_seconds")
+	if !strings.Contains(w.Body.String(), "stackrun_uptime_seconds") {
+		t.Error("Prometheus: expected stackrun_uptime_seconds")
 	}
 }
 
@@ -549,7 +549,7 @@ func TestProjectNotFound(t *testing.T) {
 	defer cleanup()
 	router := setupTestRouter()
 
-	regBody := map[string]string{"email": "notfound@nidus.dev", "name": "NF", "password": "test123456"}
+	regBody := map[string]string{"email": "notfound@stackrun.dev", "name": "NF", "password": "test123456"}
 	req := httptest.NewRequest("POST", "/api/auth/register", jsonBody(regBody))
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)

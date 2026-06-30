@@ -153,7 +153,7 @@ func (hc *HealthChecker) checkProject(ctx context.Context, projectID, slug, name
 }
 
 func (hc *HealthChecker) restartContainer(projectID, slug string, port int) {
-	containerName := fmt.Sprintf("nidus-%s-%s", slug, projectID[:8])
+	containerName := fmt.Sprintf("stackrun-%s-%s", slug, projectID[:8])
 
 	cmd := exec.Command("docker", "stop", containerName)
 	cmd.CombinedOutput()

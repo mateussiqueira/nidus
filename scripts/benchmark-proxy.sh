@@ -1,5 +1,5 @@
 #!/bin/bash
-# Nidus Proxy Benchmark — Rust vs Go vs Caddy vs Nginx
+# StackRun Proxy Benchmark — Rust vs Go vs Caddy vs Nginx
 set -e
 
 TARGET="${1:-http://127.0.0.1:3000}"  # dashboard as upstream
@@ -7,7 +7,7 @@ CONCURRENCY="${2:-100}"
 REQUESTS="${3:-10000}"
 
 echo "═══════════════════════════════════════════"
-echo "  Nidus Proxy Benchmark Suite"
+echo "  StackRun Proxy Benchmark Suite"
 echo "  Target: $TARGET"
 echo "  Concurrency: $CONCURRENCY"
 echo "  Requests: $REQUESTS"
@@ -18,11 +18,11 @@ which wrk || apt-get install -y -qq wrk
 
 # ── Rust Proxy ──
 echo ""
-echo "🦀 Rust Proxy (nidus-proxy v0.2.0)"
+echo "🦀 Rust Proxy (stackrun-proxy v0.2.0)"
 # Kill old instances
-pkill -f nidus-proxy 2>/dev/null || true
+pkill -f stackrun-proxy 2>/dev/null || true
 # Start Rust proxy on port 8089
-/root/nidus/rust/target/release/nidus-proxy &
+/root/stackrun/rust/target/release/stackrun-proxy &
 sleep 2
 # Redirect it to dashboard
 RUST_PID=$!
@@ -33,9 +33,9 @@ sleep 1
 
 # ── Go Proxy ──
 echo ""
-echo "🐹 Go Proxy (nidus-proxy)"
-pkill -f "nidus-proxy" 2>/dev/null || true
-/root/nidus/apps/proxy/nidus-proxy &
+echo "🐹 Go Proxy (stackrun-proxy)"
+pkill -f "stackrun-proxy" 2>/dev/null || true
+/root/stackrun/apps/proxy/stackrun-proxy &
 GO_PID=$!
 sleep 2
 echo "  PID: $GO_PID, Memory: $(ps -o rss= -p $GO_PID | tr -d ' ') KB"
@@ -46,7 +46,7 @@ sleep 1
 # ── Caddy ──
 echo ""
 echo "🐹 Caddy (reverse proxy)"
-wrk -t4 -c$CONCURRENCY -d10s --latency https://nidus.app 2>&1 | tee /tmp/caddy-bench.txt
+wrk -t4 -c$CONCURRENCY -d10s --latency https://stackrun.vercel.app 2>&1 | tee /tmp/caddy-bench.txt
 
 # ── Summary ──
 echo ""

@@ -1,12 +1,12 @@
 #!/bin/bash
-# Nidus SBOM Generator — CycloneDX + cargo audit + trivy + gitleaks
+# StackRun SBOM Generator — CycloneDX + cargo audit + trivy + gitleaks
 set -e
 
-OUTPUT_DIR="${1:-/root/nidus/sbom}"
+OUTPUT_DIR="${1:-/root/stackrun/sbom}"
 mkdir -p "$OUTPUT_DIR"
 
 echo "═══════════════════════════════════"
-echo " Nidus SBOM Generator"
+echo " StackRun SBOM Generator"
 echo " Output: $OUTPUT_DIR"
 echo "═══════════════════════════════════"
 
@@ -15,7 +15,7 @@ which cargo-cyclonedx || cargo install cargo-cyclonedx 2>/dev/null
 
 echo ""
 echo "[1/5] cargo audit — vulnerability scan..."
-cd /root/nidus/rust
+cd /root/stackrun/rust
 cargo audit --json > "$OUTPUT_DIR/cargo-audit.json" 2>&1 || true
 VULNS=$(python3 -c "
 import json
@@ -26,15 +26,15 @@ print(v.get('count',0))
 echo "  Vulnerabilities found: $VULNS"
 
 echo "[2/5] cargo cyclonedx — SBOM generation..."
-cd /root/nidus/rust
+cd /root/stackrun/rust
 cargo cyclonedx --all --format json 2>/dev/null || true
 mkdir -p "$OUTPUT_DIR/sbom-parts"
 find . -name "*.cdx.json" -exec cp {} "$OUTPUT_DIR/sbom-parts/" \; 2>/dev/null
-python3 /root/nidus/scripts/combine-sbom.py "$OUTPUT_DIR/sbom-parts" "$OUTPUT_DIR/nidus-sbom.cdx.json"
+python3 /root/stackrun/scripts/combine-sbom.py "$OUTPUT_DIR/sbom-parts" "$OUTPUT_DIR/stackrun-sbom.cdx.json"
 
 echo "[3/5] trivy — container image scan..."
 if which trivy; then
-    docker images --format "{{.Repository}}:{{.Tag}}" | grep nidus | while read img; do
+    docker images --format "{{.Repository}}:{{.Tag}}" | grep stackrun | while read img; do
         echo "  Scanning: $img"
         trivy image --quiet --format json -o "$OUTPUT_DIR/trivy-${img//\//_}.json" "$img" 2>/dev/null || true
     done

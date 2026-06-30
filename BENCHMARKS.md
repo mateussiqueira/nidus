@@ -1,4 +1,4 @@
-# Nidus — Benchmark Results (Real Data)
+# StackRun — Benchmark Results (Real Data)
 
 ## Load Test Results (ab - Apache Bench)
 *Date: 2026-06-30 | Server: VPS 2 vCPU, 4GB RAM | Go 1.25*
@@ -17,11 +17,11 @@
 
 | Service | RSS | Language |
 |---------|-----|----------|
-| nidus-api | 19 MB | Go |
-| nidus-proxy (Go) | 12 MB | Go |
-| nidus-worker | 23 MB | Go |
-| nidus-dashboard | 71 MB | Node.js/Next.js |
-| nidus-docs | 70 MB | Node.js/VitePress |
+| stackrun-api | 19 MB | Go |
+| stackrun-proxy (Go) | 12 MB | Go |
+| stackrun-worker | 23 MB | Go |
+| stackrun-dashboard | 71 MB | Node.js/Next.js |
+| stackrun-docs | 70 MB | Node.js/VitePress |
 | **Total Go** | **54 MB** | 3 services |
 | **Total Node** | **141 MB** | 2 apps |
 
@@ -41,26 +41,26 @@
 
 | Binary | Size | Tech |
 |--------|------|------|
-| nidus-proxy | 8.0 MB | hyper + tokio-postgres |
-| nidus-cli | 6.0 MB | clap + indicatif + spinoff |
-| nidus-builder | 3.6 MB | bollard (Docker API) |
-| nidus-edge | 15.0 MB | wasmtime 21 |
-| nidus-vmm | 2.1 MB | Firecracker microVM |
-| nidus-mesh | lib | tonic + prost |
+| stackrun-proxy | 8.0 MB | hyper + tokio-postgres |
+| stackrun-cli | 6.0 MB | clap + indicatif + spinoff |
+| stackrun-builder | 3.6 MB | bollard (Docker API) |
+| stackrun-edge | 15.0 MB | wasmtime 21 |
+| stackrun-vmm | 2.1 MB | Firecracker microVM |
+| stackrun-mesh | lib | tonic + prost |
 | **Total Rust** | **34.7 MB** | 6 crates |
 
 ### Docker Containers
 
 | Container | Uptime | Status |
 |-----------|--------|--------|
-| nidus-my-express | 7h | Running |
-| nidus-node-app | 7h | Running |
-| nidus-nidus-test | 23h | Running |
-| nidus-teste-nidus | 27h | Running |
-| nidus-cvaprovado | 28h | Running |
-| nidus-grafana | 28h | Running |
-| nidus-prometheus | 32h | Running |
-| nidus-node-exporter | 32h | Running |
+| stackrun-my-express | 7h | Running |
+| stackrun-node-app | 7h | Running |
+| stackrun-stackrun-test | 23h | Running |
+| stackrun-teste-nidus | 27h | Running |
+| stackrun-cvaprovado | 28h | Running |
+| stackrun-grafana | 28h | Running |
+| stackrun-prometheus | 32h | Running |
+| stackrun-node-exporter | 32h | Running |
 
 ### Health Checker
 
@@ -73,7 +73,7 @@
 
 ### Competitive Analysis
 
-| Metric | Nidus (Go) | Nidus (Rust est.) | Vercel | Railway | Coolify |
+| Metric | StackRun (Go) | StackRun (Rust est.) | Vercel | Railway | Coolify |
 |--------|------------|-------------------|--------|---------|---------|
 | API req/s | 3,451 | ~50,000 | 10,000+ | 5,000+ | 1,000+ |
 | Proxy req/s | 1,024 | ~50,000 | N/A (edge) | N/A | 500+ |

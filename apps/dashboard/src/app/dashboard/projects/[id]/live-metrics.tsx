@@ -17,7 +17,7 @@ export default function LiveMetrics({ metrics: initial, projectId }: LiveMetrics
       try {
         const res = await fetch(
           process.env.NEXT_PUBLIC_API_URL + "/api/projects/" + projectId + "/metrics",
-          { headers: { Authorization: "Bearer " + (localStorage.getItem("nidus_token") || "") } }
+          { headers: { Authorization: "Bearer " + (localStorage.getItem("stackrun_token") || "") } }
         )
         if (res.ok) setCurrent(await res.json())
       } catch {}

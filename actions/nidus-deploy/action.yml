@@ -1,17 +1,17 @@
-name: "Deploy to Nidus"
-description: "Deploy your project to Nidus — self-hosted PaaS"
-author: "Nidus"
+name: "Deploy to StackRun"
+description: "Deploy your project to StackRun — self-hosted PaaS"
+author: "StackRun"
 
 inputs:
   api_url:
-    description: "Nidus API URL"
+    description: "StackRun API URL"
     required: false
-    default: "https://api.nidus.app"
+    default: "https://api.stackrun.vercel.app"
   api_token:
-    description: "Nidus API token (create at app.nidus.app/dashboard/settings)"
+    description: "StackRun API token (create at app.stackrun.vercel.app/dashboard/settings)"
     required: true
   project:
-    description: "Project slug (matches Nidus project)"
+    description: "Project slug (matches StackRun project)"
     required: true
   branch:
     description: "Branch to deploy"
@@ -37,7 +37,7 @@ runs:
       id: deploy
       shell: bash
       run: |
-        echo "🚀 Deploying to Nidus..."
+        echo "🚀 Deploying to StackRun..."
         
         RESPONSE=$(curl -s -X POST "${{ inputs.api_url }}/api/projects/${{ inputs.project }}/deploy" \
           -H "Authorization: Bearer ${{ inputs.api_token }}" \

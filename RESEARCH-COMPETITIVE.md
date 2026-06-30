@@ -1,4 +1,4 @@
-# Nidus — Pesquisa Competitiva: O que torna uma PaaS magnética
+# StackRun — Pesquisa Competitiva: O que torna uma PaaS magnética
 
 ## O "unfair advantage" de cada gigante
 
@@ -34,17 +34,17 @@
 5. **Dashboard lindo**: UI que parece produto Apple.
 
 ### Coolify — O concorrente direto
-1. **Self-hosted**: Igual Nidus. Mas em PHP/Laravel.
+1. **Self-hosted**: Igual StackRun. Mas em PHP/Laravel.
 2. **UI bonita**: Dashboard bem desenhado.
 3. **One-click services**: WordPress, n8n, MinIO, etc.
 4. **Fraquezas**: PHP (performance), sem proxy Rust, sem edge, sem SDKs.
 
-## O que o Nidus precisa ter pra vencer
+## O que o StackRun precisa ter pra vencer
 
 ### Diferencial #1: Performance brutal (Rust core)
 ```
 Caddy (Go)    → 5K req/s, 100MB RAM
-Nidus Proxy   → 50K req/s, 15MB RAM
+StackRun Proxy   → 50K req/s, 15MB RAM
 NGINX         → 20K req/s, 200MB RAM
 Traefik (Go)  → 8K req/s, 80MB RAM
 ```
@@ -52,14 +52,14 @@ Traefik (Go)  → 8K req/s, 80MB RAM
 
 ### Diferencial #2: CLI nível Vercel/Railway (Rust)
 ```
-$ nidus deploy
+$ stackrun deploy
  ⠋ Detecting framework...     nextjs
  ⠙ Building...                [====================] 2.1s
  ⠹ Optimizing...              [====================] 0.8s
  ⠸ Deploying to edge...       [====================] 1.2s
- ✅ Live at https://app.nidus.app
+ ✅ Live at https://app.stackrun.vercel.app
 
-$ nidus logs --live
+$ stackrun logs --live
  2:30:01 PM  GET /api/users    200  12ms  ← verde
  2:30:03 PM  POST /api/order   201  45ms  ← verde
  2:30:04 PM  GET /api/broken   500  2ms   ← vermelho
@@ -70,7 +70,7 @@ $ nidus logs --live
 ### Diferencial #3: Edge Functions em Rust (WASM)
 ```
 Tradicional (Docker):    cold start 2-30s, 50MB+ RAM
-Nidus Edge (WASM):       cold start <5ms, 2MB RAM
+StackRun Edge (WASM):       cold start <5ms, 2MB RAM
 Vercel Edge (V8):        cold start <50ms, 10MB RAM
 Cloudflare Workers (V8): cold start 0ms, 5MB RAM
 ```
@@ -78,9 +78,9 @@ Cloudflare Workers (V8): cold start 0ms, 5MB RAM
 
 ### Diferencial #4: Hybrid Cloud (único no mercado)
 ```
-Nidus Cloud:      Hospedado por nós. R$49/mês. Zero ops.
-Nidus Self-Hosted: Seu servidor. R$30/mês. Controle total.
-Nidus Hybrid:     Cloud para staging, self-hosted para produção.
+StackRun Cloud:      Hospedado por nós. R$49/mês. Zero ops.
+StackRun Self-Hosted: Seu servidor. R$30/mês. Controle total.
+StackRun Hybrid:     Cloud para staging, self-hosted para produção.
 ```
 **Vantagem**: Nenhum concorrente oferece os 3 modos. Vercel é só cloud. Coolify é só self-hosted.
 
@@ -104,16 +104,16 @@ Nidus Hybrid:     Cloud para staging, self-hosted para produção.
 
 ### Fase 1: Proxy + CLI (Mês 1) ← HOJE
 - [x] Rust workspace setup
-- [x] nidus-proxy: HTTP forward básico
-- [x] nidus-cli: health + list
-- [ ] nidus-proxy: SNI routing + TLS + DB cache
-- [ ] nidus-cli: deploy com progress bar + logs live
+- [x] stackrun-proxy: HTTP forward básico
+- [x] stackrun-cli: health + list
+- [ ] stackrun-proxy: SNI routing + TLS + DB cache
+- [ ] stackrun-cli: deploy com progress bar + logs live
 - [ ] Benchmark: proxy Rust vs Go vs Caddy
 
 ### Fase 2: Builder + Edge (Mês 2)
-- [ ] nidus-builder: BuildKit integrado com cache S3
-- [ ] nidus-edge: WASM runtime (wasmtime)
-- [ ] nidus-cli: syntax highlighting nos logs
+- [ ] stackrun-builder: BuildKit integrado com cache S3
+- [ ] stackrun-edge: WASM runtime (wasmtime)
+- [ ] stackrun-cli: syntax highlighting nos logs
 - [ ] Deploy preview com URL automática
 
 ### Fase 3: Observabilidade (Mês 3)
@@ -130,7 +130,7 @@ Nidus Hybrid:     Cloud para staging, self-hosted para produção.
 
 ## Concorrentes — Análise de fraquezas
 
-| Plataforma | Maior fraqueza | Oportunidade pro Nidus |
+| Plataforma | Maior fraqueza | Oportunidade pro StackRun |
 |-----------|---------------|----------------------|
 | Vercel | Vendor lock-in. Preço alto ($20+/mês). | Self-hosted = sem lock-in |
 | Railway | Sem self-hosted. Precisa de conta. | BYO server |

@@ -1,10 +1,10 @@
 {
-  "name": "nidus",
+  "name": "stackrun",
   "version": "0.2.0",
   "type": "module",
-  "description": "Nidus CLI — deploy full-stack com suporte nativo a Dart/Vaden",
+  "description": "StackRun CLI — deploy full-stack com suporte nativo a Dart/Vaden",
   "bin": {
-    "nidus": "./bin/index.js"
+    "stackrun": "./bin/index.js"
   },
   "files": ["bin/**", "src/**", "package.json", "README.md"],
   "scripts": {},
@@ -15,8 +15,8 @@
     "ora": "^9.4.1"
   },
   "keywords": ["deploy", "paas", "docker", "self-hosted", "vercel", "railway", "dart", "vaden", "nextjs"],
-  "repository": "github:mateussiqueira/nidus",
-  "homepage": "https://nidus.app",
+  "repository": "github:mateussiqueira/stackrun",
+  "homepage": "https://stackrun.vercel.app",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"

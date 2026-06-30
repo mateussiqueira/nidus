@@ -1,4 +1,4 @@
-# Nidus Deploy Worker v2 - Configuration Guide
+# StackRun Deploy Worker v2 - Configuration Guide
 
 ## Environment Variables
 
@@ -38,10 +38,10 @@ REDIS_URL=redis://:password@redis:6379/0
 ### Storage
 ```bash
 # Directory for deploys and artifacts
-NIDUS_DEPLOYS_DIR=/tmp/nidus-deploys
+STACKRUN_DEPLOYS_DIR=/tmp/stackrun-deploys
 
 # Host for container URL mapping
-NIDUS_HOST=localhost
+STACKRUN_HOST=localhost
 ```
 
 ### Server
@@ -55,15 +55,15 @@ WORKER_PORT=8081
 ### Production (2GB+ RAM)
 ```yaml
 deploy-worker:
-  image: nidus:deploy-worker-v2
+  image: stackrun:deploy-worker-v2
   environment:
     MAX_CONCURRENT_BUILDS: 50
     DOCKER_TIMEOUT_SECONDS: 120
     BUILDKIT_ENABLED: "true"
     DATABASE_URL: postgresql://user:pass@postgres:5432/nidus
     REDIS_URL: redis://redis:6379/0
-    NIDUS_DEPLOYS_DIR: /data/deploys
-    NIDUS_HOST: deploy-worker
+    STACKRUN_DEPLOYS_DIR: /data/deploys
+    STACKRUN_HOST: deploy-worker
   volumes:
     - /var/run/docker.sock:/var/run/docker.sock
     - deploy-data:/data
@@ -85,15 +85,15 @@ deploy-worker:
 ### Lite Edition (512MB RAM)
 ```yaml
 deploy-worker:
-  image: nidus:deploy-worker-v2
+  image: stackrun:deploy-worker-v2
   environment:
     MAX_CONCURRENT_BUILDS: 2
     DOCKER_TIMEOUT_SECONDS: 60
     BUILDKIT_ENABLED: "false"
     DATABASE_URL: sqlite:///data/nidus.db
     # No Redis - uses in-process queue
-    NIDUS_DEPLOYS_DIR: /data/deploys
-    NIDUS_HOST: localhost
+    STACKRUN_DEPLOYS_DIR: /data/deploys
+    STACKRUN_HOST: localhost
   volumes:
     - /var/run/docker.sock:/var/run/docker.sock
     - deploy-data:/data
@@ -132,13 +132,13 @@ curl http://localhost:8081/metrics
 ```
 
 Key metrics:
-- `nidus_deploys_total` - Total deploys by status
-- `nidus_deploy_duration_seconds` - Deploy duration histogram
-- `nidus_deploy_active` - Currently processing deploys
-- `nidus_build_duration_seconds` - Docker build duration
-- `nidus_git_duration_seconds` - Git operations duration
-- `nidus_build_cache_hits_total` - Docker cache hits
-- `nidus_build_cache_misses_total` - Docker cache misses
+- `stackrun_deploys_total` - Total deploys by status
+- `stackrun_deploy_duration_seconds` - Deploy duration histogram
+- `stackrun_deploy_active` - Currently processing deploys
+- `stackrun_build_duration_seconds` - Docker build duration
+- `stackrun_git_duration_seconds` - Git operations duration
+- `stackrun_build_cache_hits_total` - Docker cache hits
+- `stackrun_build_cache_misses_total` - Docker cache misses
 
 ## Performance Tuning Tips
 

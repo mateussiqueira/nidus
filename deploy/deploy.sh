@@ -1,11 +1,11 @@
 #!/bin/bash
 # ============================================
-# NIDUS - Main Deploy Script for VPS
+# STACKRUN - Main Deploy Script for VPS
 # Execute como root no VPS
 # ============================================
 set -e
 
-echo "🚀 NIDUS - Deploy Script para Produção"
+echo "🚀 STACKRUN - Deploy Script para Produção"
 echo "========================================"
 echo ""
 
@@ -107,7 +107,7 @@ fi
 
 # Etapa 9: Clonar repositório
 echo ""
-log_info "Etapa 9/11: Clonando repositório Nidus..."
+log_info "Etapa 9/11: Clonando repositório StackRun..."
 mkdir -p /opt
 if [ -d "/opt/nidus" ]; then
     log_warn "Diretório /opt/nidus já existe. Atualizando..."
@@ -121,8 +121,8 @@ fi
 # Etapa 10: Configurar volumes
 echo ""
 log_info "Etapa 10/11: Configurando volumes..."
-mkdir -p /opt/nidus/data/{postgres,redis,deploys}
-mkdir -p /opt/nidus/logs/{caddy,api,worker,dashboard,proxy}
+mkdir -p /opt/stackrun/data/{postgres,redis,deploys}
+mkdir -p /opt/stackrun/logs/{caddy,api,worker,dashboard,proxy}
 chown -R deploy:deploy /opt/nidus
 
 # Etapa 11: Iniciar serviços
@@ -144,11 +144,11 @@ echo "✅ DEPLOY CONCLUÍDO!"
 echo "========================================"
 echo ""
 echo "📍 Serviços:"
-echo "   - API: https://api.nidus.com"
-echo "   - Dashboard: https://nidus.com"
-echo "   - Apps: https://*.nidus.com"
+echo "   - API: https://api.stackrun.vercel.app"
+echo "   - Dashboard: https://stackrun.vercel.app"
+echo "   - Apps: https://*.stackrun.vercel.app"
 echo ""
-echo "🔐 Credenciais (salvas em /opt/nidus/.env.production):"
+echo "🔐 Credenciais (salvas em /opt/stackrun/.env.production):"
 echo "   PostgreSQL: nidus / [ver .env.production]"
 echo "   Redis: [ver .env.production]"
 echo "   JWT Secret: [ver .env.production]"
@@ -160,14 +160,14 @@ echo "   docker-compose -f docker-compose.prod.yml restart # Reiniciar"
 echo "   docker-compose -f docker-compose.prod.yml down    # Parar"
 echo ""
 echo "🔍 Verificação de segurança:"
-echo "   /usr/local/bin/nidus-security-check.sh"
+echo "   /usr/local/bin/stackrun-security-check.sh"
 echo ""
 echo "📝 Próximos passos:"
-echo "   1. Configure seu domínio (nidus.com) para apontar para este IP"
-echo "   2. Configure DNS: api.nidus.com → IP do VPS"
-echo "   3. Configure DNS: *.nidus.com → IP do VPS"
-echo "   4. Acesse https://nidus.com para criar sua conta"
-echo "   5. Execute /usr/local/bin/nidus-audit.sh para auditoria"
+echo "   1. Configure seu domínio (stackrun.vercel.app) para apontar para este IP"
+echo "   2. Configure DNS: api.stackrun.vercel.app → IP do VPS"
+echo "   3. Configure DNS: *.stackrun.vercel.app → IP do VPS"
+echo "   4. Acesse https://stackrun.vercel.app para criar sua conta"
+echo "   5. Execute /usr/local/bin/stackrun-audit.sh para auditoria"
 echo ""
 echo "⚠️  IMPORTANTE:"
 echo "   - SSH está configurado para chave pública apenas"

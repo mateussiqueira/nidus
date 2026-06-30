@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================
-# NIDUS - Docker Security Hardening
+# STACKRUN - Docker Security Hardening
 # Execute como root no VPS
 # ============================================
 set -e
@@ -42,7 +42,7 @@ EOF
 cat >> /etc/sysctl.conf << 'EOF'
 
 # ============================================
-# NIDUS - Docker Security
+# STACKRUN - Docker Security
 # ============================================
 
 # Previne IP spoofing
@@ -82,7 +82,7 @@ sysctl -p
 cat >> /etc/security/limits.conf << 'EOF'
 
 # ============================================
-# NIDUS - Resource Limits
+# STACKRUN - Resource Limits
 # ============================================
 
 # Limitar processos por usuário

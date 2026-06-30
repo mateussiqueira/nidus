@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================
-# NIDUS - Firewall Configuration (UFW)
+# STACKRUN - Firewall Configuration (UFW)
 # Execute como root no VPS
 # ============================================
 set -e
@@ -40,7 +40,7 @@ ufw allow from 127.0.0.1 to any port 3001 comment "API Local"
 echo "📊 Configurando Dashboard interno..."
 ufw allow from 127.0.0.1 to any port 3000 comment "Dashboard Local"
 
-# Apps dos usuários (wildcard *.nidus.com)
+# Apps dos usuários (wildcard *.stackrun.vercel.app)
 echo "🚀 Configurando Apps dos usuários..."
 ufw allow 3080/tcp comment "User Apps Proxy"
 

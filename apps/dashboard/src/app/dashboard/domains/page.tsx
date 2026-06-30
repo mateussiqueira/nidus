@@ -119,7 +119,7 @@ export default function DomainsPage() {
                   <h3 className="font-medium">{project.name}</h3>
                   <p className="text-xs text-zinc-500">
                     {projectDomains.length} dominios
-                    {project.slug && <span className="ml-2 text-cyan-400/70">{project.slug}.nidus.app</span>}
+                    {project.slug && <span className="ml-2 text-cyan-400/70">{project.slug}.stackrun.vercel.app</span>}
                   </p>
                 </div>
               </div>
@@ -132,10 +132,10 @@ export default function DomainsPage() {
                   <div className="flex items-center justify-between p-2 rounded bg-zinc-900/50 mb-2 text-sm">
                     <div className="flex items-center gap-2">
                       <ShieldCheck size={14} className="text-green-400" />
-                      <span className="font-mono text-zinc-300">{project.slug}.nidus.app</span>
+                      <span className="font-mono text-zinc-300">{project.slug}.stackrun.vercel.app</span>
                       <span className="badge badge-active text-[10px]">auto</span>
                     </div>
-                    <a href={"https://" + project.slug + ".nidus.app"} target="_blank" className="text-cyan-400 hover:underline text-xs flex items-center gap-1">
+                    <a href={"https://" + project.slug + ".stackrun.vercel.app"} target="_blank" className="text-cyan-400 hover:underline text-xs flex items-center gap-1">
                       <ExternalLink size={12} /> Visitar
                     </a>
                   </div>

@@ -23,7 +23,7 @@ export default function APIPT() {
 Response:
 {
   "status": "ok",
-  "name": "nidus-control-plane",
+  "name": "stackrun-control-plane",
   "version": "0.2.0"
 }`}
           </pre>

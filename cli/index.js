@@ -7,7 +7,7 @@ const Conf = require('conf');
 const https = require('https');
 const http = require('http');
 
-const config = new Conf({ projectName: 'nidus' });
+const config = new Conf({ projectName: 'stackrun' });
 
 const API_URL = config.get('apiUrl') || 'http://localhost:3001';
 
@@ -47,13 +47,13 @@ function request(method, path, body) {
 }
 
 program
-  .name('nidus')
+  .name('stackrun')
   .description('Self-hosted deploy platform')
   .version('1.0.0');
 
 program
   .command('login')
-  .description('Login to Nidus')
+  .description('Login to StackRun')
   .argument('<email>')
   .argument('<password>')
   .action(async (email, password) => {

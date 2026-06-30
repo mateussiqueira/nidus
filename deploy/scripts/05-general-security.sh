@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================
-# NIDUS - General Security Hardening
+# STACKRUN - General Security Hardening
 # Execute como root no VPS
 # ============================================
 set -e
@@ -62,9 +62,9 @@ EOF
 # Configurar sudoers para deploy
 echo "👤 Configurando sudoers..."
 cat > /etc/sudoers.d/nidus << 'EOF'
-# NIDUS Security - Deploy user
+# STACKRUN Security - Deploy user
 deploy ALL=(ALL) NOPASSWD: /usr/bin/docker, /usr/bin/docker-compose, /usr/bin/systemctl restart docker, /usr/bin/systemctl restart caddy
-deploy ALL=(ALL) NOPASSWD: /usr/bin/journalctl -u nidus*, /usr/bin/tail -f /var/log/nidus/*
+deploy ALL=(ALL) NOPASSWD: /usr/bin/journalctl -u nidus*, /usr/bin/tail -f /var/log/stackrun/*
 EOF
 chmod 0440 /etc/sudoers.d/nidus
 
@@ -73,7 +73,7 @@ echo "📝 Configurando auditoria..."
 apt-get install -y auditd audispd-plugins
 
 cat > /etc/audit/rules.d/nidus.rules << 'EOF'
-# NIDUS Audit Rules
+# STACKRUN Audit Rules
 
 # Monitor alterações em arquivos sensíveis
 -w /etc/passwd -p wa -k identity
@@ -94,8 +94,8 @@ cat > /etc/audit/rules.d/nidus.rules << 'EOF'
 -w /var/log/auth.log -p wa -k auth_log
 -w /var/log/syslog -p wa -k syslog
 
-# Monitor Nidus
--w /opt/nidus/ -p wa -k nidus
+# Monitor StackRun
+-w /opt/stackrun/ -p wa -k nidus
 EOF
 
 # Reiniciar auditd
@@ -112,7 +112,7 @@ echo "📊 Instalando Lynis para auditoria..."
 apt-get install -y lynis
 
 # Criar script de auditoria
-cat > /usr/local/bin/nidus-audit.sh << 'EOF'
+cat > /usr/local/bin/stackrun-audit.sh << 'EOF'
 #!/bin/bash
 echo "🔍 Executando auditoria de segurança..."
 echo ""
@@ -121,12 +121,12 @@ echo ""
 echo "📊 Verificação completa!"
 echo "📁 Logs em: /var/log/lynis.log"
 EOF
-chmod +x /usr/local/bin/nidus-audit.sh
+chmod +x /usr/local/bin/stackrun-audit.sh
 
 # Criar script de verificação de segurança
-cat > /usr/local/bin/nidus-security-check.sh << 'EOF'
+cat > /usr/local/bin/stackrun-security-check.sh << 'EOF'
 #!/bin/bash
-echo "🔍 Verificação de Segurança Nidus"
+echo "🔍 Verificação de Segurança StackRun"
 echo "=================================="
 echo ""
 
@@ -164,12 +164,12 @@ echo ""
 
 echo "✅ Verificação completa!"
 EOF
-chmod +x /usr/local/bin/nidus-security-check.sh
+chmod +x /usr/local/bin/stackrun-security-check.sh
 
 # Criar script de backup de segurança
-cat > /usr/local/bin/nidus-security-backup.sh << 'EOF'
+cat > /usr/local/bin/stackrun-security-backup.sh << 'EOF'
 #!/bin/bash
-BACKUP_DIR="/opt/nidus/backups/security/$(date +%Y%m%d_%H%M%S)"
+BACKUP_DIR="/opt/stackrun/backups/security/$(date +%Y%m%d_%H%M%S)"
 mkdir -p "$BACKUP_DIR"
 
 echo "📦 Criando backup de segurança..."
@@ -195,25 +195,25 @@ rm -rf "$BACKUP_DIR"
 
 echo "✅ Backup criado: $BACKUP_DIR.tar.gz"
 echo "📁 Mantendo apenas os últimos 7 backups"
-ls -t /opt/nidus/backups/security/*.tar.gz | tail -n +8 | xargs rm -f
+ls -t /opt/stackrun/backups/security/*.tar.gz | tail -n +8 | xargs rm -f
 EOF
-chmod +x /usr/local/bin/nidus-security-backup.sh
+chmod +x /usr/local/bin/stackrun-security-backup.sh
 
 # Criar cron para backup diário
-cat > /etc/cron.d/nidus-security << 'EOF'
+cat > /etc/cron.d/stackrun-security << 'EOF'
 # Backup de segurança diário às 2:00
-0 2 * * * root /usr/local/bin/nidus-security-backup.sh
+0 2 * * * root /usr/local/bin/stackrun-security-backup.sh
 EOF
 
 echo ""
 echo "✅ Segurança geral configurada!"
 echo ""
 echo "📋 Scripts criados:"
-echo "   /usr/local/bin/nidus-audit.sh - Auditoria completa"
-echo "   /usr/local/bin/nidus-security-check.sh - Verificação rápida"
-echo "   /usr/local/bin/nidus-security-backup.sh - Backup de configs"
+echo "   /usr/local/bin/stackrun-audit.sh - Auditoria completa"
+echo "   /usr/local/bin/stackrun-security-check.sh - Verificação rápida"
+echo "   /usr/local/bin/stackrun-security-backup.sh - Backup de configs"
 echo ""
 echo "📅 Cron configurado:"
 echo "   Backup de segurança diário às 2:00"
 echo ""
-echo "⚠️  Execute agora: /usr/local/bin/nidus-security-check.sh"
+echo "⚠️  Execute agora: /usr/local/bin/stackrun-security-check.sh"

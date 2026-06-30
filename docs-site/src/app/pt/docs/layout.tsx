@@ -24,7 +24,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
           <div className="flex items-center gap-4 text-sm">
             <Link href="/en/docs" className="text-[#a1a1aa] hover:text-white no-underline transition">EN</Link>
             <Link href="/pt/docs" className="text-[#22c55e] font-medium no-underline">PT</Link>
-            <a href="https://github.com/mateussiqueira/nidus" target="_blank" className="text-[#a1a1aa] hover:text-white no-underline transition">GitHub</a>
+            <a href="https://github.com/mateussiqueira/stackrun" target="_blank" className="text-[#a1a1aa] hover:text-white no-underline transition">GitHub</a>
           </div>
         </div>
       </header>

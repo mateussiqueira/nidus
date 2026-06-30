@@ -14,7 +14,7 @@
     ],
     "component": {
       "type": "library",
-      "bom-ref": "path+file:///root/nidus/rust/nidus-mesh#0.1.0",
+      "bom-ref": "path+file:///root/stackrun/rust/nidus-mesh#0.1.0",
       "name": "nidus-mesh",
       "version": "0.1.0",
       "scope": "required",
@@ -22,7 +22,7 @@
       "components": [
         {
           "type": "library",
-          "bom-ref": "path+file:///root/nidus/rust/nidus-mesh#0.1.0 bin-target-0",
+          "bom-ref": "path+file:///root/stackrun/rust/nidus-mesh#0.1.0 bin-target-0",
           "name": "nidus_mesh",
           "version": "0.1.0",
           "purl": "pkg:cargo/nidus-mesh@0.1.0?download_url=file://.#src/lib.rs"
@@ -3286,7 +3286,7 @@
   ],
   "dependencies": [
     {
-      "ref": "path+file:///root/nidus/rust/nidus-mesh#0.1.0",
+      "ref": "path+file:///root/stackrun/rust/nidus-mesh#0.1.0",
       "dependsOn": [
         "registry+https://github.com/rust-lang/crates.io-index#prost@0.12.6",
         "registry+https://github.com/rust-lang/crates.io-index#serde@1.0.228",

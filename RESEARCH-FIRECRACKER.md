@@ -15,7 +15,7 @@ Each microVM is a lightweight virtual machine with:
 - <125ms boot (pre-built kernel + minimal rootfs)
 - <5MB memory overhead (vs 50MB for QEMU)
 
-## Why Nidus needs this
+## Why StackRun needs this
 
 Docker containers share the host kernel. A kernel exploit in one
 container compromises ALL containers. Firecracker provides true

@@ -15,7 +15,7 @@ export async function login(token) {
     console.log(chalk.green("✓") + " Token salvo!")
     return
   }
-  console.log(chalk.cyan("\n  Nidus Login\n"))
+  console.log(chalk.cyan("\n  StackRun Login\n"))
   const email = await question("  Email: ")
   const password = await question("  Senha: ")
   try {
@@ -33,14 +33,14 @@ export async function login(token) {
 export async function whoami() {
   const config = loadConfig()
   if (!config.token) {
-    console.log(chalk.yellow("  ⚠ Não logado. Use " + chalk.bold("nidus login")))
+    console.log(chalk.yellow("  ⚠ Não logado. Use " + chalk.bold("stackrun login")))
     return
   }
   try {
     const user = await api("/api/auth/me")
     console.log(chalk.green("  ✓ ") + chalk.bold(user.name) + " <" + user.email + ">")
   } catch {
-    console.log(chalk.red("  ✗ Token inválido. Use " + chalk.bold("nidus login")))
+    console.log(chalk.red("  ✗ Token inválido. Use " + chalk.bold("stackrun login")))
   }
 }
 

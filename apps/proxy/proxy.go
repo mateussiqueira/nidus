@@ -48,7 +48,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", handleProxy)
 
-	log.Printf("Nidus Proxy starting on :%s", port)
+	log.Printf("StackRun Proxy starting on :%s", port)
 	log.Fatal(http.ListenAndServe(":"+port, mux))
 }
 
@@ -56,10 +56,10 @@ func handleProxy(w http.ResponseWriter, r *http.Request) {
 	host := strings.Split(r.Host, ":")[0]
 	log.Printf("Request: host=%s path=%s", host, r.URL.Path)
 
-	// Check if this is a project subdomain (e.g., my-project.nidus.app)
+	// Check if this is a project subdomain (e.g., my-project.stackrun.vercel.app)
 	var projectSlug string
-	if strings.HasSuffix(host, ".nidus.app") {
-		idx := strings.Index(host, ".nidus.app")
+	if strings.HasSuffix(host, ".stackrun.vercel.app") {
+		idx := strings.Index(host, ".stackrun.vercel.app")
 		projectSlug = host[:idx]
 	} else if strings.HasSuffix(host, ".localhost") {
 		idx := strings.Index(host, ".localhost")
@@ -69,7 +69,7 @@ func handleProxy(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Extracted slug: %q", projectSlug)
 
 	// Skip known system subdomains
-	if projectSlug == "app" || projectSlug == "api" || projectSlug == "docs" || projectSlug == "metrics" || projectSlug == "nidus" || projectSlug == "" {
+	if projectSlug == "app" || projectSlug == "api" || projectSlug == "docs" || projectSlug == "metrics" || projectSlug == "stackrun" || projectSlug == "" {
 		log.Printf("Routing to dashboard (system subdomain or empty)")
 		proxyTo(w, r, dashboardURL)
 		return

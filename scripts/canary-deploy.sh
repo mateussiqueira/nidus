@@ -1,5 +1,5 @@
 #!/bin/bash
-# Nidus Canary Deploy — Progressive Traffic Shifting
+# StackRun Canary Deploy — Progressive Traffic Shifting
 set -e
 
 PROJECT="${1}"

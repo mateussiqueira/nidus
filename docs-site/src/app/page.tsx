@@ -10,7 +10,7 @@ export default function Home() {
           </a>
           <div className="flex items-center gap-6">
             <a href="/en/docs" className="text-sm text-[#a1a1aa] hover:text-white no-underline font-medium transition">Docs</a>
-            <a href="https://github.com/mateussiqueira/nidus" target="_blank" className="text-sm text-[#a1a1aa] hover:text-white no-underline font-medium transition">GitHub</a>
+            <a href="https://github.com/mateussiqueira/stackrun" target="_blank" className="text-sm text-[#a1a1aa] hover:text-white no-underline font-medium transition">GitHub</a>
             <a href="/en/docs/quickstart" className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#22c55e] text-black rounded-lg font-semibold text-sm no-underline hover:bg-[#16a34a] transition">Get Started</a>
           </div>
         </nav>
@@ -33,7 +33,7 @@ export default function Home() {
           <a href="/en/docs/quickstart" className="inline-flex items-center gap-2 px-7 py-3.5 bg-[#22c55e] text-black rounded-lg font-semibold text-base no-underline hover:bg-[#16a34a] transition">
             Start Deploying
           </a>
-          <a href="https://github.com/mateussiqueira/nidus" target="_blank" className="inline-flex items-center gap-2 px-7 py-3.5 border border-[#1f1f23] text-white rounded-lg font-medium text-base no-underline hover:bg-[#111113] transition">
+          <a href="https://github.com/mateussiqueira/stackrun" target="_blank" className="inline-flex items-center gap-2 px-7 py-3.5 border border-[#1f1f23] text-white rounded-lg font-medium text-base no-underline hover:bg-[#111113] transition">
             View on GitHub
           </a>
         </div>

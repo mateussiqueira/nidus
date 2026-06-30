@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================
-# NIDUS - Fail2Ban Configuration
+# STACKRUN - Fail2Ban Configuration
 # Execute como root no VPS
 # ============================================
 set -e
@@ -14,7 +14,7 @@ if ! command -v fail2ban-client &>/dev/null; then
     apt-get install -y fail2ban
 fi
 
-# Criar configuração do Nidus
+# Criar configuração do StackRun
 cat > /etc/fail2ban/jail.d/nidus.conf << 'EOF'
 [DEFAULT]
 # Banir por 1 hora
@@ -42,47 +42,47 @@ logpath = /var/log/auth.log
 maxretry = 3
 bantime = 3600
 
-[nidus-api]
+[stackrun-api]
 enabled = true
 port = 3001
-filter = nidus-api
+filter = stackrun-api
 logpath = /var/log/caddy/api.log
 maxretry = 10
 bantime = 600
 
-[nidus-dashboard]
+[stackrun-dashboard]
 enabled = true
 port = 3000
-filter = nidus-dashboard
+filter = stackrun-dashboard
 logpath = /var/log/caddy/dashboard.log
 maxretry = 10
 bantime = 600
 
-[nidus-apps]
+[stackrun.vercel.apps]
 enabled = true
 port = 3080
-filter = nidus-apps
+filter = stackrun.vercel.apps
 logpath = /var/log/caddy/apps.log
 maxretry = 20
 bantime = 300
 EOF
 
 # Criar filtro para API
-cat > /etc/fail2ban/filter.d/nidus-api.conf << 'EOF'
+cat > /etc/fail2ban/filter.d/stackrun-api.conf << 'EOF'
 [Definition]
 failregex = ^.*"remote_ip":"<HOST>".*"status":(401|403|429).*$
 ignoreregex =
 EOF
 
 # Criar filtro para Dashboard
-cat > /etc/fail2ban/filter.d/nidus-dashboard.conf << 'EOF'
+cat > /etc/fail2ban/filter.d/stackrun-dashboard.conf << 'EOF'
 [Definition]
 failregex = ^.*"remote_ip":"<HOST>".*"status":(401|403|429).*$
 ignoreregex =
 EOF
 
 # Criar filtro para Apps
-cat > /etc/fail2ban/filter.d/nidus-apps.conf << 'EOF'
+cat > /etc/fail2ban/filter.d/stackrun.vercel.apps.conf << 'EOF'
 [Definition]
 failregex = ^.*"remote_ip":"<HOST>".*"status":(401|403|429).*$
 ignoreregex =

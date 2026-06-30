@@ -1,4 +1,4 @@
-// Nidus Edge Function — JSON API Handler
+// StackRun Edge Function — JSON API Handler
 
 use std::io::{self, Write};
 
@@ -9,11 +9,11 @@ fn main() {
         .as_secs();
     
     let json = format!(
-        r#"{{"status":"ok","runtime":"nidus-edge-wasm","version":"0.1.0","timestamp":{}}}"#,
+        r#"{{"status":"ok","runtime":"stackrun-edge-wasm","version":"0.1.0","timestamp":{}}}"#,
         now
     );
     
     println!("Content-Type: application/json\r");
-    println!("X-Runtime: nidus-edge-wasm\r\n\r");
+    println!("X-Runtime: stackrun-edge-wasm\r\n\r");
     println!("{}", json);
 }

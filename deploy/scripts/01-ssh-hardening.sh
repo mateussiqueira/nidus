@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================
-# NIDUS - SSH Hardening Script
+# STACKRUN - SSH Hardening Script
 # Execute como root no VPS
 # ============================================
 set -e
@@ -25,7 +25,7 @@ sed -i 's/^Protocol 1/Protocol 2/' /etc/ssh/sshd_config
 cat >> /etc/ssh/sshd_config << 'EOF'
 
 # ============================================
-# NIDUS Security Hardening
+# STACKRUN Security Hardening
 # ============================================
 
 # Porta customizada (opcional, descomente se quiser)
