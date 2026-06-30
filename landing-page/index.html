@@ -1,26 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nidus — Deploy like Vercel. Run on your own server.</title>
-<meta name="description" content="Self-hosted platform for deploying apps, databases, and domains. Git push to production in seconds. No vendor lock-in.">
+<title>Nidus — Deploy como a Vercel. Rode no seu servidor.</title>
+<meta name="description" content="PaaS self-hosted para times que querem controle total. Deploy em segundos com git push. Open source, sem vendor lock-in.">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
   --bg: #030303;
   --surface: #0a0a0c;
+  --surface2: #0f0f12;
   --border: #1a1a1e;
+  --border2: #26262b;
   --text: #fafafa;
   --text-secondary: #71717a;
+  --text-tertiary: #52525b;
   --accent: #22c55e;
   --accent-glow: rgba(34,197,94,0.18);
   --accent2: #3b82f6;
   --accent3: #a855f7;
 }
+
+html { scroll-behavior: smooth; }
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -31,19 +36,31 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── animated background grid ── */
+/* ── background ── */
 .bg-grid {
-  position: fixed; inset: 0; z-index: 0;
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
   background-image:
-    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
   background-size: 60px 60px;
   mask-image: radial-gradient(ellipse 80% 80% at 50% 0%, black 30%, transparent 70%);
 }
 
-/* ── floating orbs ── */
+.gradient-bg {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(34,197,94,0.06) 0%, transparent 60%),
+              radial-gradient(ellipse 60% 50% at 80% 40%, rgba(59,130,246,0.04) 0%, transparent 50%),
+              radial-gradient(ellipse 50% 40% at 20% 70%, rgba(168,85,247,0.04) 0%, transparent 50%);
+  animation: gradientShift 12s ease-in-out infinite alternate;
+}
+
+@keyframes gradientShift {
+  0% { opacity: 0.8; transform: scale(1); }
+  100% { opacity: 1; transform: scale(1.05); }
+}
+
 .orb {
-  position: fixed; border-radius: 50%; filter: blur(100px); opacity: 0.12;
+  position: fixed; border-radius: 50%; filter: blur(100px); opacity: 0.08;
   z-index: 0; pointer-events: none;
 }
 .orb-1 { width: 600px; height: 600px; background: var(--accent); top: -200px; left: -100px; animation: orb1 20s ease-in-out infinite; }
@@ -54,44 +71,48 @@ body {
 @keyframes orb2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-80px,-60px) scale(1.2); } }
 @keyframes orb3 { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(-60px,-80px) scale(1.1); } 66% { transform: translate(80px,30px) scale(0.9); } }
 
-/* ── hero layout ── */
-.hero {
-  position: relative; z-index: 1;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  min-height: 100vh; padding: 40px 24px; text-align: center;
+/* ── container ── */
+.container {
+  position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 24px;
 }
 
-/* ── logo animation ── */
+/* ══════════════════════════════════════════════
+   HERO
+   ══════════════════════════════════════════════ */
+.hero-section {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 80px 24px; text-align: center;
+}
+
 .logo-container {
-  position: relative; margin-bottom: 48px;
+  position: relative; margin-bottom: 40px;
 }
 .logo-hex {
-  position: relative; width: 80px; height: 72px;
+  position: relative; width: 72px; height: 64px;
   background: linear-gradient(135deg, var(--accent), #16a34a);
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
   margin: 0 auto;
   animation: logoPulse 3s ease-in-out infinite;
-  box-shadow: 0 0 60px var(--accent-glow), 0 0 120px rgba(34,197,94,0.08);
+  box-shadow: 0 0 60px var(--accent-glow), 0 0 120px rgba(34,197,94,0.06);
 }
 .logo-hex::after {
   content: 'N';
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 36px; font-weight: 900; color: #030303;
-  letter-spacing: -1px;
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  font-size: 32px; font-weight: 900; color: #030303; letter-spacing: -1px;
 }
 .logo-rings { position: absolute; inset: -20px; animation: logoSpin 8s linear infinite; }
-.logo-ring { position: absolute; inset: 0; border: 1.5px solid rgba(34,197,94,0.15); border-radius: 16px; animation: ringPulse 3s ease-in-out infinite; }
-.logo-ring:nth-child(2) { inset: -12px; animation-delay: 0.3s; border-color: rgba(34,197,94,0.08); }
-.logo-ring:nth-child(3) { inset: -24px; animation-delay: 0.6s; border-color: rgba(34,197,94,0.04); }
+.logo-ring { position: absolute; inset: 0; border: 1.5px solid rgba(34,197,94,0.12); border-radius: 16px; animation: ringPulse 3s ease-in-out infinite; }
+.logo-ring:nth-child(2) { inset: -12px; animation-delay: 0.3s; border-color: rgba(34,197,94,0.06); }
+.logo-ring:nth-child(3) { inset: -24px; animation-delay: 0.6s; border-color: rgba(34,197,94,0.03); }
 .logo-dot {
-  position: absolute; width: 6px; height: 6px; background: var(--accent);
+  position: absolute; width: 5px; height: 5px; background: var(--accent);
   border-radius: 50%; box-shadow: 0 0 8px var(--accent);
   animation: dotOrbit 8s linear infinite;
 }
 
-@keyframes logoPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+@keyframes logoPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.04); } }
 @keyframes logoSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes ringPulse { 0%,100% { opacity: 0.3; } 50% { opacity: 0.6; } }
 @keyframes dotOrbit {
@@ -100,22 +121,21 @@ body {
   100% { top: -4px; left: 50%; }
 }
 
-/* ── typography ── */
-.tagline {
-  font-size: clamp(32px, 6vw, 64px); font-weight: 800;
-  line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 20px;
-  max-width: 800px;
+.hero-headline {
+  font-size: clamp(36px, 6.5vw, 68px); font-weight: 800;
+  line-height: 1.08; letter-spacing: -0.03em; margin-bottom: 20px;
+  max-width: 850px;
 }
-.tagline .hl { color: var(--accent); }
-.subtitle {
-  font-size: clamp(16px, 2.2vw, 20px); color: var(--text-secondary);
-  line-height: 1.6; max-width: 600px; margin-bottom: 48px;
-  font-weight: 400;
+.hero-headline .hl { color: var(--accent); }
+
+.hero-subtitle {
+  font-size: clamp(16px, 2vw, 20px); color: var(--text-secondary);
+  line-height: 1.7; max-width: 620px; margin-bottom: 40px; font-weight: 400;
 }
 
-/* ── buttons ── */
+/* buttons */
 .actions {
-  display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+  display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 56px;
 }
 .btn {
   display: inline-flex; align-items: center; gap: 8px;
@@ -132,11 +152,32 @@ body {
   background: rgba(255,255,255,0.04); color: var(--text);
   border: 1px solid var(--border);
 }
-.btn-ghost:hover { background: rgba(255,255,255,0.08); border-color: #2a2a30; }
+.btn-ghost:hover { background: rgba(255,255,255,0.08); border-color: var(--border2); }
 
-/* ── feature pills ── */
-.features {
-  display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 64px;
+/* install snippet */
+.install-snippet {
+  padding: 18px 28px; border-radius: 12px;
+  background: var(--surface); border: 1px solid var(--border);
+  font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace; font-size: 14px;
+  color: var(--text-secondary); max-width: 480px; width: 100%;
+  text-align: left; position: relative; overflow: hidden;
+}
+.install-snippet::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0.5;
+}
+.install-snippet .cmd { color: var(--accent); }
+.install-snippet .cmt { color: var(--text-tertiary); }
+.install-snippet .cursor {
+  display: inline-block; width: 8px; height: 16px; background: var(--accent);
+  vertical-align: text-bottom; animation: blink 1s step-end infinite;
+  margin-left: 2px;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* hero feature pills */
+.hero-pills {
+  display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 56px;
 }
 .pill {
   padding: 8px 18px; border-radius: 100px; font-size: 13px; font-weight: 500;
@@ -145,67 +186,283 @@ body {
   animation: fadeUp 0.6s ease-out backwards;
 }
 .pill:nth-child(1) { animation-delay: 0.1s; }
-.pill:nth-child(2) { animation-delay: 0.2s; }
-.pill:nth-child(3) { animation-delay: 0.3s; }
-.pill:nth-child(4) { animation-delay: 0.4s; }
-.pill:nth-child(5) { animation-delay: 0.5s; }
-.pill:nth-child(6) { animation-delay: 0.6s; }
-.pill:nth-child(7) { animation-delay: 0.7s; }
-.pill:nth-child(8) { animation-delay: 0.8s; }
+.pill:nth-child(2) { animation-delay: 0.15s; }
+.pill:nth-child(3) { animation-delay: 0.2s; }
+.pill:nth-child(4) { animation-delay: 0.25s; }
+.pill:nth-child(5) { animation-delay: 0.3s; }
+.pill:nth-child(6) { animation-delay: 0.35s; }
+.pill:nth-child(7) { animation-delay: 0.4s; }
+.pill:nth-child(8) { animation-delay: 0.45s; }
 
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ── code snippet ── */
-.code-block {
-  margin-top: 48px; padding: 20px 28px; border-radius: 12px;
-  background: var(--surface); border: 1px solid var(--border);
-  font-family: 'SF Mono', 'Fira Code', monospace; font-size: 14px;
-  color: var(--text-secondary); max-width: 480px; width: 100%;
-  text-align: left; position: relative; overflow: hidden;
+/* ══════════════════════════════════════════════
+   SECTION HEADINGS
+   ══════════════════════════════════════════════ */
+.section {
+  position: relative; z-index: 1;
+  padding: 100px 24px;
 }
-.code-block::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  opacity: 0.5;
+.section-label {
+  font-size: 13px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--accent); margin-bottom: 12px;
 }
-.code-block .cmd { color: var(--accent); }
-.code-block .cmt { color: #52525b; }
-.code-block .cursor {
-  display: inline-block; width: 8px; height: 16px; background: var(--accent);
-  vertical-align: text-bottom; animation: blink 1s step-end infinite;
+.section-title {
+  font-size: clamp(28px, 4vw, 40px); font-weight: 800;
+  letter-spacing: -0.02em; margin-bottom: 16px;
+  line-height: 1.2;
 }
-@keyframes blink { 50% { opacity: 0; } }
+.section-subtitle {
+  font-size: 17px; color: var(--text-secondary);
+  max-width: 560px; line-height: 1.7; margin-bottom: 48px;
+}
 
-/* ── footer ── */
-.footer {
-  text-align: center; padding: 40px; color: var(--text-secondary);
-  font-size: 13px; position: relative; z-index: 1;
+/* ══════════════════════════════════════════════
+   TERMINAL DEMO
+   ══════════════════════════════════════════════ */
+.terminal-section {
+  text-align: center;
 }
-.footer a { color: var(--accent); text-decoration: none; }
-.footer a:hover { text-decoration: underline; }
+.terminal-window {
+  max-width: 700px; margin: 0 auto; border-radius: 14px; overflow: hidden;
+  background: #0d1117; border: 1px solid #21262d;
+  box-shadow: 0 0 60px rgba(0,0,0,0.5), 0 0 120px rgba(34,197,94,0.03);
+  text-align: left;
+}
+.terminal-bar {
+  display: flex; align-items: center; gap: 8px; padding: 14px 18px;
+  background: #161b22; border-bottom: 1px solid #21262d;
+}
+.terminal-dot { width: 12px; height: 12px; border-radius: 50%; }
+.terminal-dot:nth-child(1) { background: #ff5f56; }
+.terminal-dot:nth-child(2) { background: #ffbd2e; }
+.terminal-dot:nth-child(3) { background: #27c93f; }
+.terminal-title {
+  margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  color: #8b949e; font-weight: 500;
+}
+.terminal-body {
+  padding: 24px 28px;
+  font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  font-size: 13.5px; line-height: 1.75; color: #c9d1d9;
+}
+.terminal-body .prompt { color: var(--accent); font-weight: 500; }
+.terminal-body .success { color: var(--accent); }
+.terminal-body .dim { color: #8b949e; }
+.terminal-body .info { color: #58a6ff; }
+.terminal-body .emoji { color: #f0f6fc; }
+.terminal-body .cmd-input { color: #f0f6fc; }
+.terminal-body .done { color: var(--accent); }
+.terminal-body .url { color: #58a6ff; }
+.terminal-body .typing {
+  display: inline-block; overflow: hidden; white-space: nowrap;
+  border-right: 2px solid var(--accent);
+  animation: typing 1.5s steps(24) forwards, blink-caret 0.75s step-end 3;
+  width: 0;
+}
+.terminal-body .typing:nth-child(1) { animation-delay: 0s; }
+.terminal-body .line { opacity: 0; animation: fadeIn 0.3s ease forwards; }
+.terminal-body .line:nth-child(1) { animation-delay: 0.2s; }
+.terminal-body .line:nth-child(2) { animation-delay: 0.4s; }
+.terminal-body .line:nth-child(3) { animation-delay: 0.6s; }
+.terminal-body .line:nth-child(4) { animation-delay: 0.8s; }
+.terminal-body .line:nth-child(5) { animation-delay: 1.0s; }
+.terminal-body .line:nth-child(6) { animation-delay: 1.2s; }
+.terminal-body .line:nth-child(7) { animation-delay: 1.4s; }
+.terminal-body .line:nth-child(8) { animation-delay: 1.6s; }
+.terminal-body .line:nth-child(9) { animation-delay: 1.8s; }
+.terminal-body .line:nth-child(10) { animation-delay: 2.0s; }
+.terminal-body .line:nth-child(11) { animation-delay: 2.2s; }
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+@keyframes blink-caret {
+  50% { border-color: transparent; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════════════════════════════════════════
+   FEATURE GRID
+   ══════════════════════════════════════════════ */
+.feature-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px; margin-top: 8px;
+}
+.feature-card {
+  padding: 28px; border-radius: 16px;
+  background: var(--surface); border: 1px solid var(--border);
+  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+.feature-card:hover {
+  border-color: var(--border2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+.feature-icon {
+  width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+  border-radius: 12px; background: rgba(34,197,94,0.08);
+  font-size: 20px; margin-bottom: 16px;
+}
+.feature-card h3 {
+  font-size: 16px; font-weight: 700; margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+.feature-card p {
+  font-size: 14px; color: var(--text-secondary); line-height: 1.6;
+}
+
+/* ══════════════════════════════════════════════
+   PRICING
+   ══════════════════════════════════════════════ */
+.pricing-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px; align-items: stretch;
+}
+.pricing-card {
+  padding: 32px 28px; border-radius: 16px;
+  background: var(--surface); border: 1px solid var(--border);
+  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+  display: flex; flex-direction: column;
+}
+.pricing-card:hover {
+  border-color: var(--border2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+.pricing-card.featured {
+  border-color: rgba(34,197,94,0.25);
+  background: linear-gradient(180deg, rgba(34,197,94,0.04) 0%, var(--surface) 40%);
+  box-shadow: 0 0 40px rgba(34,197,94,0.06), 0 4px 20px rgba(0,0,0,0.4);
+  position: relative;
+}
+.pricing-card.featured::before {
+  content: '★ Popular';
+  position: absolute; top: -12px; right: 24px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--accent);
+  background: var(--surface); padding: 4px 12px;
+  border-radius: 100px; border: 1px solid rgba(34,197,94,0.25);
+}
+.pricing-name {
+  font-size: 18px; font-weight: 700; margin-bottom: 4px;
+}
+.pricing-price {
+  font-size: 32px; font-weight: 800; margin-bottom: 4px;
+  letter-spacing: -0.02em;
+}
+.pricing-price span { font-size: 16px; font-weight: 500; color: var(--text-secondary); }
+.pricing-desc {
+  font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.5;
+}
+.pricing-features {
+  list-style: none; flex-grow: 1; margin-bottom: 24px;
+}
+.pricing-features li {
+  font-size: 14px; color: var(--text-secondary); padding: 7px 0;
+  display: flex; align-items: center; gap: 10px; line-height: 1.5;
+}
+.pricing-features li::before {
+  content: '✓'; color: var(--accent); font-weight: 700; font-size: 13px;
+  min-width: 16px;
+}
+.pricing-cta, .pricing-cta-ghost {
+  display: block; text-align: center; padding: 12px 20px; border-radius: 10px;
+  font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer;
+  transition: all 0.2s ease; font-family: inherit;
+}
+.pricing-cta {
+  background: var(--accent); color: #030303;
+  box-shadow: 0 0 20px rgba(34,197,94,0.12);
+}
+.pricing-cta:hover { transform: translateY(-1px); box-shadow: 0 0 30px rgba(34,197,94,0.2); }
+.pricing-cta-ghost {
+  background: rgba(255,255,255,0.04); color: var(--text);
+  border: 1px solid var(--border);
+}
+.pricing-cta-ghost:hover { background: rgba(255,255,255,0.08); }
+
+/* ══════════════════════════════════════════════
+   FOOTER
+   ══════════════════════════════════════════════ */
+.footer-section {
+  position: relative; z-index: 1;
+  padding: 60px 24px; border-top: 1px solid var(--border);
+}
+.footer-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start;
+  gap: 40px;
+}
+.footer-brand { max-width: 280px; }
+.footer-logo {
+  display: inline-flex; align-items: center; gap: 8px; margin-bottom: 12px;
+  text-decoration: none; color: var(--text); font-size: 18px; font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.footer-logo .fl-hex {
+  width: 26px; height: 24px; background: linear-gradient(135deg, var(--accent), #16a34a);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 900; color: #030303;
+}
+.footer-tagline {
+  font-size: 14px; color: var(--text-secondary); line-height: 1.7;
+}
+.footer-links {
+  display: flex; gap: 60px; flex-wrap: wrap;
+}
+.footer-col h4 {
+  font-size: 13px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text); margin-bottom: 16px;
+}
+.footer-col a {
+  display: block; color: var(--text-secondary); text-decoration: none;
+  font-size: 14px; padding: 4px 0; transition: color 0.2s;
+}
+.footer-col a:hover { color: var(--text); }
+.footer-bottom {
+  max-width: 1100px; margin: 40px auto 0; padding-top: 24px;
+  border-top: 1px solid var(--border);
+  display: flex; flex-wrap: wrap; justify-content: space-between;
+  align-items: center; gap: 16px;
+  font-size: 13px; color: var(--text-tertiary);
+}
+.footer-bottom .heart { color: var(--accent); }
 
 /* ── responsive ── */
-@media (max-width: 640px) {
-  .hero { padding: 60px 20px; min-height: auto; }
+@media (max-width: 768px) {
+  .hero-section { padding: 60px 20px; min-height: auto; }
+  .terminal-body { font-size: 12px; padding: 20px 18px; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .pricing-grid { grid-template-columns: 1fr; }
+  .footer-inner { flex-direction: column; }
+  .footer-links { gap: 32px; }
+}
+@media (max-width: 480px) {
   .actions { flex-direction: column; align-items: center; }
-  .btn { width: 100%; max-width: 320px; justify-content: center; }
-  .code-block { font-size: 12px; }
+  .btn { width: 100%; max-width: 300px; justify-content: center; }
+  .terminal-body { font-size: 11px; padding: 16px 14px; }
 }
 </style>
 </head>
 <body>
 
 <div class="bg-grid"></div>
+<div class="gradient-bg"></div>
 <div class="orb orb-1"></div>
 <div class="orb orb-2"></div>
 <div class="orb orb-3"></div>
 
-<div class="hero">
-
-  <!-- animated logo -->
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<section class="hero-section">
   <div class="logo-container">
     <div class="logo-rings">
       <div class="logo-ring"></div>
@@ -216,39 +473,33 @@ body {
     <div class="logo-hex"></div>
   </div>
 
-  <!-- tagline -->
-  <h1 class="tagline">
-    Deploy like <span class="hl">Vercel</span>.<br>
-    Run on your <span class="hl">own server</span>.
+  <h1 class="hero-headline">
+    Deploy como a <span class="hl">Vercel</span>.<br>
+    Rode no <span class="hl">seu servidor</span>.
   </h1>
 
-  <p class="subtitle">
-    Self-hosted platform for deploying apps, databases, and domains. 
-    Git push to production in seconds. No vendor lock-in.
+  <p class="hero-subtitle">
+    PaaS self-hosted para times que querem controle total.
+    Deploy em segundos com <strong>git push</strong>. Open source, sem vendor lock-in.
   </p>
 
-  <!-- buttons -->
   <div class="actions">
-    <a href="/dashboard" class="btn btn-primary">
+    <a href="https://app.nidus.app" class="btn btn-primary">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-      Launch Dashboard
+      Começar Grátis
     </a>
-    <a href="https://github.com/mateussiqueira/nidus" target="_blank" class="btn btn-ghost">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-      GitHub
+    <a href="#demo" class="btn btn-ghost">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Ver Demo
     </a>
   </div>
 
-  <!-- code snippet -->
-  <div class="code-block">
-    <span class="cmt"># Install Nidus on any VPS</span><br>
-    <span class="cmd">curl -sSL https://nidus.app/install.sh | sh</span><br><br>
-    <span class="cmt"># Deploy your first app</span><br>
-    <span class="cmd">nidus deploy</span><span class="cursor"></span>
+  <div class="install-snippet">
+    <span class="cmt"># Instale o Nidus em qualquer VPS</span><br>
+    <span class="cmd">curl -sSL https://nidus.app/install.sh | sh</span><span class="cursor"></span>
   </div>
 
-  <!-- feature pills -->
-  <div class="features">
+  <div class="hero-pills">
     <span class="pill">⚡ Git push to deploy</span>
     <span class="pill">🐳 Docker native</span>
     <span class="pill">🗄️ Managed databases</span>
@@ -258,11 +509,191 @@ body {
     <span class="pill">💸 No per-seat pricing</span>
     <span class="pill">🔓 Open source</span>
   </div>
+</section>
 
-</div>
+<!-- ═══════════════════ TERMINAL DEMO ═══════════ -->
+<section class="section terminal-section" id="demo">
+  <div class="container">
+    <div class="section-label">Demo</div>
+    <h2 class="section-title">Veja em ação</h2>
+    <p class="section-subtitle" style="margin: 0 auto 48px;">
+      Um deploy real do início ao fim. Login, git push, build, container e deploy — tudo em segundos.
+    </p>
 
-<footer class="footer">
-  <p>Nidus is open source. <a href="https://github.com/mateussiqueira/nidus" target="_blank">MIT License</a>.</p>
+    <div class="terminal-window">
+      <div class="terminal-bar">
+        <div class="terminal-dot"></div>
+        <div class="terminal-dot"></div>
+        <div class="terminal-dot"></div>
+        <span class="terminal-title">Terminal — nidus</span>
+      </div>
+      <div class="terminal-body">
+        <div class="line"><span class="prompt">$</span> <span class="cmd-input">nidus login</span></div>
+        <div class="line"><span class="success">✓</span> Login efetuado como <span class="info">dev@nidus.app</span></div>
+        <div class="line" style="height:8px"></div>
+        <div class="line"><span class="prompt">$</span> <span class="cmd-input">nidus deploy</span></div>
+        <div class="line"><span class="emoji">🚀</span> Deploying my-app (<span class="info">nextjs</span>)...</div>
+        <div class="line"><span class="emoji">📦</span> Cloning repository... <span class="done">done</span></div>
+        <div class="line"><span class="emoji">🔨</span> Building Docker image... <span class="done">done</span></div>
+        <div class="line"><span class="emoji">🚀</span> Starting container... <span class="done">done</span></div>
+        <div class="line"><span class="emoji">🏥</span> Health check... <span class="done">OK</span></div>
+        <div class="line"><span class="success">✅</span> Deployed at <span class="url">https://my-app.nidus.app</span></div>
+        <div class="line"><span class="prompt">$</span> <span class="cursor">&nbsp;</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FEATURE GRID ═══════════ -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">Features</div>
+    <h2 class="section-title">Tudo que você precisa</h2>
+    <p class="section-subtitle">
+      Da entrega contínua ao monitoramento. Nidus empacota o workflow completo de deploy em uma plataforma self-hosted.
+    </p>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🚀</div>
+        <h3>Git Push to Deploy</h3>
+        <p>git push e seu app está no ar em segundos. Sem configuração manual de CI/CD.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📦</div>
+        <h3>Docker + Compose</h3>
+        <p>Suporte nativo a Dockerfile e docker-compose.yml. Suas stacks rodam exatamente como você define.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>SSL Automático</h3>
+        <p>Certificados TLS provisionados automaticamente para todos os domínios via Caddy.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🗄️</div>
+        <h3>Bancos Gerenciados</h3>
+        <p>PostgreSQL provisionado com 1 clique. Backups automáticos e conexão segura.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌐</div>
+        <h3>Domínios Customizados</h3>
+        <p>Seu domínio, sua marca. Conecte quantos quiser sem custo adicional e sem lock-in.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Métricas em Tempo Real</h3>
+        <p>CPU, RAM, disco, uptime e logs ao vivo. Tudo em um dashboard unificado.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <h3>CI/CD Nativo</h3>
+        <p>GitHub Actions, webhooks configuráveis e preview deploys para cada pull request.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔐</div>
+        <h3>RBAC</h3>
+        <p>Roles de admin, developer e viewer por projeto. Controle granular de acesso ao seu time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ PRICING ═══════════════ -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">Preços</div>
+    <h2 class="section-title">Compare e economize</h2>
+    <p class="section-subtitle">
+      Self-hosted significa zero custo recorrente com plataforma. Compare com as alternativas.
+    </p>
+
+    <div class="pricing-grid">
+      <div class="pricing-card featured">
+        <div class="pricing-name">Nidus</div>
+        <div class="pricing-price">Grátis <span>/mês</span></div>
+        <div class="pricing-desc">Self-hosted. Instale no seu VPS e tenha controle total.</div>
+        <ul class="pricing-features">
+          <li>Projetos ilimitados</li>
+          <li>Domínios customizados</li>
+          <li>SSL automático</li>
+          <li>Bancos PostgreSQL</li>
+          <li>Deploy via Git</li>
+          <li>Suporte comunidade</li>
+          <li>Sem vendor lock-in</li>
+          <li>Open source (MIT)</li>
+        </ul>
+        <a href="https://app.nidus.app" class="pricing-cta">Começar Grátis</a>
+      </div>
+
+      <div class="pricing-card">
+        <div class="pricing-name">Vercel Pro</div>
+        <div class="pricing-price"> <span>/mês</span></div>
+        <div class="pricing-desc">Plataforma serverless gerenciada. Limites por uso.</div>
+        <ul class="pricing-features">
+          <li>100 GB bandwidth</li>
+          <li>6K build minutes</li>
+          <li>Serverless functions</li>
+          <li>Edge network</li>
+          <li>Domain management</li>
+          <li>Preview deployments</li>
+          <li>Password protection</li>
+          <li>Email support</li>
+        </ul>
+        <a href="https://vercel.com/pricing" target="_blank" class="pricing-cta-ghost">Conhecer Vercel</a>
+      </div>
+
+      <div class="pricing-card">
+        <div class="pricing-name">Railway Pro</div>
+        <div class="pricing-price"> <span>/mês</span></div>
+        <div class="pricing-desc">PaaS gerenciado por consumo. Créditos + recursos.</div>
+        <ul class="pricing-features">
+          <li> crédito incluso</li>
+          <li>8 GB RAM</li>
+          <li>4 vCPU</li>
+          <li>Shared DB</li>
+          <li>Custom domains</li>
+          <li>GitHub integration</li>
+          <li>Volume mounts</li>
+          <li>Community support</li>
+        </ul>
+        <a href="https://railway.app/pricing" target="_blank" class="pricing-cta-ghost">Conhecer Railway</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FOOTER ═══════════════ -->
+<footer class="footer-section">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a href="/" class="footer-logo">
+        <div class="fl-hex">N</div>
+        Nidus
+      </a>
+      <p class="footer-tagline">
+        Self-hosted PaaS. Open source. Sem vendor lock-in.
+      </p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <h4>Produto</h4>
+        <a href="https://app.nidus.app" target="_blank">Dashboard</a>
+        <a href="/docs" target="_blank">Documentação</a>
+        <a href="/api" target="_blank">API Reference</a>
+        <a href="/status" target="_blank">Status</a>
+      </div>
+      <div class="footer-col">
+        <h4>Open Source</h4>
+        <a href="https://github.com/mateussiqueira/nidus" target="_blank">GitHub</a>
+        <a href="https://github.com/mateussiqueira/nidus/blob/main/LICENSE" target="_blank">Licença MIT</a>
+        <a href="https://github.com/mateussiqueira/nidus/issues" target="_blank">Issues</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 Nidus. Todos os direitos reservados.</span>
+    <span>Feito com <span class="heart">&#x1F49A;</span> pela comunidade open source</span>
+  </div>
 </footer>
 
 </body>

@@ -1,0 +1,23 @@
+{
+  "name": "@nidus/sdk",
+  "version": "0.1.0",
+  "description": "JavaScript/TypeScript SDK for the Nidus PaaS API",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc && node scripts/build-cjs.mjs",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": ["nidus", "paas", "api", "sdk"],
+  "license": "MIT"
+}
