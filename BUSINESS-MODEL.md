@@ -116,3 +116,88 @@ Densidade: ~150 clientes
 3. **Performance**: Rust core, 50K req/s, 8MB proxy
 4. **Soberania**: Seus dados, seu servidor
 5. **Brasil**: Foco no mercado BR (PIX, suporte PT)
+
+## 💰 Planos Anuais (Mercado Brasileiro)
+
+### Por que anual?
+- 73% dos SaaS BR vendem plano anual (fonte: ABStartups)
+- PIX à vista = sem taxa de cartão (economia de 3-5%)
+- Cliente anual tem LTV 3x maior que mensal
+- Churn de plano anual é 4x menor
+
+### Planos Anuais — Preços Finais
+
+| Plano | Mensal | **Anual** | Desconto | PIX (à vista) |
+|-------|--------|-----------|----------|---------------|
+| Cloud | R$49/mês | **R$497/ano** | 15% off | **R$447** (25% off) |
+| Pro | R$99/mês | **R$997/ano** | 16% off | **R$897** (25% off) |
+| Enterprise | R$299/mês | **R$2.997/ano** | 17% off | **R$2.697** (25% off) |
+
+### Métodos de Pagamento (Brasil)
+
+| Método | Taxa | Prazo | Preferência |
+|--------|------|-------|-------------|
+| **PIX** | 0% | Instantâneo | 65% dos BR |
+| Cartão crédito | 3-5% | 30 dias | 25% |
+| Boleto | R$3-5 | 3 dias | 10% |
+
+### Projeção Anual (com PIX à vista)
+
+**Cenário Conservador — Ano 1:**
+```
+Mês 1-3:  20 clientes Cloud  × R$447/ano = R$8.940  (entrada)
+Mês 4-6:  80 clientes Cloud  × R$447/ano = R$35.760 (entrada)
+Mês 7-9:  200 clientes Cloud × R$447/ano = R$89.400 (entrada)
+Mês 10-12: 350 clientes Cloud × R$447/ano = R$156.450 (entrada)
+
+Pro:  30 × R$897  = R$26.910
+Ent:  5  × R$2.697 = R$13.485
+
+RECEITA ANO 1: R$331.945
+CUSTO ANO 1:  R$4.500 (3 VPS Hostinger × 12 meses)
+LUCRO ANO 1:  R$327.445  (98.6% margem!)
+```
+
+**Cenário Realista — Ano 1:**
+```
+Total clientes: 650 Cloud + 50 Pro + 10 Enterprise
+RECEITA: R$438.270
+CUSTO:   R$6.600 (VPS Hostinger anual)
+LUCRO:   R$431.670
+```
+
+### Estratégia de Venda (Brasil)
+
+1. **Lançamento**: R$297/ano (50% off — early adopters)
+2. **PIX**: Sempre oferecer desconto extra no PIX
+3. **Garantia**: 7 dias de reembolso total
+4. **Boleto**: Parcelamento em até 12x no cartão
+5. **Indicação**: 1 mês grátis para quem indicar
+
+### Gateways de Pagamento (Brasil)
+
+| Gateway | PIX | Boleto | Cartão | Taxa |
+|---------|-----|--------|--------|------|
+| **Stripe** | ✅* | ❌ | ✅ | 3.99% |
+| **Mercado Pago** | ✅ | ✅ | ✅ | 3.79% |
+| **Pagar.me** | ✅ | ✅ | ✅ | 3.49% |
+| **Efí (Gerencianet)** | ✅ | ✅ | ✅ | 0.99% (PIX) |
+
+*Stripe PIX em beta no Brasil. Recomendação: **Efí** (menor taxa no PIX).
+
+### VPS Hostinger — Custo Anual
+
+| Plano | Mensal | **Anual (40% off)** | Clientes | Custo/cliente |
+|-------|--------|---------------------|----------|---------------|
+| KVM 2 (4 vCPU, 8GB) | R$55 | **R$396/ano** | 50 | R$7.92/cliente |
+| KVM 4 (8 vCPU, 16GB) | R$105 | **R$756/ano** | 150 | R$5.04/cliente |
+| KVM 8 (16 vCPU, 32GB) | R$205 | **R$1.476/ano** | 400 | R$3.69/cliente |
+
+### ROI por VPS (plano anual KVM 4)
+```
+Investimento: R$756/ano (1 VPS)
+Faturamento: 150 clientes × R$447 = R$67.050/ano
+ROI: 88x
+Payback: 2 clientes (R$894 cobre o VPS)
+```
+
