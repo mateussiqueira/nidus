@@ -1,0 +1,17 @@
+{
+  "dashboard": {
+    "title": "Nidus Overview",
+    "uid": "nidus-overview",
+    "panels": [
+      {"title":"Deploys/hour","type":"graph","targets":[{"expr":"rate(nidus_deploy_total[1h])"}]},
+      {"title":"API req/s","type":"graph","targets":[{"expr":"rate(nidus_api_requests_total[5m])"}]},
+      {"title":"Proxy cache hit %","type":"stat","targets":[{"expr":"nidus_proxy_cache_hits/(nidus_proxy_cache_hits+nidus_proxy_cache_misses)*100"}]},
+      {"title":"Active projects","type":"stat","targets":[{"expr":"count(nidus_project_status{status=\"ACTIVE\"})"}]},
+      {"title":"Rust proxy RAM","type":"gauge","targets":[{"expr":"nidus_proxy_memory_bytes/1024/1024"}]},
+      {"title":"Edge req/s","type":"graph","targets":[{"expr":"rate(nidus_edge_requests_total[5m])"}]},
+      {"title":"Edge cold start p99","type":"stat","targets":[{"expr":"histogram_quantile(0.99,rate(nidus_edge_cold_start_seconds_bucket[5m]))*1000"}]},
+      {"title":"Build duration","type":"graph","targets":[{"expr":"histogram_quantile(0.50,rate(nidus_build_duration_seconds_bucket[5m]))","legendFormat":"p50"},{"expr":"histogram_quantile(0.95,rate(nidus_build_duration_seconds_bucket[5m]))","legendFormat":"p95"},{"expr":"histogram_quantile(0.99,rate(nidus_build_duration_seconds_bucket[5m]))","legendFormat":"p99"}]},
+      {"title":"Health check","type":"stat","targets":[{"expr":"avg(nidus_health_check_status)"}]}
+    ]
+  }
+}
