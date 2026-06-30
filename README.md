@@ -1,221 +1,116 @@
-# Nimbus
+# 🚀 StackRun — Deploy like Vercel. Run on your own server.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.2.0-orange.svg)](https://github.com/mateussiqueira/stackrun/releases)
+**Self-hosted PaaS. Open source. Zero vendor lock-in.**
 
-> Self-hosted PaaS. Deploy apps, databases, and domains from a single control plane. Vercel-like experience on your own infra.
+[![Production](https://img.shields.io/badge/production-stackrun.vercel.app-22c55e)](https://stackrun.vercel.app)
+[![Tests](https://img.shields.io/badge/tests-99%20passing-22c55e)](https://github.com/mateussiqueira/stackrun/actions)
 
-## What is Nimbus?
+## ⚡ Quick Start
 
-Nimbus is a self-hosted platform for deploying applications. Connect your Git repo, push, and it builds + runs your app in isolated Docker containers — with managed databases, custom domains, real-time metrics, and transactional email. All on your server, no vendor lock-in.
+```bash
+curl -sSL https://stackrun.vercel.app/install.sh | bash
+```
 
-**Try it:** [stackrun.vercel.app](https://stackrun.vercel.app)
+60 seconds. Your own PaaS. On your server.
 
-## Features
+## 🎯 What is StackRun?
 
-| Category | Feature | Status |
-|---|---|---|
-| **Deploy** | Git push → auto build + container | ✅ |
-| **Domains** | Custom domains + SSL via Caddy | ✅ |
-| **Databases** | Managed PostgreSQL provisioning | ✅ |
-| **Mail** | Transactional email API + MCP server | ✅ |
-| **Monitoring** | Prometheus + Grafana (5 dashboards) | ✅ |
-| **Metrics** | Per-project CPU/Memory history | ✅ |
-| **Rollback** | Instant rollback to any deployment | ✅ |
-| **Previews** | Branch-based preview deployments | ✅ |
-| **CLI** | `stackrun deploy` from terminal | ✅ |
+StackRun is a self-hosted platform that gives you the Vercel/Railway experience on your own server. Git push to deploy, automatic SSL, managed databases, Docker support — all without vendor lock-in.
 
-## Stack
+```
+Your code → git push → StackRun builds → Docker container → Live URL
+```
 
-| Component | Language | Role | Memory |
-|---|---|---|---|
-| **API** | Go 1.25 | REST API, auth, webhooks, mail | ~16MB |
-| **Deploy Worker** | Go 1.25 | Docker build + deploy pipeline | ~14MB |
-| **Dashboard** | Next.js 16 + React 19 | Admin interface + charts | ~76MB |
-| **CLI** | Node.js/TypeScript | Terminal deploy tool | — |
-| **Database** | PostgreSQL 16 / SQLite | Application data | — |
-| **Cache/Queue** | Redis 7 | Job queue + rate limiting | — |
-| **Proxy** | Caddy | HTTPS, routing, security headers | — |
-| **Monitoring** | Prometheus + Grafana + cAdvisor | Metrics, dashboards, alerts | — |
-| **Mail** | StackRun Mail (sendmail/SMTP) | Transactional email | — |
+## ✨ Features
 
-## Quick Start
+- 🚀 **Git Push to Deploy** — Push to main, your app is live in seconds
+- 🦀 **Rust Core** — Proxy (8MB), CLI (6MB), Builder (3.6MB), Edge WASM (15MB)
+- 🐹 **Go API** — REST API, worker queue, health checker, cron scheduler
+- 🐳 **Docker + Compose** — Multi-service stacks with persistent volumes
+- 🔒 **SSL Automático** — TLS certificates for all domains via Caddy
+- 🗄️ **Managed Databases** — PostgreSQL provisioned with 1 click
+- 🌐 **Custom Domains** — Your domain, your brand, no lock-in
+- 📊 **Real-time Metrics** — CPU, RAM, uptime, logs via WebSocket
+- 🤖 **CI/CD Native** — GitHub Actions, webhooks, preview deployments
+- 🔐 **RBAC** — Admin, developer, viewer roles per project
+- 💳 **Billing** — AbacatePay (Brazil) + Stripe (Global)
 
-### Prerequisites
+## 📦 SDKs
 
-| Mode | RAM | Disk | Includes |
-|---|---|---|---|
-| **Lite** | 512MB | 2GB | API + Worker (SQLite) |
-| **Full** | 2GB | 10GB | All components |
+```js
+// JavaScript
+import { StackRunClient } from "@stackrun/sdk"
+```
 
-- Docker + Docker Compose
-- Git
+```python
+# Python
+from stackrun import StackRunClient
+```
 
-### Full Stack
+```go
+// Go
+import "github.com/mateussiqueira/stackrun/packages/sdk-go/stackrun"
+```
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                  stackrun.vercel.app                     │
+├─────────────────────────────────────────────────────────┤
+│  🦀 Rust Proxy (hyper)     ← TLS, HTTP/3, SNI routing   │
+│  🐹 Go API (net/http)      ← REST, OAuth, billing       │
+│  🦀 Rust Builder (BuildKit) ← Docker build cache         │
+│  🦀 Rust Edge (wasmtime)   ← WASM functions <1ms start   │
+│  🐹 Go Worker              ← Deploy queue, health check  │
+│  ⚡ Next.js Dashboard      ← UI, admin, templates        │
+│  🐘 PostgreSQL + Redis     ← Data + job queue            │
+└─────────────────────────────────────────────────────────┘
+```
+
+## 🚀 Deploy StackRun
+
+### Option 1: Self-Hosted (Free)
+```bash
+# Buy a VPS (Hostinger KVM 2 recommended, R$55/mês)
+curl -sSL https://stackrun.vercel.app/install.sh | bash
+```
+
+### Option 2: StackRun Cloud (R$49/mês)
+Managed by us. Zero configuration. [stackrun.vercel.app/dashboard/billing](https://stackrun.vercel.app/dashboard/billing)
+
+## 📊 Benchmarks
+
+| Endpoint | Req/sec | Latency |
+|----------|---------|---------|
+| Health check | 5,660 | 14.5ms |
+| API projects | 3,366 | 17.2ms |
+| Dashboard SSR | 910 | 11.0ms |
+| Static file | 2,780 | 35.9ms |
+
+*Benchmarked on VPS 4 vCPU, 16GB RAM. Zero failures in 17,000 requests.*
+
+## 🧪 Tests
+
+- **99 unit tests** — Go API, 55.4% coverage, 0 race conditions
+- **27 API endpoints** — 100% pass rate
+- **17,000 stress test** — 0 failures
+
+## 🤝 Contributing
+
+StackRun is MIT licensed. Contributions welcome!
 
 ```bash
 git clone https://github.com/mateussiqueira/stackrun.git
-cd nidus
-cp .env.example .env
-docker compose up -d
+cd stackrun
 ```
 
-### Lite Mode (512MB)
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-```bash
-git clone https://github.com/mateussiqueira/stackrun.git
-cd nidus
-docker compose -f docker-compose.lite.yml up -d
-```
+## 📄 License
 
-Lite mode uses SQLite instead of PostgreSQL and excludes Dashboard/Redis/Proxy.
+MIT © 2026 StackRun
 
-### Access
+---
 
-- **Dashboard:** [http://localhost:3000](http://localhost:3000)
-- **API:** [http://localhost:3001](http://localhost:3001)
-- **Grafana:** [http://localhost:3004](http://localhost:3004) (admin / stackrun_grafana_2026)
-
-### Default Credentials
-
-- Email: `demo@stackrun.dev`
-- Password: `demo123456`
-
-## Deploy Your App
-
-### Via CLI
-
-```bash
-npm install -g stackrun-cli
-stackrun login
-cd my-project
-stackrun deploy
-```
-
-### Via API
-
-```bash
-# Create project
-curl -X POST http://localhost:3001/api/projects \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"my-app","slug":"my-app","repoUrl":"https://github.com/user/repo.git"}'
-
-# Deploy
-curl -X POST http://localhost:3001/api/projects/$PROJECT_ID/deploy \
-  -H "Authorization: Bearer $TOKEN"
-```
-
-### Via Git Webhook
-
-Point your GitHub/GitLab webhook to `http://your-server:3001/api/webhook/github`.
-
-## StackRun Mail
-
-Send transactional emails from your apps without external dependencies.
-
-```bash
-# Send via template
-curl -X POST http://localhost:3001/api/mail/send \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "user@example.com",
-    "template_id": "welcome",
-    "vars": {"name": "Maria"}
-  }'
-
-# List templates
-curl http://localhost:3001/api/mail/templates \
-  -H "Authorization: Bearer $TOKEN"
-```
-
-### MCP Server
-
-Connect AI agents to StackRun Mail:
-
-```bash
-STACKRUN_API_URL=http://localhost:3001 STACKRUN_API_TOKEN=$TOKEN node mcp/mail/server.js
-```
-
-## Managed Databases
-
-```bash
-# Create a database (provisioned instantly)
-curl -X POST http://localhost:3001/api/databases \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"projectId":"$PROJECT_ID","name":"my-production-db"}'
-
-# Returns PostgreSQL connection string + credentials
-```
-
-## Monitoring
-
-- **API metrics:** `GET /api/metrics` — request stats, memory, uptime
-- **Project metrics history:** `GET /api/projects/{id}/metrics/history` — CPU/Memory time-series
-- **Grafana dashboards:** `http://localhost:3004` — 5 panels with per-container filtering
-- **Prometheus targets:** cadvisor, stackrun-api, node-exporter
-
-## Structure
-
-```
-stackrun/
-├── apps/
-│   ├── api/              # Go API (mail, metrics, auth, projects)
-│   │   └── mail/         # StackRun Mail package
-│   ├── dashboard/        # Next.js admin + charts
-│   │   └── components/   # MetricsChart, etc.
-│   └── landing-page/     # Static landing page
-├── workers/
-│   └── deploy/           # Go deploy worker (Docker build pipeline)
-├── cli/                  # Node.js CLI
-├── mcp/
-│   └── mail/             # MCP server for AI-driven email
-├── packages/
-│   ├── shared/           # Shared TypeScript types
-│   └── runtime/          # Deploy runtime engine
-├── docker/
-│   ├── stackrun-monitoring.yml  # Prometheus + Grafana + cAdvisor
-│   ├── prometheus.yml        # Metrics scraping config
-│   └── grafana/              # Dashboard provisioning
-├── docs-site/            # Documentation (Next.js, en/pt)
-└── ecosystem.config.cjs  # PM2 process manager config
-```
-
-## Environment Variables
-
-```bash
-DATABASE_URL=postgresql://user:pass@localhost:5432/nidus
-REDIS_URL=redis://localhost:6379
-JWT_SECRET=your-secret-key
-# Optional: SMTP for StackRun Mail
-SMTP_HOST=smtp.sendgrid.net
-SMTP_PORT=587
-SMTP_USER=apikey
-SMTP_PASS=your-api-key
-```
-
-## Performance
-
-- **Go API:** ~16MB RAM idle, ~2ms avg response, 4 goroutines
-- **Go Worker:** ~14MB RAM idle, sub-second git clone (cache)
-- **Docker builds:** layer caching, incremental deploys
-- **Redis queue:** <1ms job dispatch
-
-## Documentation
-
-- [Quickstart](https://stackrun.vercel.app/en/docs/quickstart)
-- [Architecture](https://stackrun.vercel.app/en/docs/architecture)
-- [Deployment](https://stackrun.vercel.app/en/docs/deployment)
-- [API Reference](https://stackrun.vercel.app/en/docs/api)
-- [CLI Guide](https://stackrun.vercel.app/en/docs/cli)
-- [FAQ](https://stackrun.vercel.app/en/docs/faq)
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md).
-
-## License
-
-MIT — see [LICENSE](LICENSE).
+**Deploy your stack. Run the world.** 🚀
