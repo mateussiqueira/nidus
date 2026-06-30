@@ -207,7 +207,12 @@ func main() {
 	mux.HandleFunc("POST /api/projects/{projectId}/compose", withAuth(handleDeployCompose))
 
 	// Webhooks (outgoing)\n	mux.HandleFunc("GET /api/projects/{projectId}/webhooks", withAuth(handleListWebhooks))\n	mux.HandleFunc("POST /api/projects/{projectId}/webhooks", withAuth(handleCreateWebhook))\n	mux.HandleFunc("DELETE /api/projects/{projectId}/webhooks/{webhookId}", withAuth(handleDeleteWebhook))
-	mux.HandleFunc("POST /api/webhook/github", handleWebhook)
+	// Billing & Plans
+        mux.HandleFunc("GET /api/plans", handleListPlans)
+        mux.HandleFunc("GET /api/billing/usage", withAuth(handleGetUsage))
+        mux.HandleFunc("POST /api/billing/subscribe", withAuth(handleSubscribe))
+
+        mux.HandleFunc("POST /api/webhook/github", handleWebhook)
 
 	// Metrics
 	mux.HandleFunc("GET /api/metrics", handleMetrics)
@@ -3185,4 +3190,64 @@ func handleDeleteVolume(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonResponse(w, map[string]interface{}{"ok": true})
+}
+
+
+// --- Billing ---
+
+func handleListPlans(w http.ResponseWriter, r *http.Request) {
+        rows, err := db.Query("SELECT id, name, price_cents, max_projects, max_databases, features FROM plans ORDER BY price_cents")
+        if err != nil {
+                log.Printf("handleListPlans query error: %v", err)
+                jsonError(w, "Erro ao listar planos", http.StatusInternalServerError)
+                return
+        }
+        defer rows.Close()
+        var plans []map[string]interface{}
+        for rows.Next() {
+                var id, name string
+                var features []byte
+                var price, maxProj, maxDB int
+                if err := rows.Scan(&id, &name, &price, &maxProj, &maxDB, &features); err != nil {
+                        log.Printf("handleListPlans scan error: %v", err)
+                        jsonError(w, "Erro ao ler planos", http.StatusInternalServerError)
+                        return
+                }
+                plans = append(plans, map[string]interface{}{
+                        "id":          id,
+                        "name":        name,
+                        "priceCents":  price,
+                        "maxProjects": maxProj,
+                        "maxDatabases": maxDB,
+                        "features":    string(features),
+                })
+        }
+        jsonResponse(w, plans)
+}
+
+func handleGetUsage(w http.ResponseWriter, r *http.Request) {
+        userID := r.Context().Value("userID").(string)
+        month := time.Now().Format("2006-01")
+        row := db.QueryRow("SELECT deploys, projects, databases FROM usage_metrics WHERE user_id=$1 AND month=$2", userID, month)
+        var deploys, projects, dbs int
+        row.Scan(&deploys, &projects, &dbs)
+        var planID string
+        db.QueryRow("SELECT COALESCE(plan_id,'free') FROM users WHERE id=$1", userID).Scan(&planID)
+        jsonResponse(w, map[string]interface{}{
+                "month": month, "deploys": deploys, "projects": projects, "databases": dbs, "plan": planID,
+        })
+}
+
+func handleSubscribe(w http.ResponseWriter, r *http.Request) {
+        userID := r.Context().Value("userID").(string)
+        var body struct {
+                PlanID string `json:"planId"`
+        }
+        json.NewDecoder(r.Body).Decode(&body)
+        if body.PlanID == "" {
+                body.PlanID = "pro"
+        }
+        db.Exec("UPDATE users SET plan_id=$1 WHERE id=$2", body.PlanID, userID)
+        db.Exec("INSERT INTO subscriptions (user_id, plan_id, current_period_start, current_period_end) VALUES ($1,$2,NOW(),NOW()+INTERVAL '30 days') ON CONFLICT DO NOTHING", userID, body.PlanID)
+        jsonResponse(w, map[string]interface{}{"plan": body.PlanID, "status": "active"})
 }
