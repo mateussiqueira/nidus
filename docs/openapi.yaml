@@ -1,0 +1,241 @@
+openapi: "3.0.3"
+info:
+  title: Nidus API
+  version: 0.2.0
+  description: "Self-hosted PaaS — deploy full-stack apps with Docker, compose, and Git"
+  contact:
+    name: Nidus
+    url: https://nidus.app
+
+servers:
+  - url: https://api.nidus.app
+    description: Production
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    apiToken:
+      type: http
+      scheme: bearer
+      description: "API token (nidus_...)"
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { type: string }
+                  dbConnected: { type: boolean }
+
+  /api/auth/register:
+    post:
+      summary: Register new user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                email: { type: string }
+                password: { type: string }
+                name: { type: string }
+      responses:
+        201: { description: Created }
+        400: { description: Bad request }
+
+  /api/auth/login:
+    post:
+      summary: Login with email/password
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        200:
+          description: JWT token
+          content:
+            application/json:
+              schema:
+                properties:
+                  token: { type: string }
+                  user: { type: object }
+
+  /api/auth/github/login:
+    get:
+      summary: Login with GitHub OAuth
+      responses:
+        302: { description: Redirect to GitHub }
+
+  /api/projects:
+    get:
+      summary: List projects
+      security: [{ bearerAuth: [] }]
+      responses:
+        200:
+          description: Array of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    id: { type: string }
+                    name: { type: string }
+                    slug: { type: string }
+                    status: { type: string }
+                    port: { type: integer }
+    post:
+      summary: Create project
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                name: { type: string }
+                repoUrl: { type: string }
+                branch: { type: string }
+                framework: { type: string }
+      responses:
+        201: { description: Created }
+
+  /api/projects/{projectId}:
+    get:
+      summary: Get project details
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        200: { description: Project object }
+
+  /api/projects/{projectId}/deploy:
+    post:
+      summary: Trigger deploy
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        202: { description: Deploy queued }
+
+  /api/projects/{projectId}/compose:
+    post:
+      summary: Deploy docker-compose stack
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                compose: { type: string, description: "docker-compose.yml content" }
+      responses:
+        202: { description: Compose deploy queued }
+
+  /api/projects/{projectId}/envs:
+    get:
+      summary: List environment variables
+      security: [{ bearerAuth: [] }]
+      responses:
+        200: { description: Array of env vars }
+    post:
+      summary: Add environment variable
+      security: [{ bearerAuth: [] }]
+      responses:
+        201: { description: Created }
+
+  /api/projects/{projectId}/domains:
+    get:
+      summary: List custom domains
+      security: [{ bearerAuth: [] }]
+      responses:
+        200: { description: Array of domains }
+    post:
+      summary: Add custom domain
+      security: [{ bearerAuth: [] }]
+      responses:
+        201: { description: Created }
+
+  /api/projects/{projectId}/webhooks:
+    get:
+      summary: List outgoing webhooks
+      security: [{ bearerAuth: [] }]
+      responses:
+        200: { description: Array of webhooks }
+    post:
+      summary: Create outgoing webhook
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                url: { type: string }
+                events: { type: array, items: { type: string } }
+      responses:
+        201: { description: Created }
+
+  /api/projects/{projectId}/cron:
+    get:
+      summary: List cron jobs
+      security: [{ bearerAuth: [] }]
+      responses:
+        200: { description: Array of cron jobs }
+    post:
+      summary: Create cron job
+      security: [{ bearerAuth: [] }]
+      responses:
+        201: { description: Created }
+
+  /api/databases:
+    get:
+      summary: List databases
+      security: [{ bearerAuth: [] }]
+      responses:
+        200: { description: Array of databases }
+    post:
+      summary: Provision database
+      security: [{ bearerAuth: [] }]
+      responses:
+        201: { description: Created }
+
+  /api/databases/{dbId}/metrics:
+    get:
+      summary: Database metrics (size, connections, cache)
+      security: [{ bearerAuth: [] }]
+      responses:
+        200: { description: Metrics object }
+
+  /api/tokens:
+    get:
+      summary: List API tokens
+      security: [{ bearerAuth: [] }]
+      responses:
+        200: { description: Array of tokens }
+    post:
+      summary: Create API token
+      security: [{ bearerAuth: [] }]
+      responses:
+        201: { description: Token created }
+
+  /api/webhook/github:
+    post:
+      summary: GitHub webhook receiver
+      responses:
+        200: { description: OK }
+

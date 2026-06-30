@@ -59,3 +59,6 @@ apps/dashboard/.next/
 mcp/mail/node_modules/
 deploys/
 *.bak
+workers/deploy/nidus-worker
+apps/api/nidus-api
+apps/proxy/nidus-proxy

@@ -1,0 +1,85 @@
+name: "Deploy to Nidus"
+description: "Deploy your project to Nidus — self-hosted PaaS"
+author: "Nidus"
+
+inputs:
+  api_url:
+    description: "Nidus API URL"
+    required: false
+    default: "https://api.nidus.app"
+  api_token:
+    description: "Nidus API token (create at app.nidus.app/dashboard/settings)"
+    required: true
+  project:
+    description: "Project slug (matches Nidus project)"
+    required: true
+  branch:
+    description: "Branch to deploy"
+    required: false
+    default: "${{ github.ref_name }}"
+  wait:
+    description: "Wait for deploy to complete"
+    required: false
+    default: "true"
+
+outputs:
+  url:
+    description: "Deploy preview URL"
+    value: ${{ steps.deploy.outputs.url }}
+  status:
+    description: "Deploy status"
+    value: ${{ steps.deploy.outputs.status }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Trigger deploy
+      id: deploy
+      shell: bash
+      run: |
+        echo "🚀 Deploying to Nidus..."
+        
+        RESPONSE=$(curl -s -X POST "${{ inputs.api_url }}/api/projects/${{ inputs.project }}/deploy" \
+          -H "Authorization: Bearer ${{ inputs.api_token }}" \
+          -H "Content-Type: application/json" \
+          -d "{\"branch\": \"${{ inputs.branch }}\"}")
+        
+        DEPLOY_ID=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin).get(id,))" 2>/dev/null)
+        
+        if [ -z "$DEPLOY_ID" ]; then
+          echo "❌ Deploy failed: $RESPONSE"
+          exit 1
+        fi
+        
+        echo "📦 Deploy queued: $DEPLOY_ID"
+        echo "deploy_id=$DEPLOY_ID" >> $GITHUB_OUTPUT
+        
+        if [ "${{ inputs.wait }}" = "true" ]; then
+          echo "⏳ Waiting for deploy..."
+          for i in $(seq 1 60); do
+            sleep 5
+            STATUS=$(curl -s "${{ inputs.api_url }}/api/projects/${{ inputs.project }}/deployments/$DEPLOY_ID" \
+              -H "Authorization: Bearer ${{ inputs.api_token }}" | \
+              python3 -c "import sys,json; print(json.load(sys.stdin).get(status,))" 2>/dev/null)
+            
+            case "$STATUS" in
+              success)
+                echo "✅ Deploy completo!"
+                echo "status=success" >> $GITHUB_OUTPUT
+                break
+                ;;
+              failed)
+                echo "❌ Deploy falhou"
+                echo "status=failed" >> $GITHUB_OUTPUT
+                exit 1
+                ;;
+              *)
+                echo "  ... $STATUS"
+                ;;
+            esac
+          done
+        fi
+
+branding:
+  icon: "upload-cloud"
+  color: "blue"

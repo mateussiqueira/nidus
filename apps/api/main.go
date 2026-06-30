@@ -205,6 +205,8 @@ func main() {
 	mux.HandleFunc("GET /api/databases/{dbId}/metrics", withAuth(handleDatabaseMetrics))
 
 	mux.HandleFunc("POST /api/projects/{projectId}/compose", withAuth(handleDeployCompose))
+
+	// Webhooks (outgoing)\n	mux.HandleFunc("GET /api/projects/{projectId}/webhooks", withAuth(handleListWebhooks))\n	mux.HandleFunc("POST /api/projects/{projectId}/webhooks", withAuth(handleCreateWebhook))\n	mux.HandleFunc("DELETE /api/projects/{projectId}/webhooks/{webhookId}", withAuth(handleDeleteWebhook))
 	mux.HandleFunc("POST /api/webhook/github", handleWebhook)
 
 	// Metrics
@@ -2974,5 +2976,93 @@ func handleDeployCompose(w http.ResponseWriter, r *http.Request) {
 	jsonResponse(w, map[string]interface{}{
 		"deploymentId": deployID, "status": "queued", "message": "Compose deploy enfileirado",
 	}, http.StatusAccepted)
+}
+
+
+// ─── Webhooks & Notifications ────────────────────────────────────────────
+
+func sendWebhookNotification(projectName, projectSlug, status, url, branch string) {
+	rows, err := db.Query("SELECT url, secret FROM webhooks WHERE project_id IN (SELECT id FROM projects WHERE slug=$1) AND events @> ARRAY[$2]::TEXT[] AND status=active", projectSlug, status)
+	if err != nil { return }
+	defer rows.Close()
+	for rows.Next() {
+		var webhookURL, secret string
+		rows.Scan(&webhookURL, &secret)
+		payload := map[string]interface{}{
+			"project": projectName,
+			"slug": projectSlug,
+			"status": status,
+			"url": url,
+			"branch": branch,
+			"timestamp": time.Now().Format(time.RFC3339),
+		}
+		body, _ := json.Marshal(payload)
+		go func(url string, b []byte) {
+			req, _ := http.NewRequest("POST", url, bytes.NewReader(b))
+			req.Header.Set("Content-Type", "application/json")
+			http.DefaultClient.Do(req)
+		}(webhookURL, body)
+	}
+}
+
+// Discord webhook support (converts to Discord embed format)
+func sendDiscordNotification(projectName, projectSlug, status, url, branch string, webhookURL string) {
+	color := 0x22d3ee
+	switch status {
+	case "depoy.success": color = 0x22c55e
+	case "depoy.failed": color = 0xef4444
+	}
+	payload := map[string]interface{}{
+		"embeds": []map[string]interface{}{{
+			"title": fmt.Sprintf("Deploy %s — %s", status, projectName),
+			"description": fmt.Sprintf("Branch: **%s**\nURL: %s", branch, url),
+			"color": color,
+			"timestamp": time.Now().Format(time.RFC3339),
+		}},
+	}
+	body, _ := json.Marshal(payload)
+	go func(u string, b []byte) {
+		http.Post(u, "application/json", bytes.NewReader(b))
+	}(webhookURL, body)
+}
+
+func handleListWebhooks(w http.ResponseWriter, r *http.Request) {
+	projectID := r.PathValue("projectId")
+	rows, err := db.Query("SELECT id, url, events, status, created_at FROM webhooks WHERE project_id=$1 ORDER BY created_at DESC", projectID)
+	if err != nil { jsonError(w, "Erro", http.StatusInternalServerError); return }
+	defer rows.Close()
+	webhooks := []map[string]interface{}{}
+	for rows.Next() {
+		var id, url, status string
+		var events []string
+		var createdAt time.Time
+		rows.Scan(&id, &url, &events, &status, &createdAt)
+		webhooks = append(webhooks, map[string]interface{}{
+			"id": id, "url": url, "events": events, "status": status,
+			"createdAt": createdAt.Format(time.RFC3339),
+		})
+	}
+	jsonResponse(w, webhooks)
+}
+
+func handleCreateWebhook(w http.ResponseWriter, r *http.Request) {
+	projectID := r.PathValue("projectId")
+	var body struct {
+		URL    string   `json:"url"`
+		Events []string `json:"events"`
+	}
+	json.NewDecoder(r.Body).Decode(&body)
+	if body.URL == "" { jsonError(w, "URL obrigatoria", http.StatusBadRequest); return }
+	if len(body.Events) == 0 { body.Events = []string{"deploy.success", "deploy.failed"} }
+	id := uuid.New().String()
+	db.Exec("INSERT INTO webhooks (id, project_id, url, events) VALUES ($1,$2,$3,$4)", id, projectID, body.URL, body.Events)
+	jsonResponse(w, map[string]interface{}{"id": id, "url": body.URL, "events": body.Events}, http.StatusCreated)
+}
+
+func handleDeleteWebhook(w http.ResponseWriter, r *http.Request) {
+	projectID := r.PathValue("projectId")
+	webhookID := r.PathValue("webhookId")
+	db.Exec("DELETE FROM webhooks WHERE id=$1 AND project_id=$2", webhookID, projectID)
+	jsonResponse(w, map[string]interface{}{"ok": true})
 }
 
