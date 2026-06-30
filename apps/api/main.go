@@ -216,6 +216,13 @@ func main() {
 	mux.HandleFunc("POST /api/projects/{projectId}/cron", withAuth(handleCreateCronJob))
 	mux.HandleFunc("DELETE /api/projects/{projectId}/cron/{cronId}", withAuth(handleDeleteCronJob))
 
+        mux.HandleFunc("GET /api/tokens", withAuth(handleListTokens))
+        mux.HandleFunc("POST /api/tokens", withAuth(handleCreateToken))
+        mux.HandleFunc("DELETE /api/tokens/{tokenId}", withAuth(handleDeleteToken))
+        mux.HandleFunc("GET /api/projects/{projectId}/webhooks", withAuth(handleListWebhooks))
+        mux.HandleFunc("POST /api/projects/{projectId}/webhooks", withAuth(handleCreateWebhook))
+        mux.HandleFunc("DELETE /api/projects/{projectId}/webhooks/{webhookId}", withAuth(handleDeleteWebhook))
+
         mux.HandleFunc("POST /api/webhook/github", handleWebhook)
 
 	// Metrics
