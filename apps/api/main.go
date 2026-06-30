@@ -226,6 +226,11 @@ func main() {
 	mux.HandleFunc("POST /api/billing/checkout", withAuth(handleBillingCheckout))
 	mux.HandleFunc("POST /api/billing/webhook", handleBillingWebhook)
 
+	mux.HandleFunc("GET /api/admin/stats", withAuth(withAdmin(handleAdminStats)))
+	mux.HandleFunc("GET /api/admin/users", withAuth(withAdmin(handleAdminUsers)))
+	mux.HandleFunc("GET /api/admin/payments", withAuth(withAdmin(handleAdminPayments)))
+	mux.HandleFunc("GET /api/admin/audit", withAuth(withAdmin(handleAdminAudit)))
+
         mux.HandleFunc("POST /api/webhook/github", handleWebhook)
 
 	// Metrics
