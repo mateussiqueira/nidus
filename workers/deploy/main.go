@@ -564,6 +564,9 @@ func main() {
 	// Health + metrics server
 	go startHealthServer(ctx, rdb, dbPool)
 
+	// Project container health checker (30s interval, auto-restart)
+	go startHealthChecker(ctx, dbPool, rdb)
+
 	// Worker pool
 	var wg sync.WaitGroup
 	
