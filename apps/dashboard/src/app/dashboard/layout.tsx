@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { isAuthenticated, clearToken, api } from "@/lib/api"
-import { Box, Rocket, LayoutDashboard, Settings, LogOut, ChevronDown, Database, Activity, FileText } from "lucide-react"
+import { Box, Rocket, LayoutDashboard, Settings, LogOut, ChevronDown, Database, Activity, FileText, Globe } from "lucide-react"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -35,6 +35,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const links = [
     { href: "/dashboard/projects", label: "Projetos", icon: LayoutDashboard },
     { href: "/dashboard/deployments", label: "Deployments", icon: Rocket },
+    { href: "/dashboard/domains", label: "Dominios", icon: Globe },
     { href: "/dashboard/databases", label: "Bancos de Dados", icon: Database },
     { href: "/dashboard/settings", label: "Configuracoes", icon: Settings },
     { href: "/dashboard/monitoring", label: "Monitoramento", icon: Activity },
