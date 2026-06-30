@@ -1,0 +1,64 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  go-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: nidus
+          POSTGRES_PASSWORD: nidus_dev_2026
+          POSTGRES_DB: nidus
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - name: Unit Tests
+        run: cd apps/api && go test -v -race -cover -count=1 ./...
+        env:
+          DATABASE_URL: postgresql://nidus:nidus_dev_2026@localhost:5432/nidus?sslmode=disable
+          REDIS_URL: redis://localhost:6379
+          DASHBOARD_TOKEN: ci-test-token
+
+      - name: Integration Tests
+        run: cd apps/api && go test -v -tags=integration -race -cover -count=1 ./...
+        env:
+          DATABASE_URL: postgresql://nidus:nidus_dev_2026@localhost:5432/nidus?sslmode=disable
+          REDIS_URL: redis://localhost:6379
+          DASHBOARD_TOKEN: ci-test-token
+
+  dashboard-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: cd apps/dashboard && npm ci && npm run build
+
+  docs-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: cd docs && npm ci && npm run build
