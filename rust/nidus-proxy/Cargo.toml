@@ -1,6 +1,6 @@
 [package]
 name = "nidus-proxy"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 
 [dependencies]
@@ -9,8 +9,12 @@ hyper = { version = "1", features = ["full"] }
 hyper-util = { version = "0.1", features = ["full"] }
 http-body-util = "0.1"
 bytes = "1"
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
+tokio-postgres = { version = "0.7", features = ["with-chrono-0_4"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
 tracing = "0.1"
-tracing-subscriber = "0.3"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tokio-rustls = "0.26"
+rustls = "0.23"
+rustls-pemfile = "2"

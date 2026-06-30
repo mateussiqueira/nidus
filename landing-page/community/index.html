@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nidus Community — Open Source PaaS</title>
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800");
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,sans-serif;background:#030303;color:#fafafa}
+a{color:#22c55e;text-decoration:none}
+header{text-align:center;padding:3rem 1rem;border-bottom:1px solid #1a1a1e}
+section{padding:3rem 1rem;max-width:1000px;margin:0 auto}
+h2{font-size:2rem;margin-bottom:1.5rem;text-align:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem;margin-top:2rem}
+.card{background:#0a0a0c;border:1px solid #1a1a1e;border-radius:12px;padding:2rem;text-align:center}
+.card h3{font-size:1.2rem;margin-bottom:0.5rem}
+.card p{color:#a1a1aa;font-size:0.9rem;line-height:1.5}
+.stat{font-size:3rem;font-weight:800;background:linear-gradient(135deg,#22c55e,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+</style>
+</head>
+<body>
+<header>
+<h1 style="font-size:3rem;font-weight:800">Comunidade Nidus</h1>
+<p style="color:#a1a1aa;margin-top:1rem;font-size:1.2rem">Open source. Open community. Open infrastructure.</p>
+</header>
+
+<section>
+<div class="grid" style="grid-template-columns:repeat(4,1fr)">
+<div class="card"><div class="stat">10</div><p>commits hoje</p></div>
+<div class="card"><div class="stat">3</div><p>SDKs oficiais</p></div>
+<div class="card"><div class="stat">17</div><p>templates</p></div>
+<div class="card"><div class="stat">50+</div><p>endpoints API</p></div>
+</div>
+</section>
+
+<section>
+<h2>Contribua</h2>
+<div class="grid">
+<div class="card">
+<h3>🦀 Rust Core</h3>
+<p>Proxy, builder, CLI, edge functions. Performance crítica em Rust.</p>
+<a href="https://github.com/mateussiqueira/nidus/tree/main/rust" style="display:inline-block;margin-top:1rem;color:#22c55e">Ver código →</a>
+</div>
+<div class="card">
+<h3>🐹 Go API</h3>
+<p>API REST, orchestrator, scheduler. Orquestração em Go.</p>
+<a href="https://github.com/mateussiqueira/nidus/tree/main/apps/api" style="display:inline-block;margin-top:1rem;color:#22c55e">Ver código →</a>
+</div>
+<div class="card">
+<h3>⚡ Dashboard</h3>
+<p>Next.js + Tailwind. UI bonita e responsiva.</p>
+<a href="https://github.com/mateussiqueira/nidus/tree/main/apps/dashboard" style="display:inline-block;margin-top:1rem;color:#22c55e">Ver código →</a>
+</div>
+<div class="card">
+<h3>📦 SDKs</h3>
+<p>JavaScript, Python, Go. Empacotamento e distribuição.</p>
+<a href="https://github.com/mateussiqueira/nidus/tree/main/packages" style="display:inline-block;margin-top:1rem;color:#22c55e">Ver código →</a>
+</div>
+</div>
+</section>
+
+<section>
+<h2>Roadmap Público</h2>
+<div style="max-width:600px;margin:0 auto">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:1rem;border-left:2px solid #22c55e;margin-bottom:1rem;background:#0a0a0c;border-radius:0 8px 8px 0">
+<div><strong>Fase 1</strong><br><span style="color:#71717a;font-size:0.85rem">Fundação Rust</span></div><span style="color:#22c55e">✅</span>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:1rem;border-left:2px solid #22c55e;margin-bottom:1rem;background:#0a0a0c;border-radius:0 8px 8px 0">
+<div><strong>Fase 2</strong><br><span style="color:#71717a;font-size:0.85rem">Builder + Edge</span></div><span style="color:#f59e0b">🔄</span>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:1rem;border-left:2px solid #3b82f6;margin-bottom:1rem;background:#0a0a0c;border-radius:0 8px 8px 0">
+<div><strong>Fase 3</strong><br><span style="color:#71717a;font-size:0.85rem">Observabilidade</span></div><span style="color:#71717a">⬜</span>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:1rem;border-left:2px solid #a855f7;margin-bottom:1rem;background:#0a0a0c;border-radius:0 8px 8px 0">
+<div><strong>Fase 4</strong><br><span style="color:#71717a;font-size:0.85rem">Hybrid Cloud</span></div><span style="color:#71717a">⬜</span>
+</div>
+</div>
+</section>
+
+<section>
+<h2>Junte-se a nós</h2>
+<div class="grid">
+<div class="card">
+<h3>⭐ GitHub</h3>
+<p>Dê star, abra issues, envie PRs.</p>
+<a href="https://github.com/mateussiqueira/nidus" style="display:inline-block;margin-top:1rem;background:#22c55e;color:#000;padding:0.5rem 1.5rem;border-radius:8px;font-weight:600">Star no GitHub</a>
+</div>
+<div class="card">
+<h3>💬 Discord</h3>
+<p>Comunidade ativa. Tire dúvidas, compartilhe deploys.</p>
+<a href="#" style="display:inline-block;margin-top:1rem;background:#5865F2;color:#fff;padding:0.5rem 1.5rem;border-radius:8px;font-weight:600">Entrar no Discord</a>
+</div>
+<div class="card">
+<h3>📖 Docs</h3>
+<p>Guias, API reference, exemplos.</p>
+<a href="https://docs.nidus.app" style="display:inline-block;margin-top:1rem;background:#3b82f6;color:#fff;padding:0.5rem 1.5rem;border-radius:8px;font-weight:600">Ler Documentação</a>
+</div>
+</div>
+</section>
+
+<footer style="text-align:center;padding:2rem;border-top:1px solid #1a1a1e;color:#71717a">
+<p>Nidus · MIT License · Feito com 🦀 + 🐹 + 💚</p>
+</footer>
+</body>
+</html>
