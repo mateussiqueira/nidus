@@ -6,7 +6,7 @@ module.exports = {
       script: "/root/nidus/apps/api/nidus-api",
       interpreter: "none",
       env: {
-        DATABASE_URL: "postgresql://nidus:nidus_prod_123@localhost:5432/nidus",
+        DATABASE_URL: "postgresql://nidus:nidus_dev_2026@localhost:5432/nidus",
         REDIS_URL: "redis://:nidus_53abf19648886baa@localhost:6379/0",
         API_PORT: "3001",
         NODE_ENV: "production",
@@ -29,7 +29,7 @@ module.exports = {
       script: "/root/nidus/workers/deploy/nidus-deploy-worker",
       interpreter: "none",
       env: {
-        DATABASE_URL: "postgresql://nidus:nidus_prod_123@localhost:5432/nidus",
+        DATABASE_URL: "postgresql://nidus:nidus_dev_2026@localhost:5432/nidus",
         REDIS_URL: "redis://:nidus_53abf19648886baa@localhost:6379/0",
         DOCKER_HOST: "unix:///var/run/docker.sock",
         NIDUS_HOST: "2.24.204.31",

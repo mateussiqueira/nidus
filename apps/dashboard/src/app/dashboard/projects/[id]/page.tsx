@@ -3,6 +3,7 @@ import Link from "next/link"
 import { ArrowLeft, Box, Layers, Cpu, MemoryStick } from "lucide-react"
 import { ProjectDetailClient } from "./client"
 import LiveMetrics from "./live-metrics"
+import PreviewList from "@/components/PreviewList"
 import DeploymentHistoryChart from "@/components/DeploymentHistoryChart"
 
 export const dynamic = "force-dynamic"
@@ -80,6 +81,8 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
       {metrics?.running && <LiveMetrics metrics={metrics} projectId={id} />}
 
       <DeploymentHistoryChart projectId={id} />
+
+      <PreviewList projectId={id} projectSlug={project.slug} />
 
       <div className="card mb-6">
         <h2 className="text-lg font-semibold mb-4">Deployments ({deployments?.length ?? 0})</h2>

@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic"
 import { useEffect, useState } from "react"
 import { api } from "@/lib/api"
 import { Database, Plus, Trash2, ExternalLink, Copy, Check } from "lucide-react"
+import DatabaseMetrics from "@/components/DatabaseMetrics"
 
 interface DatabaseItem {
   id: string
@@ -179,6 +180,7 @@ export default function DatabasesPage() {
                   </button>
                 </div>
               </div>
+              {db.id && <DatabaseMetrics dbId={db.id} />}
               <div className="mt-3 p-2 bg-zinc-900 rounded text-xs font-mono text-zinc-400 break-all">
                 {db.url}
               </div>

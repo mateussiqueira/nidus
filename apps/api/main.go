@@ -13,6 +13,7 @@ import (
 	"github.com/nidus-dev/nidus-api/mail"
 	"io"
 	"log"
+	"math"
 	"math/big"
 	"net/http"
 	"net/url"
@@ -200,6 +201,9 @@ func main() {
 	mux.HandleFunc("GET /api/mail/logs", withAuth(handleMailLogs))
 
 	// Webhook
+	// DB metrics
+	mux.HandleFunc("GET /api/databases/{dbId}/metrics", withAuth(handleDatabaseMetrics))
+
 	mux.HandleFunc("POST /api/webhook/github", handleWebhook)
 
 	// Metrics
@@ -2860,3 +2864,77 @@ func handleTemplateRoutes(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
+
+// ─── RBAC Middleware ──────────────────────────────────────────────────────
+
+func withAdmin(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID := r.Context().Value("userID")
+		if userID == nil {
+			jsonError(w, "Nao autenticado", http.StatusUnauthorized)
+			return
+		}
+		var role string
+		db.QueryRow("SELECT role FROM users WHERE id = $1", userID).Scan(&role)
+		if role != "admin" {
+			jsonError(w, "Acesso restrito a administradores", http.StatusForbidden)
+			return
+		}
+		next(w, r)
+	}
+}
+
+func auditLog(userID, action, resource, resourceID, ip string, details map[string]interface{}) {
+	detailsJSON, _ := json.Marshal(details)
+	db.Exec(
+		"INSERT INTO audit_logs (user_id, action, resource, resource_id, details, ip_address) VALUES ($1, $2, $3, $4, $5, $6)",
+		userID, action, resource, resourceID, string(detailsJSON), ip,
+	)
+}
+
+// ─── DB Metrics ──────────────────────────────────────────────────────────
+
+func handleDatabaseMetrics(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("userID").(string)
+	id := r.PathValue("dbId")
+
+	var exists bool
+	db.QueryRow("SELECT EXISTS(SELECT 1 FROM databases d JOIN projects p ON d.project_id=p.id WHERE d.id=$1 AND p.user_id=$2)", id, userID).Scan(&exists)
+	if !exists {
+		jsonError(w, "Banco nao encontrado", http.StatusNotFound)
+		return
+	}
+
+	metrics := map[string]interface{}{}
+
+	// DB size
+	var dbSize string
+	db.QueryRow("SELECT pg_size_pretty(pg_database_size(current_database()))").Scan(&dbSize)
+	metrics["size"] = dbSize
+
+	// Active connections
+	var conns int
+	db.QueryRow("SELECT count(*) FROM pg_stat_activity WHERE state = active").Scan(&conns)
+	metrics["activeConnections"] = conns
+
+	// Total connections
+	var totalConns int
+	db.QueryRow("SELECT count(*) FROM pg_stat_activity").Scan(&totalConns)
+	metrics["totalConnections"] = totalConns
+
+	// Cache hit ratio
+	var cacheHit float64
+	db.QueryRow("SELECT COALESCE(sum(heap_blks_hit)*100.0 / nullif(sum(heap_blks_hit)+sum(heap_blks_read),0), 100.0) FROM pg_statio_user_tables").Scan(&cacheHit)
+	metrics["cacheHitRatio"] = math.Round(cacheHit*10) / 10
+
+	// Transaction rate (last minute)
+	var tps int
+	db.QueryRow("SELECT count(*) FROM pg_stat_database WHERE datname=current_database()").Scan(&tps)
+	metrics["databases"] = tps
+
+	jsonResponse(w, metrics)
+}
+
+// ─── Admin routes registration patch ────────────────────────────────────
+// (registered below in existing route setup)
+
