@@ -50,14 +50,14 @@ struct LoginResponse { token: String, user: User }
 struct User { email: String, name: String }
 
 fn get_token() -> Option<String> {
-    let config_path = dirs::home_dir()?.join(".nidus").join("config.json");
+    let config_path = dirs::home_dir()?.join(".stackrun").join("config.json");
     let data = std::fs::read_to_string(config_path).ok()?;
     let config: serde_json::Value = serde_json::from_str(&data).ok()?;
     config.get("token")?.as_str().map(String::from)
 }
 
 fn save_token(token: &str) {
-    let config_dir = dirs::home_dir().unwrap().join(".nidus");
+    let config_dir = dirs::home_dir().unwrap().join(".stackrun");
     std::fs::create_dir_all(&config_dir).ok();
     let config = serde_json::json!({"token": token});
     std::fs::write(config_dir.join("config.json"), config.to_string()).ok();
@@ -174,7 +174,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     let user: User = r.json().await?;
                     println!("{} Logged in as {}", "✓".green(), user.email.bold());
                 }
-                _ => { eprintln!("{} Not logged in. Use nidus login", "✗".red()); }
+                _ => { eprintln!("{} Not logged in. Use stackrun login", "✗".red()); }
             }
         }
     }
