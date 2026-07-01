@@ -10,7 +10,7 @@ info()  { echo -e "${CYAN}"→"${NC} $1"; }
 ok()    { echo -e "${GREEN}"✓"${NC} $1"; }
 warn()  { echo -e "${YELLOW}"⚠"${NC} $1"; }
 
-echo "  Nimbus 200 - StackRun PaaS"
+echo "  StackRun PaaS"
 echo "  Deploy, Host, Scale. Simple."
 
 if ! command -v docker &>/dev/null; then
